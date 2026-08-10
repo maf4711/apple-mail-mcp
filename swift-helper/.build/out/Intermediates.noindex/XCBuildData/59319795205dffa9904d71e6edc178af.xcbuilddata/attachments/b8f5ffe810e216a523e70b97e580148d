@@ -1,0 +1,16 @@
+{
+  "" : {
+    "const-values" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary.swiftconstvalues",
+    "dependencies" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary.d",
+    "diagnostics" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary.dia",
+    "emit-module-dependencies" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary-emit-module.dia",
+    "pch" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/apple-mail-ai-primary.swiftdeps"
+  },
+  "/Users/a321/Developer/apple-mail-mcp/swift-helper/Sources/AppleMailAI/main.swift" : {
+    "index-unit-output-path" : "/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/main.o",
+    "llvm-bc" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/main.bc",
+    "object" : "/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Intermediates.noindex/AppleMailAI.build/Release/apple-mail-ai-p.build/Objects-normal/arm64/main.o"
+  }
+}

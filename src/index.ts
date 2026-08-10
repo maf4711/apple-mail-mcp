@@ -98,6 +98,27 @@ import {
 } from "@/utils/attachmentLimits.js";
 import { normalizeSubject, subjectFromGetMessage } from "@/tools/thread.js";
 import { extractRfcMessageIdFromSource } from "@/utils/mimeParse.js";
+import {
+  learnFromMessages,
+  planAutoSort,
+  applyCorrection,
+  applyForget,
+  bumpMoves,
+  memoryStatus,
+  type ClusterMessage,
+} from "@/services/categoryFilter.js";
+import { defaultMemoryPath } from "@/services/categoryMemory.js";
+import {
+  deriveActionsHeuristic,
+  mergeIntoQueue,
+  loadQueue,
+  saveQueue,
+  runPendingActions,
+  queueSummary,
+  createMailReminder,
+  defaultActionQueuePath,
+  type DerivedAction,
+} from "@/services/mailActions.js";
 import { ImapIdleWatcher } from "@/services/imapIdle.js";
 import { loadFileConfig } from "@/services/fileConfig.js";
 import { isOrphaned } from "@/utils/orphan.js";
@@ -2259,6 +2280,887 @@ server.registerTool(
       { dryRun: result.dryRun, count: result.count }
     );
   }, "Error creating newsletter smart mailboxes")
+);
+
+// =============================================================================
+// Self-learning inbox filter (cluster → LLM name → memory → auto-sort)
+// =============================================================================
+
+function toClusterMessages(
+  messages: { id: string; subject: string; sender: string; account: string; mailbox: string }[]
+): ClusterMessage[] {
+  return messages.map((m) => ({
+    id: m.id,
+    subject: m.subject ?? "",
+    sender: m.sender ?? "",
+    account: m.account ?? "",
+    mailbox: m.mailbox ?? "INBOX",
+  }));
+}
+
+function listInboxForFilter(account: string | undefined, limit: number): ClusterMessage[] {
+  const { messages } = mailManager.listMessagesWithDiagnostics("INBOX", account, limit);
+  return toClusterMessages(messages);
+}
+
+/**
+ * Ensure destination mailboxes exist, then batch-move plan items marked "move".
+ * Groups by (account, destMailbox). Returns move stats.
+ */
+async function executeSortPlan(
+  plan: ReturnType<typeof planAutoSort>,
+  messages: ClusterMessage[],
+  opts: { ensureMailboxes: boolean }
+): Promise<{
+  moved: number;
+  failed: number;
+  created: string[];
+  errors: string[];
+  movedFroms: string[];
+}> {
+  const byAccountMailbox = new Map<string, { account: string; mailbox: string; ids: string[] }>();
+  const idToMsg = new Map(messages.map((m) => [m.id, m]));
+  const created: string[] = [];
+  const errors: string[] = [];
+  const movedFroms: string[] = [];
+
+  for (const item of plan.items) {
+    if (item.action !== "move") continue;
+    const msg = idToMsg.get(item.id);
+    const account = item.account || msg?.account || "";
+    const key = `${account}\0${item.destMailbox}`;
+    let g = byAccountMailbox.get(key);
+    if (!g) {
+      g = { account, mailbox: item.destMailbox, ids: [] };
+      byAccountMailbox.set(key, g);
+    }
+    g.ids.push(item.id);
+  }
+
+  let moved = 0;
+  let failed = 0;
+
+  for (const g of byAccountMailbox.values()) {
+    if (opts.ensureMailboxes && g.mailbox) {
+      const res = mailManager.createMailbox(g.mailbox, g.account || undefined);
+      if (res.success) {
+        created.push(g.account ? `${g.account}/${g.mailbox}` : g.mailbox);
+      } else if (res.error && !/already exists|existiert bereits|duplicate/i.test(res.error)) {
+        // Continue — mailbox may already exist under another wording
+        errors.push(`create-mailbox "${g.mailbox}": ${res.error}`);
+      }
+    }
+
+    // Batch in chunks of 100
+    for (let i = 0; i < g.ids.length; i += 100) {
+      const chunk = g.ids.slice(i, i + 100);
+      const {
+        success,
+        fail,
+        errors: batchErrs,
+      } = await hybridBatchCounts(
+        chunk,
+        (n) => mailManager.batchMoveMessages(n, g.mailbox, g.account || undefined),
+        (im) => imapBatchMove(im, g.mailbox, { account: g.account || undefined })
+      );
+      moved += success;
+      failed += fail;
+      errors.push(...batchErrs);
+      if (success > 0) {
+        for (const id of chunk) {
+          const m = idToMsg.get(id);
+          if (m) movedFroms.push(m.sender);
+        }
+      }
+    }
+  }
+
+  return { moved, failed, created, errors, movedFroms };
+}
+
+// --- filter-status ---
+
+server.registerTool(
+  "filter-status",
+  {
+    description:
+      "Use when: checking the self-learning inbox filter — memory path, how many domain→mailbox mappings exist, LLM config, and top learned categories.\nReturns: mapping counts, mailboxes, confidence stats, whether an LLM API key is configured.\nDo not use when: you want to learn/sort now (use filter-learn / filter-auto-sort).",
+    inputSchema: {
+      memoryPath: z
+        .string()
+        .optional()
+        .describe("Override path to category-memory.json (default Application Support)"),
+    },
+    outputSchema: {
+      mappingCount: z.number().optional(),
+      llmConfigured: z.boolean().optional(),
+    },
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    const top = st.mappings
+      .slice(0, 25)
+      .map(
+        (m) =>
+          `  - ${m.key} → ${m.mailbox} (conf ${m.confidence.toFixed(2)}, hits ${m.hits}, ${m.source})`
+      )
+      .join("\n");
+    const text = [
+      `Self-learning filter status`,
+      `  memory: ${st.memoryPath}`,
+      `  mappings: ${st.mappingCount}`,
+      `  mailboxes: ${st.mailboxes.join(", ") || "(none yet)"}`,
+      `  LLM: ${st.llmConfigured ? `configured (${st.llmModel} @ ${st.llmBaseUrl})` : "not configured — domain fallback names only (set XAI_API_KEY)"}`,
+      `  updated: ${st.updatedAt}`,
+      top ? `Top mappings:\n${top}` : "  (no mappings — run filter-learn)",
+    ].join("\n");
+    return successResponse(text, st as unknown as Record<string, unknown>);
+  }, "Error reading filter status")
+);
+
+// --- filter-memory ---
+
+server.registerTool(
+  "filter-memory",
+  {
+    description:
+      "Use when: listing everything the self-learning filter has stored (domain/email → mailbox, confidence, hits).\nReturns: full mapping table from category-memory.json.\nDo not use when: you want a short summary (use filter-status) or to change a mapping (use filter-correct / filter-forget).",
+    inputSchema: {
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      mappingCount: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    if (st.mappingCount === 0) {
+      return successResponse(
+        "No learned mappings yet. Run filter-learn on the inbox first.",
+        st as unknown as Record<string, unknown>
+      );
+    }
+    const lines = st.mappings
+      .map(
+        (m) =>
+          `  ${m.key} → ${m.mailbox}  conf=${m.confidence.toFixed(2)} hits=${m.hits} [${m.source}]`
+      )
+      .join("\n");
+    return successResponse(
+      `Learned ${st.mappingCount} mapping(s) in ${st.memoryPath}:\n${lines}`,
+      st as unknown as Record<string, unknown>
+    );
+  }, "Error listing filter memory")
+);
+
+/** Create NL:… smart mailboxes for discovered newsletter senders. */
+function runNewsletterSmartMailboxes(opts: { dryRun: boolean; minCount: number; days: number }): {
+  dryRun: boolean;
+  count: number;
+  createdOrProposed: {
+    name?: string;
+    email?: string;
+    score?: number;
+    success?: boolean;
+    alreadyExisted?: boolean;
+    wouldCreate?: boolean;
+    error?: string;
+  }[];
+  text: string;
+} {
+  const result = mailManager.createNewsletterSmartMailboxes(opts.dryRun, opts.minCount, opts.days);
+  const lines = (result.createdOrProposed || [])
+    .map((c) => {
+      const state = opts.dryRun
+        ? "would create"
+        : c.alreadyExisted
+          ? "already existed"
+          : c.success
+            ? "created"
+            : c.error
+              ? `error: ${c.error}`
+              : "ok";
+      return `  - ${c.name || "?"} <${c.email || "?"}> score ${c.score ?? "?"} [${state}]`;
+    })
+    .join("\n");
+  const prefix = opts.dryRun
+    ? `Newsletter smart mailboxes (dry-run): would create ${result.count}`
+    : `Newsletter smart mailboxes: ${result.count} processed`;
+  return {
+    dryRun: result.dryRun,
+    count: result.count,
+    createdOrProposed: result.createdOrProposed,
+    text: `${prefix}:\n${lines || "  (none met the newsletter threshold)"}`,
+  };
+}
+
+// --- filter-learn ---
+
+server.registerTool(
+  "filter-learn",
+  {
+    description:
+      'Use when: teaching the self-learning inbox filter from current INBOX mail — clusters by sender domain, names folders via LLM (or domain fallback), writes category-memory.json. By default also discovers newsletters and creates Apple Mail smart mailboxes named "NL: …" per sender. Optionally apply moves immediately (apply=true).\nReturns: clusters, newsletter smart-mailbox results, optional move stats.\nNo preset categories: names emerge from your mail. Set XAI_API_KEY for semantic folder names.\nDo not use when: you only want to apply existing memory (use filter-auto-sort) or only newsletters (use create-newsletter-smart-mailboxes).',
+    inputSchema: {
+      account: z.string().optional().describe("Limit to one Mail account"),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(500)
+        .default(150)
+        .describe("Max INBOX messages to scan (default 150)"),
+      apply: z
+        .boolean()
+        .default(false)
+        .describe("If true, also auto-sort after learning (high-confidence moves)"),
+      aggressive: z
+        .boolean()
+        .default(false)
+        .describe("When apply=true, lower confidence threshold to 0.5"),
+      forceFallback: z
+        .boolean()
+        .default(false)
+        .describe("Skip LLM even if API key is set; name folders from domains only"),
+      newsletters: z
+        .boolean()
+        .default(true)
+        .describe(
+          'If true (default), discover newsletter senders and create "NL: …" smart mailboxes'
+        ),
+      newsletterDryRun: z
+        .boolean()
+        .default(false)
+        .describe("If true, only propose newsletter smart mailboxes (no plist write)"),
+      newsletterMinCount: z
+        .number()
+        .int()
+        .min(1)
+        .default(3)
+        .describe("Min messages from a sender to treat as newsletter (default 3)"),
+      newsletterDays: z
+        .number()
+        .int()
+        .min(1)
+        .default(90)
+        .describe("Look back this many days for newsletter discovery (default 90)"),
+      actions: z
+        .boolean()
+        .default(true)
+        .describe(
+          "If true (default), derive actions from mail (reply/pay/meeting/…) and execute them (flag, Reminders, reply drafts — never auto-send)"
+        ),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      namedCount: z.number().optional(),
+      usedLlm: z.boolean().optional(),
+      moved: z.number().optional(),
+      newsletterCount: z.number().optional(),
+      actionsExecuted: z.number().optional(),
+    },
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      apply,
+      aggressive,
+      forceFallback,
+      newsletters,
+      newsletterDryRun,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath,
+    }) => {
+      const messages = listInboxForFilter(account, limit ?? 150);
+      if (messages.length === 0 && newsletters === false) {
+        return successResponse("INBOX is empty (or unreadable) — nothing to learn.", {
+          namedCount: 0,
+          usedLlm: false,
+          scanned: 0,
+        });
+      }
+
+      const learned =
+        messages.length > 0
+          ? await learnFromMessages(messages, {
+              memoryPath,
+              forceFallback: !!forceFallback,
+            })
+          : {
+              memoryPath: memoryPath || defaultMemoryPath(),
+              clusters: [] as Awaited<ReturnType<typeof learnFromMessages>>["clusters"],
+              namedCount: 0,
+              usedLlm: false,
+              llmError: undefined as string | undefined,
+              llmModel: undefined as string | undefined,
+              memory: undefined as unknown,
+            };
+
+      const clusterLines = learned.clusters
+        .map(
+          (c) =>
+            `  - ${c.domain} (${c.count} msg): → "${c.mailbox}" [${c.source}] e.g. ${c.sampleSubjects[0] || "(no subject)"}`
+        )
+        .join("\n");
+
+      let moveSection = "";
+      let moved = 0;
+      let failed = 0;
+      if (apply && messages.length > 0) {
+        const plan = planAutoSort(messages, {
+          memoryPath: learned.memoryPath,
+          aggressive: !!aggressive,
+        });
+        const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+        moved = exec.moved;
+        failed = exec.failed;
+        if (exec.movedFroms.length) bumpMoves(exec.movedFroms, learned.memoryPath);
+        moveSection = `\n\nApply: moved ${moved}, failed ${failed}, created mailboxes: ${exec.created.join(", ") || "(none)"}`;
+        if (exec.errors.length) moveSection += `\nErrors: ${exec.errors.slice(0, 5).join("; ")}`;
+      }
+
+      let newsletterSection = "";
+      let newsletterPayload: ReturnType<typeof runNewsletterSmartMailboxes> | null = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!newsletterDryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90,
+        });
+        newsletterSection = `\n\n${newsletterPayload.text}`;
+      }
+
+      let actionSection = "";
+      let actionResult: ReturnType<typeof runActionPipeline> | null = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30,
+        });
+        actionSection = `\n\n${actionResult.text}`;
+      }
+
+      const llmNote = learned.usedLlm
+        ? `LLM naming via ${learned.llmModel}`
+        : `Domain fallback names${learned.llmError ? ` (${learned.llmError})` : ""}`;
+
+      return successResponse(
+        `Learned from ${messages.length} INBOX message(s) → ${learned.namedCount} cluster(s). ${llmNote}.\nMemory: ${learned.memoryPath}\n${clusterLines || "  (no clusters)"}${moveSection}${newsletterSection}${actionSection}${apply ? "" : "\n\nTip: re-run with apply=true to move, or call filter-auto-sort."}`,
+        {
+          namedCount: learned.namedCount,
+          usedLlm: learned.usedLlm,
+          llmError: learned.llmError,
+          llmModel: learned.llmModel,
+          memoryPath: learned.memoryPath,
+          clusters: learned.clusters,
+          scanned: messages.length,
+          moved,
+          failed,
+          applied: !!apply,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload
+            ? {
+                dryRun: newsletterPayload.dryRun,
+                count: newsletterPayload.count,
+                createdOrProposed: newsletterPayload.createdOrProposed,
+              }
+            : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0,
+        }
+      );
+    },
+    "Error running filter-learn"
+  )
+);
+
+// --- filter-auto-sort ---
+
+server.registerTool(
+  "filter-auto-sort",
+  {
+    description:
+      'Use when: automatically filing INBOX mail using the self-learned memory only (no LLM). High-confidence mappings move to their mailboxes; unknown senders stay in INBOX. Creates destination mailboxes as needed. By default also creates "NL: …" newsletter smart mailboxes for bulk senders.\nReturns: move/skip counts, newsletter smart-mailbox results, and a per-message plan summary.\nDefault threshold confidence ≥ 0.8 (use aggressive=true for ≥ 0.5). dryRun=true only plans (moves + newsletters).\nDo not use when: memory is empty — run filter-learn first. Prefer filter-correct if a move was wrong.',
+    inputSchema: {
+      account: z.string().optional(),
+      limit: z.number().int().min(1).max(500).default(150),
+      dryRun: z
+        .boolean()
+        .default(false)
+        .describe("If true, only report what would move (default false = actually move)"),
+      aggressive: z.boolean().default(false).describe("Lower confidence threshold to 0.5"),
+      categories: z
+        .array(z.string())
+        .optional()
+        .describe("Only move into these destination mailbox names"),
+      newsletters: z
+        .boolean()
+        .default(true)
+        .describe('If true (default), also create "NL: …" smart mailboxes for newsletter senders'),
+      newsletterMinCount: z.number().int().min(1).default(3),
+      newsletterDays: z.number().int().min(1).default(90),
+      actions: z
+        .boolean()
+        .default(true)
+        .describe(
+          "If true (default), derive + execute mail actions (flag, Reminders, reply drafts). Skipped when dryRun=true."
+        ),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      moved: z.number().optional(),
+      skipped: z.number().optional(),
+      dryRun: z.boolean().optional(),
+      newsletterCount: z.number().optional(),
+      actionsExecuted: z.number().optional(),
+    },
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      dryRun,
+      aggressive,
+      categories,
+      newsletters,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath,
+    }) => {
+      const path = memoryPath || defaultMemoryPath();
+      const st = memoryStatus(path);
+      if (st.mappingCount === 0) {
+        return errorResponse(
+          "No learned mappings yet. Run filter-learn first so the filter can invent categories from your inbox."
+        );
+      }
+
+      const messages = listInboxForFilter(account, limit ?? 150);
+      const plan = planAutoSort(messages, {
+        memoryPath: path,
+        aggressive: !!aggressive,
+        categories,
+      });
+
+      const preview = plan.items
+        .slice(0, 40)
+        .map(
+          (i) =>
+            `  [${i.action}] ${i.id}: ${i.from.slice(0, 40)} → ${i.destMailbox || "—"} (${i.reason})`
+        )
+        .join("\n");
+
+      let newsletterPayload: ReturnType<typeof runNewsletterSmartMailboxes> | null = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!dryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90,
+        });
+      }
+      const nlText = newsletterPayload ? `\n\n${newsletterPayload.text}` : "";
+
+      if (dryRun) {
+        return successResponse(
+          `DRY RUN filter-auto-sort: would move ${plan.moveCount}, skip ${plan.skipCount} of ${messages.length}.\n${preview}${nlText}`,
+          {
+            dryRun: true,
+            moved: 0,
+            wouldMove: plan.moveCount,
+            skipped: plan.skipCount,
+            plan: plan.items,
+            newsletterCount: newsletterPayload?.count ?? 0,
+            newsletters: newsletterPayload
+              ? {
+                  dryRun: true,
+                  count: newsletterPayload.count,
+                  createdOrProposed: newsletterPayload.createdOrProposed,
+                }
+              : null,
+          }
+        );
+      }
+
+      const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+      if (exec.movedFroms.length) bumpMoves(exec.movedFroms, path);
+
+      let actionSection = "";
+      let actionResult: ReturnType<typeof runActionPipeline> | null = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30,
+        });
+        actionSection = `\n\n${actionResult.text}`;
+      }
+
+      return successResponse(
+        `filter-auto-sort: moved ${exec.moved}, failed ${exec.failed}, skipped ${plan.skipCount} of ${messages.length}.\nCreated: ${exec.created.join(", ") || "(none)"}\n${preview}${nlText}${actionSection}${exec.errors.length ? `\nErrors: ${exec.errors.slice(0, 5).join("; ")}` : ""}`,
+        {
+          dryRun: false,
+          moved: exec.moved,
+          failed: exec.failed,
+          skipped: plan.skipCount,
+          created: exec.created,
+          plan: plan.items,
+          errors: exec.errors,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload
+            ? {
+                dryRun: false,
+                count: newsletterPayload.count,
+                createdOrProposed: newsletterPayload.createdOrProposed,
+              }
+            : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0,
+        }
+      );
+    },
+    "Error running filter-auto-sort"
+  )
+);
+
+// --- Action pipeline: derive + execute from mail content ---
+
+function makeActionDeps() {
+  return {
+    flagMessage: (id: string, colorIndex?: number) => mailManager.flagMessage(id, colorIndex),
+    replyDraft: (id: string, body: string) => mailManager.replyToMessage(id, body, false, false),
+    createReminder: (title: string, body: string, dueDate?: string) =>
+      createMailReminder(title, body, dueDate),
+  };
+}
+
+/**
+ * Scan recent messages, derive actions from subject/body, merge into queue,
+ * optionally execute pending actions immediately.
+ */
+function runActionPipeline(opts: {
+  account?: string;
+  limit: number;
+  bodyLimit: number;
+  execute: boolean;
+  executeLimit: number;
+  queuePath?: string;
+}): {
+  scanned: number;
+  derived: number;
+  added: number;
+  executed: number;
+  failed: number;
+  summary: ReturnType<typeof queueSummary>;
+  sample: DerivedAction[];
+  text: string;
+} {
+  const queuePath = opts.queuePath || defaultActionQueuePath();
+  const messages = listInboxForFilter(opts.account, opts.limit);
+  const queue = loadQueue(queuePath);
+  const allDerived: DerivedAction[] = [];
+
+  // Prefer unread / recent first for bodies
+  const candidates = [...messages].slice(0, opts.bodyLimit);
+  for (const m of candidates) {
+    let body = "";
+    try {
+      const content = mailManager.getMessageContent(m.id, false, {
+        account: m.account,
+        mailbox: m.mailbox,
+      });
+      body = content?.plainText?.slice(0, 3500) ?? "";
+    } catch {
+      body = "";
+    }
+    const derived = deriveActionsHeuristic({
+      id: m.id,
+      subject: m.subject,
+      sender: m.sender,
+      body,
+    });
+    allDerived.push(...derived);
+  }
+
+  const { added } = mergeIntoQueue(queue, allDerived);
+  let executed = 0;
+  let failed = 0;
+  if (opts.execute) {
+    const run = runPendingActions(queue, makeActionDeps(), { limit: opts.executeLimit });
+    executed = run.done;
+    failed = run.failed;
+  }
+  saveQueue(queue, queuePath);
+
+  const summary = queueSummary(queue);
+  const sample = queue.actions
+    .filter((a) => a.status === "pending" || a.status === "done")
+    .slice(-15);
+  const lines = sample
+    .map(
+      (a) =>
+        `  [${a.status}] ${a.kind}: ${a.title} (msg ${a.messageId}${a.dueDate ? `, due ${a.dueDate}` : ""})`
+    )
+    .join("\n");
+
+  const text = [
+    `Actions: scanned ${messages.length} msgs, read body of ${candidates.length}, derived ${allDerived.length}, added ${added} to queue.`,
+    opts.execute
+      ? `Executed: done=${executed}, failed=${failed}.`
+      : "Not executed (execute=false). Call filter-actions-run or re-run with execute=true.",
+    `Queue: pending=${summary.pending}, done=${summary.done}, failed=${summary.failed} @ ${queuePath}`,
+    lines ? `Recent:\n${lines}` : "  (no actions)",
+  ].join("\n");
+
+  return {
+    scanned: messages.length,
+    derived: allDerived.length,
+    added,
+    executed,
+    failed,
+    summary,
+    sample,
+    text,
+  };
+}
+
+// --- filter-actions-scan ---
+
+server.registerTool(
+  "filter-actions-scan",
+  {
+    description:
+      'Use when: deriving actionable items from INBOX emails (reply needed, payment/invoice, meeting, review, follow-up) via heuristics on subject+body. Writes a local action queue. With execute=true (default), immediately works them off: flag mail, create Reminders in list "Mail Actions", open reply drafts (never auto-sends).\nReturns: counts and a sample of actions.\nDo not use when: you only want folder sorting (filter-auto-sort) without task extraction.',
+    inputSchema: {
+      account: z.string().optional(),
+      limit: z.number().int().min(1).max(200).default(40).describe("Inbox messages to consider"),
+      bodyLimit: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .default(20)
+        .describe("How many messages to open for body analysis (slower)"),
+      execute: z
+        .boolean()
+        .default(true)
+        .describe("If true (default), run pending actions after scan"),
+      executeLimit: z.number().int().min(1).max(100).default(30),
+      queuePath: z.string().optional(),
+    },
+    outputSchema: {
+      derived: z.number().optional(),
+      executed: z.number().optional(),
+      pending: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ account, limit, bodyLimit, execute, executeLimit, queuePath }) => {
+    const r = runActionPipeline({
+      account,
+      limit: limit ?? 40,
+      bodyLimit: bodyLimit ?? 20,
+      execute: execute !== false,
+      executeLimit: executeLimit ?? 30,
+      queuePath,
+    });
+    return successResponse(r.text, {
+      derived: r.derived,
+      added: r.added,
+      executed: r.executed,
+      failed: r.failed,
+      scanned: r.scanned,
+      pending: r.summary.pending,
+      summary: r.summary,
+      sample: r.sample,
+    });
+  }, "Error scanning mail actions")
+);
+
+// --- filter-actions-run ---
+
+server.registerTool(
+  "filter-actions-run",
+  {
+    description:
+      "Use when: executing pending items already in the action queue (flag, Reminders, reply drafts). Does not re-scan mail — use filter-actions-scan to derive first.\nNever sends email automatically.\nReturns: done/failed counts.",
+    inputSchema: {
+      limit: z.number().int().min(1).max(100).default(30),
+      queuePath: z.string().optional(),
+    },
+    outputSchema: {
+      done: z.number().optional(),
+      failed: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ limit, queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const pendingBefore = queue.actions.filter((a) => a.status === "pending").length;
+    if (pendingBefore === 0) {
+      return successResponse(`No pending actions in ${path}`, {
+        done: 0,
+        failed: 0,
+        pending: 0,
+      });
+    }
+    const run = runPendingActions(queue, makeActionDeps(), { limit: limit ?? 30 });
+    saveQueue(run.queue, path);
+    const summary = queueSummary(run.queue);
+    const lines = run.results
+      .map((r) => `  [${r.action.status}] ${r.action.kind}: ${r.action.title} → ${r.note}`)
+      .join("\n");
+    return successResponse(
+      `Ran actions: done=${run.done}, failed=${run.failed} (had ${pendingBefore} pending).\n${lines}`,
+      {
+        done: run.done,
+        failed: run.failed,
+        pending: summary.pending,
+        results: run.results.map((r) => ({
+          id: r.action.id,
+          kind: r.action.kind,
+          status: r.action.status,
+          note: r.note,
+        })),
+      }
+    );
+  }, "Error running mail actions")
+);
+
+// --- filter-actions-status ---
+
+server.registerTool(
+  "filter-actions-status",
+  {
+    description:
+      "Use when: checking the mail action queue (pending/done/failed, by kind).\nReturns: summary of the local action-queue.json.",
+    inputSchema: {
+      queuePath: z.string().optional(),
+    },
+    outputSchema: {
+      pending: z.number().optional(),
+      done: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const summary = queueSummary(queue);
+    const pending = queue.actions
+      .filter((a) => a.status === "pending")
+      .slice(0, 20)
+      .map((a) => `  - ${a.kind}: ${a.title}`)
+      .join("\n");
+    return successResponse(
+      `Action queue @ ${path}\n  pending=${summary.pending} done=${summary.done} failed=${summary.failed}\n  byKind: ${JSON.stringify(summary.byKind)}\n${pending || "  (no pending)"}`,
+      { ...summary, queuePath: path }
+    );
+  }, "Error reading action queue")
+);
+
+// --- filter-correct ---
+
+server.registerTool(
+  "filter-correct",
+  {
+    description:
+      "Use when: teaching the filter that a sender belongs in a different mailbox (user correction). Updates memory with high confidence so future filter-auto-sort uses the new destination.\nPass either message id (to resolve From) or an explicit from address, plus mailbox name.\nDo not use when: bulk re-learning (use filter-learn) or deleting a mapping (use filter-forget).",
+    inputSchema: {
+      mailbox: z.string().min(1, "Destination mailbox name is required"),
+      from: z.string().optional().describe("Sender address or From header"),
+      id: z.string().optional().describe("Message id — used to resolve From if from omitted"),
+      apply: z
+        .boolean()
+        .default(false)
+        .describe("If true and id given, also move that message now"),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      key: z.string().optional(),
+      mailbox: z.string().optional(),
+    },
+  },
+  withErrorHandling(async ({ mailbox, from, id, apply, memoryPath }) => {
+    let sender = from;
+    if (!sender && id) {
+      const msg = mailManager.getMessageById(id);
+      if (!msg) return errorResponse(`Message "${id}" not found`);
+      sender = msg.sender;
+    }
+    if (!sender) {
+      return errorResponse("Provide from or id so the filter knows which sender to correct");
+    }
+
+    const result = applyCorrection(sender, mailbox, memoryPath);
+    let moveNote = "";
+    if (apply && id) {
+      const { success, error } = mailManager.moveMessage(id, mailbox);
+      if (!success) {
+        // try imap path via hybrid
+        const batch = await hybridBatchCounts(
+          [id],
+          (n) => mailManager.batchMoveMessages(n, mailbox),
+          (im) => imapBatchMove(im, mailbox, {})
+        );
+        if (batch.success === 0) {
+          moveNote = ` (move failed: ${error || batch.errors.join("; ") || "unknown"})`;
+        } else {
+          bumpMoves([sender], result.memoryPath);
+          moveNote = " (message moved)";
+        }
+      } else {
+        bumpMoves([sender], result.memoryPath);
+        moveNote = " (message moved)";
+      }
+    }
+
+    return successResponse(
+      `Corrected: ${result.key} → "${result.mapping.mailbox}" (confidence ${result.mapping.confidence})${moveNote}. Future auto-sort will use this.`,
+      {
+        key: result.key,
+        mailbox: result.mapping.mailbox,
+        confidence: result.mapping.confidence,
+        memoryPath: result.memoryPath,
+      }
+    );
+  }, "Error correcting filter mapping")
+);
+
+// --- filter-forget ---
+
+server.registerTool(
+  "filter-forget",
+  {
+    description:
+      "Use when: removing a learned mapping by domain/email key or dropping all keys that point at a mailbox name.\nReturns: how many mappings were removed.\nDoes not delete Apple Mail folders or messages.",
+    inputSchema: {
+      key: z.string().optional().describe("Domain or email key to forget (e.g. amazon.de)"),
+      mailbox: z.string().optional().describe("Forget all mappings that target this mailbox name"),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      removed: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ key, mailbox, memoryPath }) => {
+    if (!key && !mailbox) {
+      return errorResponse("Provide key and/or mailbox to forget");
+    }
+    const result = applyForget({ key, mailbox, memoryPath });
+    return successResponse(
+      `Forgot ${result.removed} mapping(s). Memory: ${result.memoryPath}`,
+      result as unknown as Record<string, unknown>
+    );
+  }, "Error forgetting filter mapping")
 );
 
 // =============================================================================

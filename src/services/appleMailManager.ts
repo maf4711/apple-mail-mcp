@@ -3024,6 +3024,211 @@ export class AppleMailManager {
   }
 
   /**
+   * Create a local "On My Mac" mailbox (no account / no IMAP).
+   * Used when Gmail/iCloud server folders cannot be created via AppleScript.
+   */
+  createLocalMailbox(name: string): { success: boolean; error?: string; alreadyExisted?: boolean } {
+    const safeName = escapeForAppleScript(name);
+    const script = buildAppLevelScript(`
+      try
+        try
+          set existing to mailbox "${safeName}"
+          return "exists"
+        end try
+        make new mailbox with properties {name:"${safeName}"}
+        return "ok"
+      on error errMsg
+        return "error:" & errMsg
+      end try
+    `);
+    const result = executeAppleScript(script);
+    if (!result.success || result.output.startsWith("error:")) {
+      const raw = result.success
+        ? result.output.replace(/^error:/, "")
+        : result.error || "Unknown error";
+      console.error(`Failed to create local mailbox: ${raw}`);
+      return { success: false, error: raw };
+    }
+    this.invalidateCache();
+    if (result.output.trim() === "exists") {
+      return { success: true, alreadyExisted: true };
+    }
+    return { success: true };
+  }
+
+  /**
+   * Move messages into a local "On My Mac" mailbox by name (single osascript).
+   * Destination is resolved as top-level `mailbox "Name"`, not under an account.
+   *
+   * Prefer {@link moveFromInboxesToLocal} for automation — the full-tree batch
+   * walk often times out on large multi-account setups.
+   */
+  batchMoveToLocalMailbox(ids: string[], mailbox: string): BatchOperationResult[] {
+    if (ids.length === 0) return [];
+    const safeMailbox = escapeForAppleScript(mailbox);
+    const setup = `
+        set destName to "${safeMailbox}"
+        try
+          set destMailbox to mailbox destName
+        on error
+          return "${BATCH_FATAL}Local mailbox \\"" & destName & "\\" not found (On My Mac)"
+        end try`;
+    return this.runBatchOperation(ids, "move _msg to destMailbox", setup);
+  }
+
+  /**
+   * Fast path for auto-sort: find messages ONLY in each account's INBOX /
+   * Posteingang / Inbox (not the entire mailbox tree), then move to a local
+   * "On My Mac" mailbox. This is what actually works at scale for Gmail/IMAP
+   * accounts where server folders can't be created via AppleScript.
+   */
+  moveFromInboxesToLocal(
+    items: { id: string; account?: string }[],
+    localMailbox: string
+  ): BatchOperationResult[] {
+    if (items.length === 0) return [];
+
+    // Ensure destination exists first.
+    const ensured = this.createLocalMailbox(localMailbox);
+    if (!ensured.success) {
+      return items.map((it) => ({
+        id: it.id,
+        success: false,
+        error: ensured.error || "Could not create local mailbox",
+      }));
+    }
+
+    const safeDest = escapeForAppleScript(localMailbox);
+    const valid = items
+      .map((it) => ({ id: it.id, num: Number(it.id), account: it.account || "" }))
+      .filter((v) => Number.isFinite(v.num));
+
+    if (valid.length === 0) {
+      return items.map((it) => ({ id: it.id, success: false, error: "Invalid message ID" }));
+    }
+
+    // Group by account for tighter scripts (smaller Apple Event scope).
+    const byAccount = new Map<string, { id: string; num: number }[]>();
+    for (const v of valid) {
+      const key = v.account || "__any__";
+      const list = byAccount.get(key) ?? [];
+      list.push({ id: v.id, num: v.num });
+      byAccount.set(key, list);
+    }
+
+    const byId = new Map<string, BatchOperationResult>();
+
+    for (const [account, group] of byAccount) {
+      // Chunk to keep scripts fast
+      for (let i = 0; i < group.length; i += 25) {
+        const chunk = group.slice(i, i + 25);
+        const idList = chunk.map((c) => c.num).join(", ");
+        const accountScope =
+          account !== "__any__"
+            ? `
+        set _accounts to {}
+        try
+          set end of _accounts to account "${escapeForAppleScript(account)}"
+        end try
+        if (count of _accounts) is 0 then set _accounts to accounts`
+            : `set _accounts to accounts`;
+
+        const script = buildAppLevelScript(`
+      try
+        try
+          set destMailbox to mailbox "${safeDest}"
+        on error
+          return "${BATCH_FATAL}Local mailbox \\"${safeDest}\\" not found"
+        end try
+        set _out to ""
+        set _done to {}
+        set _ids to {${idList}}
+        set _total to count of _ids
+        set _inboxNames to {"INBOX", "Inbox", "Posteingang"}
+        ${accountScope}
+        repeat with acct in _accounts
+          if (count of _done) is _total then exit repeat
+          repeat with inName in _inboxNames
+            if (count of _done) is _total then exit repeat
+            try
+              set mb to mailbox inName of acct
+              repeat with _idx from 1 to _total
+                if _idx is not in _done then
+                  set _theId to item _idx of _ids
+                  try
+                    set _m to (messages of mb whose id is _theId)
+                    if (count of _m) > 0 then
+                      move (item 1 of _m) to destMailbox
+                      set end of _done to _idx
+                      set _out to _out & (_idx as string) & "${FIELD_SEP}ok${RECORD_SEP}"
+                    end if
+                  on error _e
+                    set end of _done to _idx
+                    set _out to _out & (_idx as string) & "${FIELD_SEP}error:" & _e & "${RECORD_SEP}"
+                  end try
+                end if
+              end repeat
+            end try
+          end repeat
+        end repeat
+        repeat with _idx from 1 to _total
+          if _idx is not in _done then set _out to _out & (_idx as string) & "${FIELD_SEP}notfound${RECORD_SEP}"
+        end repeat
+        return _out
+      on error errMsg
+        return "${BATCH_FATAL}" & errMsg
+      end try
+    `);
+
+        const result = executeAppleScript(script, {
+          timeoutMs: Math.min(90000, 30000 + chunk.length * 800),
+        });
+
+        if (!result.success || result.output.startsWith(BATCH_FATAL)) {
+          const err =
+            result.error ||
+            (result.output?.startsWith(BATCH_FATAL)
+              ? result.output.slice(BATCH_FATAL.length)
+              : "move failed");
+          for (const c of chunk) {
+            byId.set(c.id, { id: c.id, success: false, error: err });
+          }
+          continue;
+        }
+
+        for (const rec of result.output.split(RECORD_SEP)) {
+          if (!rec) continue;
+          const sep = rec.indexOf(FIELD_SEP);
+          if (sep < 0) continue;
+          const pos = Number(rec.slice(0, sep));
+          const status = rec.slice(sep + FIELD_SEP.length);
+          const entry = chunk[pos - 1];
+          if (!entry) continue;
+          if (status === "ok") {
+            byId.set(entry.id, { id: entry.id, success: true });
+          } else if (status === "notfound") {
+            byId.set(entry.id, {
+              id: entry.id,
+              success: false,
+              error: "Message not found in INBOX",
+            });
+          } else if (status.startsWith("error:")) {
+            byId.set(entry.id, {
+              id: entry.id,
+              success: false,
+              error: status.slice("error:".length),
+            });
+          } else {
+            byId.set(entry.id, { id: entry.id, success: false, error: status });
+          }
+        }
+      }
+    }
+
+    return items.map((it) => byId.get(it.id) ?? { id: it.id, success: false, error: "No result" });
+  }
+
+  /**
    * Delete a mailbox.
    */
   deleteMailbox(name: string, account?: string): { success: boolean; error?: string } {

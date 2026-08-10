@@ -37,3 +37,4 @@ Thumbs.db
 # but keep the shared project settings.json tracked.
 .claude/*
 !.claude/settings.json
+.claude-flow/

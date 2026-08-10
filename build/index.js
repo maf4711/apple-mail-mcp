@@ -20713,7 +20713,7 @@ var require_thread_stream = __commonJS({
     var { version: version3 } = require_package2();
     var { EventEmitter } = __require("events");
     var { Worker } = __require("worker_threads");
-    var { join: join6 } = __require("path");
+    var { join: join9 } = __require("path");
     var { pathToFileURL } = __require("url");
     var { wait } = require_wait();
     var {
@@ -20764,7 +20764,7 @@ var require_thread_stream = __commonJS({
     function createWorker(stream, opts) {
       const { filename, workerData } = opts;
       const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
-      const toExecute = bundlerOverrides["thread-stream-worker"] || join6(__dirname, "lib", "worker.js");
+      const toExecute = bundlerOverrides["thread-stream-worker"] || join9(__dirname, "lib", "worker.js");
       const worker = new Worker(toExecute, {
         ...opts.workerOpts,
         name: opts.workerOpts?.name || "thread-stream",
@@ -21230,10 +21230,10 @@ var require_transport = __commonJS({
   "node_modules/.pnpm/pino@10.3.1/node_modules/pino/lib/transport.js"(exports, module) {
     "use strict";
     var { createRequire: createRequire2 } = __require("module");
-    var { existsSync: existsSync6 } = __require("node:fs");
+    var { existsSync: existsSync9 } = __require("node:fs");
     var getCallers = require_caller();
-    var { join: join6, isAbsolute: isAbsolute3, sep: sep2 } = __require("node:path");
-    var { fileURLToPath } = __require("node:url");
+    var { join: join9, isAbsolute: isAbsolute3, sep: sep2 } = __require("node:path");
+    var { fileURLToPath: fileURLToPath2 } = __require("node:url");
     var sleep2 = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
@@ -21299,12 +21299,12 @@ var require_transport = __commonJS({
       let path = unquoted;
       if (path.startsWith("file://")) {
         try {
-          path = fileURLToPath(path);
+          path = fileURLToPath2(path);
         } catch {
           return false;
         }
       }
-      return isAbsolute3(path) && !existsSync6(path);
+      return isAbsolute3(path) && !existsSync9(path);
     }
     function stripQuotes(value) {
       const first = value[0];
@@ -21385,7 +21385,7 @@ var require_transport = __commonJS({
         throw new Error("only one of target or targets can be specified");
       }
       if (targets) {
-        target = bundlerOverrides["pino-worker"] || join6(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join9(__dirname, "worker.js");
         options.targets = targets.filter((dest) => dest.target).map((dest) => {
           return {
             ...dest,
@@ -21403,7 +21403,7 @@ var require_transport = __commonJS({
           });
         });
       } else if (pipeline) {
-        target = bundlerOverrides["pino-worker"] || join6(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join9(__dirname, "worker.js");
         options.pipelines = [pipeline.map((dest) => {
           return {
             ...dest,
@@ -21426,7 +21426,7 @@ var require_transport = __commonJS({
           return origin;
         }
         if (origin === "pino/file") {
-          return join6(__dirname, "..", "file.js");
+          return join9(__dirname, "..", "file.js");
         }
         let fixTarget2;
         for (const filePath of callers) {
@@ -22406,7 +22406,7 @@ var require_safe_stable_stringify = __commonJS({
               return circularValue;
             }
             let res = "";
-            let join6 = ",";
+            let join9 = ",";
             const originalIndentation = indentation;
             if (Array.isArray(value)) {
               if (value.length === 0) {
@@ -22420,7 +22420,7 @@ var require_safe_stable_stringify = __commonJS({
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join6 = `,
+                join9 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -22428,13 +22428,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join6;
+                res += join9;
               }
               const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join9}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -22455,7 +22455,7 @@ ${originalIndentation}`;
             let separator = "";
             if (spacer !== "") {
               indentation += spacer;
-              join6 = `,
+              join9 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -22469,13 +22469,13 @@ ${indentation}`;
               const tmp = stringifyFnReplacer(key2, value, stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join6;
+                separator = join9;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...":${whitespace}"${getItemCount(removedKeys)} not stringified"`;
-              separator = join6;
+              separator = join9;
             }
             if (spacer !== "" && separator.length > 1) {
               res = `
@@ -22516,7 +22516,7 @@ ${originalIndentation}`;
             }
             const originalIndentation = indentation;
             let res = "";
-            let join6 = ",";
+            let join9 = ",";
             if (Array.isArray(value)) {
               if (value.length === 0) {
                 return "[]";
@@ -22529,7 +22529,7 @@ ${originalIndentation}`;
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join6 = `,
+                join9 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -22537,13 +22537,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join6;
+                res += join9;
               }
               const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join9}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -22556,7 +22556,7 @@ ${originalIndentation}`;
             let whitespace = "";
             if (spacer !== "") {
               indentation += spacer;
-              join6 = `,
+              join9 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -22565,7 +22565,7 @@ ${indentation}`;
               const tmp = stringifyArrayReplacer(key2, value[key2], stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join6;
+                separator = join9;
               }
             }
             if (spacer !== "" && separator.length > 1) {
@@ -22623,20 +22623,20 @@ ${originalIndentation}`;
               indentation += spacer;
               let res2 = `
 ${indentation}`;
-              const join7 = `,
+              const join10 = `,
 ${indentation}`;
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
               let i = 0;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
                 res2 += tmp2 !== void 0 ? tmp2 : "null";
-                res2 += join7;
+                res2 += join10;
               }
               const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
               res2 += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res2 += `${join7}"... ${getItemCount(removedKeys)} not stringified"`;
+                res2 += `${join10}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               res2 += `
 ${originalIndentation}`;
@@ -22652,16 +22652,16 @@ ${originalIndentation}`;
               return '"[Object]"';
             }
             indentation += spacer;
-            const join6 = `,
+            const join9 = `,
 ${indentation}`;
             let res = "";
             let separator = "";
             let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
             if (isTypedArrayWithEntries(value)) {
-              res += stringifyTypedArray(value, join6, maximumBreadth);
+              res += stringifyTypedArray(value, join9, maximumBreadth);
               keys = keys.slice(value.length);
               maximumPropertiesToStringify -= value.length;
-              separator = join6;
+              separator = join9;
             }
             if (deterministic) {
               keys = sort(keys, comparator);
@@ -22672,13 +22672,13 @@ ${indentation}`;
               const tmp = stringifyIndent(key2, value[key2], stack, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}: ${tmp}`;
-                separator = join6;
+                separator = join9;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...": "${getItemCount(removedKeys)} not stringified"`;
-              separator = join6;
+              separator = join9;
             }
             if (separator !== "") {
               res = `
@@ -78695,6 +78695,180 @@ var AppleMailManager = class {
     return { success: true };
   }
   /**
+   * Create a local "On My Mac" mailbox (no account / no IMAP).
+   * Used when Gmail/iCloud server folders cannot be created via AppleScript.
+   */
+  createLocalMailbox(name) {
+    const safeName = escapeForAppleScript(name);
+    const script = buildAppLevelScript(`
+      try
+        try
+          set existing to mailbox "${safeName}"
+          return "exists"
+        end try
+        make new mailbox with properties {name:"${safeName}"}
+        return "ok"
+      on error errMsg
+        return "error:" & errMsg
+      end try
+    `);
+    const result = executeAppleScript(script);
+    if (!result.success || result.output.startsWith("error:")) {
+      const raw = result.success ? result.output.replace(/^error:/, "") : result.error || "Unknown error";
+      console.error(`Failed to create local mailbox: ${raw}`);
+      return { success: false, error: raw };
+    }
+    this.invalidateCache();
+    if (result.output.trim() === "exists") {
+      return { success: true, alreadyExisted: true };
+    }
+    return { success: true };
+  }
+  /**
+   * Move messages into a local "On My Mac" mailbox by name (single osascript).
+   * Destination is resolved as top-level `mailbox "Name"`, not under an account.
+   *
+   * Prefer {@link moveFromInboxesToLocal} for automation — the full-tree batch
+   * walk often times out on large multi-account setups.
+   */
+  batchMoveToLocalMailbox(ids, mailbox) {
+    if (ids.length === 0) return [];
+    const safeMailbox = escapeForAppleScript(mailbox);
+    const setup = `
+        set destName to "${safeMailbox}"
+        try
+          set destMailbox to mailbox destName
+        on error
+          return "${BATCH_FATAL}Local mailbox \\"" & destName & "\\" not found (On My Mac)"
+        end try`;
+    return this.runBatchOperation(ids, "move _msg to destMailbox", setup);
+  }
+  /**
+   * Fast path for auto-sort: find messages ONLY in each account's INBOX /
+   * Posteingang / Inbox (not the entire mailbox tree), then move to a local
+   * "On My Mac" mailbox. This is what actually works at scale for Gmail/IMAP
+   * accounts where server folders can't be created via AppleScript.
+   */
+  moveFromInboxesToLocal(items, localMailbox) {
+    if (items.length === 0) return [];
+    const ensured = this.createLocalMailbox(localMailbox);
+    if (!ensured.success) {
+      return items.map((it) => ({
+        id: it.id,
+        success: false,
+        error: ensured.error || "Could not create local mailbox"
+      }));
+    }
+    const safeDest = escapeForAppleScript(localMailbox);
+    const valid = items.map((it) => ({ id: it.id, num: Number(it.id), account: it.account || "" })).filter((v) => Number.isFinite(v.num));
+    if (valid.length === 0) {
+      return items.map((it) => ({ id: it.id, success: false, error: "Invalid message ID" }));
+    }
+    const byAccount = /* @__PURE__ */ new Map();
+    for (const v of valid) {
+      const key = v.account || "__any__";
+      const list = byAccount.get(key) ?? [];
+      list.push({ id: v.id, num: v.num });
+      byAccount.set(key, list);
+    }
+    const byId = /* @__PURE__ */ new Map();
+    for (const [account, group] of byAccount) {
+      for (let i = 0; i < group.length; i += 25) {
+        const chunk = group.slice(i, i + 25);
+        const idList = chunk.map((c) => c.num).join(", ");
+        const accountScope = account !== "__any__" ? `
+        set _accounts to {}
+        try
+          set end of _accounts to account "${escapeForAppleScript(account)}"
+        end try
+        if (count of _accounts) is 0 then set _accounts to accounts` : `set _accounts to accounts`;
+        const script = buildAppLevelScript(`
+      try
+        try
+          set destMailbox to mailbox "${safeDest}"
+        on error
+          return "${BATCH_FATAL}Local mailbox \\"${safeDest}\\" not found"
+        end try
+        set _out to ""
+        set _done to {}
+        set _ids to {${idList}}
+        set _total to count of _ids
+        set _inboxNames to {"INBOX", "Inbox", "Posteingang"}
+        ${accountScope}
+        repeat with acct in _accounts
+          if (count of _done) is _total then exit repeat
+          repeat with inName in _inboxNames
+            if (count of _done) is _total then exit repeat
+            try
+              set mb to mailbox inName of acct
+              repeat with _idx from 1 to _total
+                if _idx is not in _done then
+                  set _theId to item _idx of _ids
+                  try
+                    set _m to (messages of mb whose id is _theId)
+                    if (count of _m) > 0 then
+                      move (item 1 of _m) to destMailbox
+                      set end of _done to _idx
+                      set _out to _out & (_idx as string) & "${FIELD_SEP}ok${RECORD_SEP}"
+                    end if
+                  on error _e
+                    set end of _done to _idx
+                    set _out to _out & (_idx as string) & "${FIELD_SEP}error:" & _e & "${RECORD_SEP}"
+                  end try
+                end if
+              end repeat
+            end try
+          end repeat
+        end repeat
+        repeat with _idx from 1 to _total
+          if _idx is not in _done then set _out to _out & (_idx as string) & "${FIELD_SEP}notfound${RECORD_SEP}"
+        end repeat
+        return _out
+      on error errMsg
+        return "${BATCH_FATAL}" & errMsg
+      end try
+    `);
+        const result = executeAppleScript(script, {
+          timeoutMs: Math.min(9e4, 3e4 + chunk.length * 800)
+        });
+        if (!result.success || result.output.startsWith(BATCH_FATAL)) {
+          const err = result.error || (result.output?.startsWith(BATCH_FATAL) ? result.output.slice(BATCH_FATAL.length) : "move failed");
+          for (const c of chunk) {
+            byId.set(c.id, { id: c.id, success: false, error: err });
+          }
+          continue;
+        }
+        for (const rec of result.output.split(RECORD_SEP)) {
+          if (!rec) continue;
+          const sep2 = rec.indexOf(FIELD_SEP);
+          if (sep2 < 0) continue;
+          const pos = Number(rec.slice(0, sep2));
+          const status = rec.slice(sep2 + FIELD_SEP.length);
+          const entry = chunk[pos - 1];
+          if (!entry) continue;
+          if (status === "ok") {
+            byId.set(entry.id, { id: entry.id, success: true });
+          } else if (status === "notfound") {
+            byId.set(entry.id, {
+              id: entry.id,
+              success: false,
+              error: "Message not found in INBOX"
+            });
+          } else if (status.startsWith("error:")) {
+            byId.set(entry.id, {
+              id: entry.id,
+              success: false,
+              error: status.slice("error:".length)
+            });
+          } else {
+            byId.set(entry.id, { id: entry.id, success: false, error: status });
+          }
+        }
+      }
+    }
+    return items.map((it) => byId.get(it.id) ?? { id: it.id, success: false, error: "No result" });
+  }
+  /**
    * Delete a mailbox.
    */
   deleteMailbox(name, account) {
@@ -79707,7 +79881,7 @@ ${actionStmts.join("\n")}
 };
 
 // src/index.ts
-import { writeFileSync as writeFileSync4 } from "fs";
+import { writeFileSync as writeFileSync6 } from "fs";
 import { join as joinPath } from "path";
 
 // src/services/smtpMailer.ts
@@ -81263,6 +81437,1013 @@ function subjectFromGetMessage(info) {
   return m ? m[1].trim() : null;
 }
 
+// src/services/categoryMemory.ts
+import { existsSync as existsSync5, mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync2, writeFileSync as writeFileSync4 } from "fs";
+import { dirname as dirname2, join as join5 } from "path";
+import { homedir as homedir4 } from "os";
+var MEMORY_VERSION = 1;
+var CONFIDENCE_LLM = 0.75;
+var CONFIDENCE_DOMAIN_FALLBACK = 0.6;
+var CONFIDENCE_CORRECTION = 0.95;
+var THRESHOLD_AUTO = 0.8;
+var THRESHOLD_AGGRESSIVE = 0.5;
+function defaultMemoryPath(env = process.env) {
+  const override = env.APPLE_MAIL_MCP_CATEGORY_MEMORY;
+  if (override && override.trim()) return override.trim();
+  return join5(
+    homedir4(),
+    "Library",
+    "Application Support",
+    "apple-mail-mcp",
+    "category-memory.json"
+  );
+}
+function emptyMemory() {
+  return {
+    version: MEMORY_VERSION,
+    mappings: {},
+    mailboxesCreated: [],
+    updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function loadMemory(path = defaultMemoryPath()) {
+  try {
+    if (!existsSync5(path)) return emptyMemory();
+    const raw = JSON.parse(readFileSync3(path, "utf8"));
+    if (!raw || typeof raw !== "object") return emptyMemory();
+    return {
+      version: MEMORY_VERSION,
+      mappings: raw.mappings && typeof raw.mappings === "object" ? raw.mappings : {},
+      mailboxesCreated: Array.isArray(raw.mailboxesCreated) ? raw.mailboxesCreated.filter((x) => typeof x === "string") : [],
+      updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : (/* @__PURE__ */ new Date()).toISOString()
+    };
+  } catch {
+    return emptyMemory();
+  }
+}
+function saveMemory(memory, path = defaultMemoryPath()) {
+  memory.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+  memory.version = MEMORY_VERSION;
+  const dir = dirname2(path);
+  mkdirSync2(dir, { recursive: true });
+  const tmp = `${path}.${process.pid}.tmp`;
+  writeFileSync4(tmp, JSON.stringify(memory, null, 2), "utf8");
+  renameSync2(tmp, path);
+}
+function extractSenderKey(from) {
+  const raw = (from || "").trim();
+  const angle = raw.match(/<([^>]+)>/);
+  const email2 = (angle ? angle[1] : raw).trim().toLowerCase();
+  const at = email2.lastIndexOf("@");
+  if (at > 0 && at < email2.length - 1) {
+    const domain = email2.slice(at + 1).replace(/[>\s]+$/g, "");
+    return { key: domain, domain, email: email2 };
+  }
+  const token = raw.toLowerCase().replace(/[^a-z0-9.@_-]+/g, " ").trim() || "unknown";
+  return { key: token, domain: token, email: token };
+}
+function sanitizeMailboxName(name, fallback = "Unsorted") {
+  let s = (name || "").trim();
+  s = s.replace(/[/\\:\0]/g, " ").replace(/\s+/g, " ").trim();
+  if (!s) s = fallback;
+  if (s.length > 48) s = s.slice(0, 48).trim();
+  const lower = s.toLowerCase();
+  if (["inbox", "posteingang", "sent", "trash", "junk", "drafts"].includes(lower)) {
+    s = fallback;
+  }
+  return s;
+}
+function domainToMailboxName(domain) {
+  const d = (domain || "unknown").toLowerCase();
+  const base = d.replace(/^(mail|email|e-mail|newsletter|news|noreply|no-reply)\./, "").replace(/\.(com|de|net|org|io|co|uk|app|ai)$/i, "");
+  const parts = base.split(".").filter(Boolean);
+  const label = parts.length >= 2 ? parts[parts.length - 1] : parts[0] || d;
+  const pretty = label.charAt(0).toUpperCase() + label.slice(1);
+  return sanitizeMailboxName(pretty, sanitizeMailboxName(d));
+}
+function lookupMapping(memory, from) {
+  const { key, email: email2, domain } = extractSenderKey(from);
+  for (const k of [email2, domain, key]) {
+    const m = memory.mappings[k];
+    if (m) return { key: k, mapping: m };
+  }
+  return null;
+}
+function upsertMapping(memory, key, mailbox, opts) {
+  const k = key.toLowerCase().trim();
+  const existing = memory.mappings[k];
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const next = {
+    mailbox: sanitizeMailboxName(mailbox),
+    hits: (existing?.hits ?? 0) + (opts.bumpHits ? 1 : 0),
+    confidence: clamp01(opts.confidence),
+    updatedAt: now,
+    source: opts.source,
+    samples: opts.samples?.slice(0, 5) ?? existing?.samples
+  };
+  memory.mappings[k] = next;
+  if (!memory.mailboxesCreated.includes(next.mailbox)) {
+    memory.mailboxesCreated.push(next.mailbox);
+  }
+  return next;
+}
+function recordSuccessfulMove(memory, from) {
+  const hit = lookupMapping(memory, from);
+  if (!hit) return;
+  hit.mapping.hits += 1;
+  hit.mapping.confidence = clamp01(Math.min(0.99, hit.mapping.confidence + 0.01));
+  hit.mapping.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+}
+function correctMapping(memory, from, mailbox) {
+  const { email: email2, domain } = extractSenderKey(from);
+  const mapping = upsertMapping(memory, domain, mailbox, {
+    confidence: CONFIDENCE_CORRECTION,
+    source: "correction"
+  });
+  if (email2 !== domain) {
+    upsertMapping(memory, email2, mailbox, {
+      confidence: CONFIDENCE_CORRECTION,
+      source: "correction"
+    });
+  }
+  return { key: domain, mapping };
+}
+function forgetKey(memory, key) {
+  const k = key.toLowerCase().trim();
+  if (!(k in memory.mappings)) return false;
+  delete memory.mappings[k];
+  return true;
+}
+function forgetMailbox(memory, mailbox) {
+  const target = mailbox.trim();
+  let n = 0;
+  for (const [k, m] of Object.entries(memory.mappings)) {
+    if (m.mailbox === target) {
+      delete memory.mappings[k];
+      n++;
+    }
+  }
+  memory.mailboxesCreated = memory.mailboxesCreated.filter((x) => x !== target);
+  return n;
+}
+function clamp01(n) {
+  if (Number.isNaN(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+function shouldAutoMove(confidence, opts = {}) {
+  const floor = opts.threshold ?? (opts.aggressive ? THRESHOLD_AGGRESSIVE : THRESHOLD_AUTO);
+  return confidence >= floor;
+}
+
+// src/services/categoryCluster.ts
+function clusterByDomain(messages) {
+  const map = /* @__PURE__ */ new Map();
+  for (const m of messages) {
+    const { key, domain } = extractSenderKey(m.sender);
+    const k = key || domain || "unknown";
+    const list = map.get(k) ?? [];
+    list.push(m);
+    map.set(k, list);
+  }
+  const clusters = [];
+  for (const [key, msgs] of map) {
+    const domain = extractSenderKey(msgs[0]?.sender ?? key).domain;
+    const subjects = unique(
+      msgs.map((m) => (m.subject || "").trim()).filter((s) => s.length > 0),
+      8
+    );
+    const senders = unique(msgs.map((m) => m.sender).filter(Boolean), 5);
+    clusters.push({
+      key,
+      domain,
+      messages: msgs,
+      sampleSubjects: subjects,
+      sampleSenders: senders,
+      fallbackName: domainToMailboxName(domain)
+    });
+  }
+  clusters.sort((a, b) => b.messages.length - a.messages.length);
+  return clusters;
+}
+function mergeTinyClusters(clusters, minSize = 2) {
+  if (clusters.length <= 1) return clusters;
+  const big = clusters.filter((c) => c.messages.length >= minSize);
+  const tiny = clusters.filter((c) => c.messages.length < minSize);
+  if (big.length === 0) return clusters;
+  const result = [...big];
+  for (const t of tiny) {
+    const tokens = subjectTokens(t.sampleSubjects.join(" "));
+    let best = null;
+    let bestScore = 0;
+    for (const b of result) {
+      const bTokens = new Set(subjectTokens(b.sampleSubjects.join(" ")));
+      let score = 0;
+      for (const tok of tokens) if (bTokens.has(tok)) score++;
+      if (score > bestScore) {
+        bestScore = score;
+        best = b;
+      }
+    }
+    if (best && bestScore >= 2) {
+      best.messages.push(...t.messages);
+      best.sampleSubjects = unique([...best.sampleSubjects, ...t.sampleSubjects], 8);
+      best.sampleSenders = unique([...best.sampleSenders, ...t.sampleSenders], 5);
+    } else {
+      result.push(t);
+    }
+  }
+  result.sort((a, b) => b.messages.length - a.messages.length);
+  return result;
+}
+function subjectTokens(text) {
+  return text.toLowerCase().replace(/[^a-z0-9äöüß]+/gi, " ").split(/\s+/).filter((w) => w.length >= 5).slice(0, 20);
+}
+function unique(items, max) {
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const i of items) {
+    const k = i.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(i);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+function finalizeClusterName(proposed, fallback) {
+  return sanitizeMailboxName(proposed || fallback, fallback);
+}
+
+// src/services/appleMailAi.ts
+import { spawnSync as spawnSync3 } from "child_process";
+import { existsSync as existsSync6 } from "fs";
+import { dirname as dirname3, join as join6 } from "path";
+import { fileURLToPath } from "url";
+var __dirname2 = dirname3(fileURLToPath(import.meta.url));
+function resolveAppleMailAiBinary(env = process.env) {
+  if (env.APPLE_MAIL_MCP_AI_HELPER && existsSync6(env.APPLE_MAIL_MCP_AI_HELPER)) {
+    return env.APPLE_MAIL_MCP_AI_HELPER;
+  }
+  const candidates = [
+    join6(__dirname2, "..", "..", "build", "apple-mail-ai"),
+    join6(__dirname2, "apple-mail-ai"),
+    join6(process.cwd(), "build", "apple-mail-ai"),
+    join6(process.cwd(), "swift-helper", ".build", "release", "apple-mail-ai")
+  ];
+  for (const p of candidates) {
+    if (existsSync6(p)) return p;
+  }
+  return null;
+}
+function nameClustersWithAppleAI(clusters, opts = {}) {
+  const env = opts.env ?? process.env;
+  const bin = resolveAppleMailAiBinary(env);
+  if (!bin) {
+    return { names: {}, usedAppleAI: false, error: "apple-mail-ai binary not found" };
+  }
+  if (clusters.length === 0) {
+    return { names: {}, usedAppleAI: true, model: "SystemLanguageModel" };
+  }
+  const payload = clusters.map((c) => ({
+    id: c.key,
+    domain: c.domain,
+    count: c.messages.length,
+    senders: c.sampleSenders.slice(0, 3),
+    subjects: c.sampleSubjects.slice(0, 5)
+  }));
+  const r = spawnSync3(bin, ["name-clusters"], {
+    encoding: "utf8",
+    input: JSON.stringify(payload),
+    timeout: opts.timeoutMs ?? 12e4,
+    maxBuffer: 8 * 1024 * 1024,
+    env: { ...process.env, ...env }
+  });
+  if (r.error) {
+    return { names: {}, usedAppleAI: false, error: r.error.message };
+  }
+  if (r.status !== 0) {
+    return {
+      names: {},
+      usedAppleAI: false,
+      error: (r.stderr || r.stdout || `exit ${r.status}`).slice(0, 300)
+    };
+  }
+  try {
+    const j = JSON.parse((r.stdout || "").trim());
+    if (!j.ok || !j.names) {
+      return { names: {}, usedAppleAI: false, error: j.error || "apple-mail-ai ok=false" };
+    }
+    const names = {};
+    for (const c of clusters) {
+      const raw = j.names[c.key];
+      names[c.key] = raw ? finalizeClusterName(raw, c.fallbackName) : c.fallbackName;
+    }
+    return {
+      names,
+      usedAppleAI: true,
+      model: j.model || "SystemLanguageModel",
+      details: j.details
+    };
+  } catch (e) {
+    return {
+      names: {},
+      usedAppleAI: false,
+      error: e instanceof Error ? e.message : String(e)
+    };
+  }
+}
+
+// src/services/categoryLlm.ts
+function resolveLlmConfig(env = process.env) {
+  const apiKey = env.APPLE_MAIL_MCP_LLM_API_KEY || env.XAI_API_KEY || env.OPENAI_API_KEY || void 0;
+  const baseUrl = (env.APPLE_MAIL_MCP_LLM_BASE_URL || env.XAI_BASE_URL || "https://api.x.ai/v1").replace(/\/$/, "");
+  const model = env.APPLE_MAIL_MCP_LLM_MODEL || env.XAI_MODEL || "grok-4-1-fast-non-reasoning";
+  return { apiKey, baseUrl, model };
+}
+async function nameClusters(clusters, opts = {}) {
+  const env = opts.env ?? process.env;
+  const cfg = resolveLlmConfig(env);
+  const fallbackNames = {};
+  for (const c of clusters) {
+    fallbackNames[c.key] = c.fallbackName;
+  }
+  if (opts.forceFallback) {
+    return { names: fallbackNames, usedLlm: false };
+  }
+  const forceCloud = env.APPLE_MAIL_MCP_FORCE_CLOUD_LLM === "1";
+  if (!forceCloud) {
+    const apple = nameClustersWithAppleAI(clusters, { env });
+    if (apple.usedAppleAI && Object.keys(apple.names).length > 0) {
+      const names = { ...fallbackNames, ...apple.names };
+      for (const c of clusters) {
+        if (!names[c.key]) names[c.key] = c.fallbackName;
+        else names[c.key] = finalizeClusterName(names[c.key], c.fallbackName);
+      }
+      return {
+        names,
+        usedLlm: true,
+        usedAppleAI: true,
+        model: apple.model || "SystemLanguageModel"
+      };
+    }
+  }
+  if (!cfg.apiKey) {
+    return {
+      names: fallbackNames,
+      usedLlm: false,
+      error: "No Apple AI naming and no cloud LLM key (build swift-helper or set XAI_API_KEY)"
+    };
+  }
+  try {
+    const names = await callLlmForNames(clusters, cfg, opts.fetchImpl ?? fetch);
+    for (const c of clusters) {
+      if (!names[c.key]) names[c.key] = c.fallbackName;
+      else names[c.key] = finalizeClusterName(names[c.key], c.fallbackName);
+    }
+    return { names, usedLlm: true, usedAppleAI: false, model: cfg.model };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { names: fallbackNames, usedLlm: false, error: msg, model: cfg.model };
+  }
+}
+async function callLlmForNames(clusters, cfg, fetchImpl) {
+  const payload = clusters.map((c) => ({
+    id: c.key,
+    domain: c.domain,
+    count: c.messages.length,
+    senders: c.sampleSenders.slice(0, 3),
+    subjects: c.sampleSubjects.slice(0, 5)
+  }));
+  const system = `You name email folder categories for a personal inbox.
+Given clusters of messages (domain + sample subjects/senders), invent a short folder name per cluster.
+Rules:
+- German or English OK; prefer short proper nouns or clear themes (max 3 words).
+- No presets required \u2014 invent from evidence only.
+- Never use: Inbox, Sent, Trash, Junk, Drafts.
+- Do not use path separators or colons.
+- Return ONLY valid JSON object mapping cluster id \u2192 folder name string.
+Example: {"amazon.de":"Amazon","github.com":"GitHub"}`;
+  const user = `Name these clusters:
+${JSON.stringify(payload, null, 0)}`;
+  const res = await fetchImpl(`${cfg.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${cfg.apiKey}`
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      temperature: 0.2,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user }
+      ]
+    })
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`LLM HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content ?? "";
+  return parseNameJson(content);
+}
+function parseNameJson(content) {
+  const trimmed = content.trim();
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const jsonText = fence ? fence[1].trim() : trimmed;
+  const start = jsonText.indexOf("{");
+  const end = jsonText.lastIndexOf("}");
+  if (start < 0 || end <= start) return {};
+  const obj = JSON.parse(jsonText.slice(start, end + 1));
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === "string" && v.trim()) out[k] = v.trim();
+  }
+  return out;
+}
+
+// src/services/categoryFilter.ts
+async function learnFromMessages(messages, opts = {}) {
+  const memoryPath = opts.memoryPath ?? defaultMemoryPath(opts.env);
+  const memory = loadMemory(memoryPath);
+  let clusters = clusterByDomain(messages);
+  if (opts.mergeTiny !== false) {
+    clusters = mergeTinyClusters(clusters);
+  }
+  const needsNaming = clusters.filter((c) => {
+    const existing = memory.mappings[c.key];
+    return !existing || existing.confidence < 0.85 || existing.source === "domain";
+  });
+  const nameResult = await nameClusters(needsNaming.length > 0 ? needsNaming : clusters, {
+    env: opts.env,
+    forceFallback: opts.forceFallback,
+    fetchImpl: opts.fetchImpl
+  });
+  const clusterSummaries = [];
+  for (const c of clusters) {
+    const existing = memory.mappings[c.key];
+    let mailbox;
+    let source;
+    let confidence;
+    if (existing && existing.confidence >= 0.85 && existing.source !== "domain") {
+      mailbox = existing.mailbox;
+      source = existing.source;
+      confidence = existing.confidence;
+      upsertMapping(memory, c.key, mailbox, {
+        confidence,
+        source,
+        samples: c.sampleSubjects,
+        bumpHits: false
+      });
+    } else {
+      const proposed = nameResult.names[c.key] ?? c.fallbackName;
+      mailbox = proposed;
+      source = nameResult.usedLlm ? "llm" : "domain";
+      confidence = nameResult.usedLlm ? CONFIDENCE_LLM : CONFIDENCE_DOMAIN_FALLBACK;
+      if (existing && existing.confidence > confidence && existing.mailbox) {
+        mailbox = existing.mailbox;
+        source = existing.source;
+        confidence = existing.confidence;
+      }
+      upsertMapping(memory, c.key, mailbox, {
+        confidence,
+        source,
+        samples: c.sampleSubjects
+      });
+    }
+    clusterSummaries.push({
+      key: c.key,
+      domain: c.domain,
+      count: c.messages.length,
+      mailbox,
+      source,
+      sampleSubjects: c.sampleSubjects.slice(0, 3)
+    });
+  }
+  saveMemory(memory, memoryPath);
+  return {
+    memoryPath,
+    clusters: clusterSummaries,
+    namedCount: clusterSummaries.length,
+    usedLlm: nameResult.usedLlm,
+    llmError: nameResult.error,
+    llmModel: nameResult.model,
+    memory
+  };
+}
+function planAutoSort(messages, opts = {}) {
+  const memoryPath = opts.memoryPath ?? defaultMemoryPath(opts.env);
+  const memory = loadMemory(memoryPath);
+  const items = [];
+  const byMailbox = {};
+  for (const m of messages) {
+    const hit = lookupMapping(memory, m.sender);
+    if (!hit) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: "",
+        key: extractSenderKey(m.sender).key,
+        confidence: 0,
+        action: "skip",
+        reason: "unknown sender \u2014 run filter-learn first"
+      });
+      continue;
+    }
+    const conf = hit.mapping.confidence;
+    const dest = hit.mapping.mailbox;
+    if (opts.categories && opts.categories.length > 0 && !opts.categories.includes(dest)) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: dest,
+        key: hit.key,
+        confidence: conf,
+        action: "skip",
+        reason: `filtered out (not in categories filter)`
+      });
+      continue;
+    }
+    if (m.mailbox.toLowerCase() === dest.toLowerCase()) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: dest,
+        key: hit.key,
+        confidence: conf,
+        action: "skip",
+        reason: "already in destination mailbox"
+      });
+      continue;
+    }
+    if (!shouldAutoMove(conf, { aggressive: opts.aggressive, threshold: opts.threshold })) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: dest,
+        key: hit.key,
+        confidence: conf,
+        action: "skip",
+        reason: `confidence ${conf.toFixed(2)} below threshold`
+      });
+      continue;
+    }
+    items.push({
+      id: m.id,
+      from: m.sender,
+      subject: m.subject,
+      account: m.account,
+      sourceMailbox: m.mailbox,
+      destMailbox: dest,
+      key: hit.key,
+      confidence: conf,
+      action: "move",
+      reason: `learned ${hit.key} \u2192 ${dest}`
+    });
+    (byMailbox[dest] ??= []).push(m.id);
+  }
+  return {
+    items,
+    moveCount: items.filter((i) => i.action === "move").length,
+    skipCount: items.filter((i) => i.action === "skip").length,
+    byMailbox
+  };
+}
+function applyCorrection(from, mailbox, memoryPath) {
+  const path = memoryPath ?? defaultMemoryPath();
+  const memory = loadMemory(path);
+  const result = correctMapping(memory, from, mailbox);
+  saveMemory(memory, path);
+  return { ...result, memoryPath: path };
+}
+function applyForget(opts) {
+  const path = opts.memoryPath ?? defaultMemoryPath();
+  const memory = loadMemory(path);
+  let removed = 0;
+  if (opts.key) {
+    if (forgetKey(memory, opts.key)) removed++;
+  }
+  if (opts.mailbox) {
+    removed += forgetMailbox(memory, opts.mailbox);
+  }
+  saveMemory(memory, path);
+  return { removed, memoryPath: path };
+}
+function bumpMoves(froms, memoryPath) {
+  const path = memoryPath ?? defaultMemoryPath();
+  const memory = loadMemory(path);
+  for (const f of froms) recordSuccessfulMove(memory, f);
+  saveMemory(memory, path);
+}
+function memoryStatus(memoryPath, env) {
+  const path = memoryPath ?? defaultMemoryPath(env);
+  const memory = loadMemory(path);
+  const llm = resolveLlmConfig(env);
+  const byMailbox = {};
+  for (const m of Object.values(memory.mappings)) {
+    byMailbox[m.mailbox] = (byMailbox[m.mailbox] ?? 0) + 1;
+  }
+  return {
+    memoryPath: path,
+    mappingCount: Object.keys(memory.mappings).length,
+    mailboxes: memory.mailboxesCreated,
+    byMailbox,
+    updatedAt: memory.updatedAt,
+    llmConfigured: Boolean(llm.apiKey),
+    llmModel: llm.model,
+    llmBaseUrl: llm.baseUrl,
+    mappings: Object.entries(memory.mappings).map(([key, m]) => ({
+      key,
+      mailbox: m.mailbox,
+      confidence: m.confidence,
+      hits: m.hits,
+      source: m.source
+    })).sort((a, b) => b.hits - a.hits || b.confidence - a.confidence)
+  };
+}
+
+// src/services/mailActions.ts
+import { existsSync as existsSync7, mkdirSync as mkdirSync3, readFileSync as readFileSync4, renameSync as renameSync3, writeFileSync as writeFileSync5 } from "fs";
+import { dirname as dirname4, join as join7 } from "path";
+import { homedir as homedir5 } from "os";
+function escapeForAppleScript2(text) {
+  if (!text) return "";
+  return text.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\x00-\x1f\x7f]/g, "");
+}
+function defaultActionQueuePath(env = process.env) {
+  const override = env.APPLE_MAIL_MCP_ACTION_QUEUE;
+  if (override?.trim()) return override.trim();
+  return join7(homedir5(), "Library", "Application Support", "apple-mail-mcp", "action-queue.json");
+}
+function emptyQueue() {
+  return {
+    version: 1,
+    updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    processedMessageIds: [],
+    actions: []
+  };
+}
+function loadQueue(path = defaultActionQueuePath()) {
+  try {
+    if (!existsSync7(path)) return emptyQueue();
+    const raw = JSON.parse(readFileSync4(path, "utf8"));
+    return {
+      version: 1,
+      updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : (/* @__PURE__ */ new Date()).toISOString(),
+      processedMessageIds: Array.isArray(raw.processedMessageIds) ? raw.processedMessageIds.filter((x) => typeof x === "string") : [],
+      actions: Array.isArray(raw.actions) ? raw.actions : []
+    };
+  } catch {
+    return emptyQueue();
+  }
+}
+function saveQueue(queue, path = defaultActionQueuePath()) {
+  queue.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+  queue.version = 1;
+  const dir = dirname4(path);
+  mkdirSync3(dir, { recursive: true });
+  const tmp = `${path}.${process.pid}.tmp`;
+  writeFileSync5(tmp, JSON.stringify(queue, null, 2), "utf8");
+  renameSync3(tmp, path);
+}
+function deriveActionsHeuristic(mail) {
+  const subject = mail.subject || "";
+  const body = (mail.body || "").slice(0, 4e3);
+  const text = `${subject}
+${body}`.toLowerCase();
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const due = extractDueDate(text, mail.dateReceived);
+  const actions = [];
+  const base = {
+    messageId: mail.id,
+    from: mail.sender,
+    subject: mail.subject,
+    createdAt: now,
+    source: "heuristic",
+    status: "pending",
+    dueDate: due
+  };
+  const replySignals = /\b(please\s+reply|kindly\s+reply|awaiting\s+your|your\s+response|can you|could you|let me know|bitte\s+(um\s+)?(rückmeldung|antwort)|antwortet?\s+bitte|rückmeldung|warte\s+auf|feedback\s+erbeten|dringend\s+antworten)\b/i;
+  const paySignals = /\b(invoice|payment\s+due|pay\s+now|amount\s+due|overdue|rechnung|zahlungsaufforderung|zahlung\s+fällig|offene\s+forderung|mahnung|betrag\s+fällig|please\s+pay)\b/i;
+  const meetSignals = /\b(meeting|invite|invitation|calendar|zoom|teams|termin|einladung|besprechung|videokonferenz|sprechstunde)\b/i;
+  const actionSignals = /\b(action\s+required|action\s+needed|todo|to-do|please\s+confirm|confirm\s+by|deadline|fällig|bitte\s+handeln|bitte\s+bestätigen|zu\s+erledigen|dringend|urgent|asap)\b/i;
+  const reviewSignals = /\b(please\s+review|for\s+your\s+review|approval|genehmigung|freigabe|prüfen\s+sie|zur\s+prüfung|unterschreiben|sign\s+here)\b/i;
+  let any = false;
+  if (paySignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "pay"),
+      kind: "pay",
+      title: `Zahlung pr\xFCfen: ${clip(subject, 60)}`,
+      detail: "Rechnung/Zahlung erkannt \u2014 Reminder + Flag (kein Auto-Pay).",
+      urgency: "high",
+      flagColor: 1,
+      // red
+      autoExecutable: true
+    });
+  }
+  if (meetSignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "appointment"),
+      kind: "appointment",
+      title: `Termin pr\xFCfen: ${clip(subject, 60)}`,
+      detail: "Termin/Einladung erkannt \u2014 Reminder anlegen.",
+      urgency: "medium",
+      flagColor: 6,
+      // blue
+      autoExecutable: true
+    });
+  }
+  if (replySignals.test(text) || actionSignals.test(text) && !paySignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "reply_draft"),
+      kind: "reply_draft",
+      title: `Antwort n\xF6tig: ${clip(subject, 60)}`,
+      detail: "Antwortsignal erkannt \u2014 Flag + Antwort-Entwurf (nicht senden).",
+      urgency: /\b(urgent|dringend|asap|sofort)\b/i.test(text) ? "high" : "medium",
+      flagColor: 2,
+      // orange
+      autoExecutable: true
+    });
+  }
+  if (reviewSignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "review"),
+      kind: "review",
+      title: `Review: ${clip(subject, 60)}`,
+      detail: "Freigabe/Pr\xFCfung erkannt \u2014 Reminder.",
+      urgency: "medium",
+      flagColor: 3,
+      // yellow
+      autoExecutable: true
+    });
+  }
+  if (!any && /\?/.test(subject) && !isBulkNoise(text, mail.sender)) {
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "follow_up"),
+      kind: "follow_up",
+      title: `Follow-up: ${clip(subject, 60)}`,
+      detail: "Frage im Betreff \u2014 Flag zur Nachverfolgung.",
+      urgency: "low",
+      flagColor: 3,
+      autoExecutable: true
+    });
+  }
+  return dedupeKinds(actions);
+}
+function isBulkNoise(text, sender) {
+  const s = `${sender} ${text}`.toLowerCase();
+  return /noreply|no-reply|newsletter|unsubscribe|list-unsubscribe|donotreply|do-not-reply/.test(s);
+}
+function extractDueDate(text, received) {
+  const de = text.match(/\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b/);
+  if (de) {
+    const d = `${de[3]}-${de[2].padStart(2, "0")}-${de[1].padStart(2, "0")}`;
+    if (isSaneDate(d)) return d;
+  }
+  const iso = text.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+  if (iso && isSaneDate(iso[0])) return iso[0];
+  if (/\b(heute|today|morgen|tomorrow)\b/i.test(text)) {
+    const base = received ? new Date(received) : /* @__PURE__ */ new Date();
+    if (/\b(morgen|tomorrow)\b/i.test(text)) base.setDate(base.getDate() + 1);
+    return base.toISOString().slice(0, 10);
+  }
+  return void 0;
+}
+function isSaneDate(iso) {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return false;
+  const y = new Date(t).getFullYear();
+  return y >= 2020 && y <= 2035;
+}
+function actionId(messageId, kind) {
+  return `${messageId}:${kind}`;
+}
+function clip(s, n) {
+  const t = (s || "").replace(/\s+/g, " ").trim();
+  return t.length <= n ? t : t.slice(0, n - 1) + "\u2026";
+}
+function dedupeKinds(actions) {
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const a of actions) {
+    if (seen.has(a.kind)) continue;
+    seen.add(a.kind);
+    out.push(a);
+  }
+  return out;
+}
+function mergeIntoQueue(queue, derived, opts = {}) {
+  const existingIds = new Set(queue.actions.map((a) => a.id));
+  const processed = new Set(queue.processedMessageIds);
+  let added = 0;
+  for (const a of derived) {
+    if (!opts.reprocess && processed.has(a.messageId) && !queue.actions.some((x) => x.messageId === a.messageId && x.status === "pending")) {
+      const pendingForMsg = queue.actions.filter(
+        (x) => x.messageId === a.messageId && x.status === "pending"
+      );
+      if (pendingForMsg.length === 0 && queue.actions.some((x) => x.messageId === a.messageId)) {
+        continue;
+      }
+    }
+    if (existingIds.has(a.id)) continue;
+    queue.actions.push(a);
+    existingIds.add(a.id);
+    added++;
+  }
+  return { queue, added };
+}
+function executeAction(action, deps) {
+  if (!action.autoExecutable) {
+    action.status = "skipped";
+    action.result = "not auto-executable";
+    return { action, ok: true, note: "skipped (manual)" };
+  }
+  try {
+    switch (action.kind) {
+      case "flag":
+      case "follow_up": {
+        const ok = deps.flagMessage(action.messageId, action.flagColor);
+        action.status = ok ? "done" : "failed";
+        action.result = ok ? "flagged" : "flag failed";
+        return { action, ok, note: action.result };
+      }
+      case "pay":
+      case "appointment":
+      case "review": {
+        const flagged = deps.flagMessage(action.messageId, action.flagColor);
+        const rem = deps.createReminder(
+          action.title,
+          `${action.detail}
+From: ${action.from || "?"}
+Subject: ${action.subject || "?"}
+Mail-ID: ${action.messageId}`,
+          action.dueDate
+        );
+        const ok = flagged || rem.ok;
+        action.status = rem.ok ? "done" : flagged ? "done" : "failed";
+        action.result = `flag=${flagged}; reminder=${rem.ok ? "ok" : rem.error || "fail"}`;
+        return { action, ok, note: action.result };
+      }
+      case "reply_draft": {
+        const flagged = deps.flagMessage(action.messageId, action.flagColor ?? 2);
+        const body = buildReplyStub(action);
+        const drafted = deps.replyDraft(action.messageId, body);
+        const rem = deps.createReminder(
+          action.title,
+          `Antwort-Entwurf angelegt.
+${action.detail}
+From: ${action.from || "?"}`,
+          action.dueDate
+        );
+        const ok = drafted || flagged || rem.ok;
+        action.status = ok ? "done" : "failed";
+        action.result = `flag=${flagged}; draft=${drafted}; reminder=${rem.ok}`;
+        return { action, ok, note: action.result };
+      }
+      default: {
+        action.status = "skipped";
+        action.result = "unknown kind";
+        return { action, ok: true, note: "skipped" };
+      }
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    action.status = "failed";
+    action.result = msg;
+    return { action, ok: false, note: msg };
+  }
+}
+function buildReplyStub(action) {
+  return [
+    "Hallo,",
+    "",
+    "danke f\xFCr Ihre Nachricht \u2014 ich melde mich in K\xFCrze mit einer konkreten Antwort.",
+    "",
+    "(Automatisch vorbereiteter Entwurf aus apple-mail-mcp filter-actions \u2014 bitte pr\xFCfen vor dem Senden.)",
+    "",
+    `Bez\xFCglich: ${action.subject || ""}`
+  ].join("\n");
+}
+function createMailReminder(title, body, dueDate, listName = "Mail Actions") {
+  const safeTitle = escapeForAppleScript2(clip(title, 120));
+  const safeBody = escapeForAppleScript2(clip(body, 500));
+  const safeList = escapeForAppleScript2(listName);
+  let dueBlock = "";
+  if (dueDate && /^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    const [y, m, d] = dueDate.split("-").map(Number);
+    dueBlock = `
+      set dueDate to current date
+      set year of dueDate to ${y}
+      set month of dueDate to ${m}
+      set day of dueDate to ${d}
+      set hours of dueDate to 9
+      set minutes of dueDate to 0
+      set seconds of dueDate to 0
+      set due date of r to dueDate
+    `;
+  } else {
+    dueBlock = `
+      set dueDate to (current date) + (2 * days)
+      set hours of dueDate to 9
+      set minutes of dueDate to 0
+      set seconds of dueDate to 0
+      set due date of r to dueDate
+    `;
+  }
+  const script = `
+tell application "Reminders"
+  try
+    set lst to missing value
+    repeat with L in lists
+      if name of L is "${safeList}" then set lst to L
+    end repeat
+    if lst is missing value then
+      set lst to make new list with properties {name:"${safeList}"}
+    end if
+    set r to make new reminder at end of lst with properties {name:"${safeTitle}", body:"${safeBody}"}
+    ${dueBlock}
+    return "ok"
+  on error errMsg
+    return "error:" & errMsg
+  end try
+end tell
+`;
+  const res = executeAppleScript(script, { timeoutMs: 3e4 });
+  if (!res.success || res.output.startsWith("error:")) {
+    return { ok: false, error: res.error || res.output.replace(/^error:/, "") };
+  }
+  return { ok: true };
+}
+function runPendingActions(queue, deps, opts = {}) {
+  const limit = opts.limit ?? 50;
+  const results = [];
+  let done = 0;
+  let failed = 0;
+  let n = 0;
+  for (const action of queue.actions) {
+    if (n >= limit) break;
+    if (action.status !== "pending") continue;
+    if (opts.kinds && !opts.kinds.includes(action.kind)) continue;
+    const r = executeAction(action, deps);
+    results.push(r);
+    n++;
+    if (r.action.status === "done") done++;
+    else if (r.action.status === "failed") failed++;
+  }
+  const byMsg = /* @__PURE__ */ new Map();
+  for (const a of queue.actions) {
+    const list = byMsg.get(a.messageId) ?? [];
+    list.push(a);
+    byMsg.set(a.messageId, list);
+  }
+  for (const [mid, list] of byMsg) {
+    if (list.every((a) => a.status === "done" || a.status === "skipped" || a.status === "failed")) {
+      if (!queue.processedMessageIds.includes(mid)) queue.processedMessageIds.push(mid);
+    }
+  }
+  return { queue, results, done, failed };
+}
+function queueSummary(queue) {
+  const pending = queue.actions.filter((a) => a.status === "pending");
+  const done = queue.actions.filter((a) => a.status === "done");
+  const failed = queue.actions.filter((a) => a.status === "failed");
+  const byKind = {};
+  for (const a of pending) {
+    byKind[a.kind] = (byKind[a.kind] ?? 0) + 1;
+  }
+  return {
+    total: queue.actions.length,
+    pending: pending.length,
+    done: done.length,
+    failed: failed.length,
+    processedMessages: queue.processedMessageIds.length,
+    byKind,
+    updatedAt: queue.updatedAt
+  };
+}
+
 // src/services/imapIdle.ts
 var import_imapflow2 = __toESM(require_imap_flow(), 1);
 var defaultIdleConnect = async (cfg) => {
@@ -81384,19 +82565,19 @@ var ImapIdleWatcher = class {
 };
 
 // src/services/fileConfig.ts
-import { existsSync as existsSync5, readFileSync as readFileSync3 } from "fs";
-import { join as join5 } from "path";
-import { homedir as homedir4 } from "os";
+import { existsSync as existsSync8, readFileSync as readFileSync5 } from "fs";
+import { join as join8 } from "path";
+import { homedir as homedir6 } from "os";
 function fileConfigPath(env = process.env) {
   const override = env.APPLE_MAIL_MCP_CONFIG_FILE;
   if (override && override.trim()) return override.trim();
-  return join5(homedir4(), "Library", "Application Support", "apple-mail-mcp", "config.json");
+  return join8(homedir6(), "Library", "Application Support", "apple-mail-mcp", "config.json");
 }
 function loadFileConfig(env = process.env, path = fileConfigPath(env)) {
   const applied = [];
   try {
-    if (!existsSync5(path)) return applied;
-    const parsed = JSON.parse(readFileSync3(path, "utf8"));
+    if (!existsSync8(path)) return applied;
+    const parsed = JSON.parse(readFileSync5(path, "utf8"));
     if (!parsed || typeof parsed !== "object") return applied;
     for (const [k, v] of Object.entries(parsed)) {
       if (typeof v !== "string") continue;
@@ -82608,7 +83789,7 @@ server.registerTool(
       if (!r.success || !r.base64) {
         return errorResponse(r.error || `Failed to fetch attachment "${attachmentName}"`);
       }
-      writeFileSync4(target.savedPath, Buffer.from(r.base64, "base64"));
+      writeFileSync6(target.savedPath, Buffer.from(r.base64, "base64"));
       return successResponse(`Attachment "${attachmentName}" saved to ${savePath}`, {
         ok: true,
         attachmentName,
@@ -83003,6 +84184,672 @@ ${lines || "  (none met the threshold)"}`,
       { dryRun: result.dryRun, count: result.count }
     );
   }, "Error creating newsletter smart mailboxes")
+);
+function toClusterMessages(messages) {
+  return messages.map((m) => ({
+    id: m.id,
+    subject: m.subject ?? "",
+    sender: m.sender ?? "",
+    account: m.account ?? "",
+    mailbox: m.mailbox ?? "INBOX"
+  }));
+}
+function listInboxForFilter(account, limit) {
+  const { messages } = mailManager.listMessagesWithDiagnostics("INBOX", account, limit);
+  return toClusterMessages(messages);
+}
+async function executeSortPlan(plan, messages, opts) {
+  const byAccountMailbox = /* @__PURE__ */ new Map();
+  const idToMsg = new Map(messages.map((m) => [m.id, m]));
+  const created = [];
+  const errors = [];
+  const movedFroms = [];
+  for (const item of plan.items) {
+    if (item.action !== "move") continue;
+    const msg = idToMsg.get(item.id);
+    const account = item.account || msg?.account || "";
+    const key = `${account}\0${item.destMailbox}`;
+    let g = byAccountMailbox.get(key);
+    if (!g) {
+      g = { account, mailbox: item.destMailbox, ids: [] };
+      byAccountMailbox.set(key, g);
+    }
+    g.ids.push(item.id);
+  }
+  let moved = 0;
+  let failed = 0;
+  for (const g of byAccountMailbox.values()) {
+    if (opts.ensureMailboxes && g.mailbox) {
+      const res = mailManager.createMailbox(g.mailbox, g.account || void 0);
+      if (res.success) {
+        created.push(g.account ? `${g.account}/${g.mailbox}` : g.mailbox);
+      } else if (res.error && !/already exists|existiert bereits|duplicate/i.test(res.error)) {
+        errors.push(`create-mailbox "${g.mailbox}": ${res.error}`);
+      }
+    }
+    for (let i = 0; i < g.ids.length; i += 100) {
+      const chunk = g.ids.slice(i, i + 100);
+      const {
+        success,
+        fail,
+        errors: batchErrs
+      } = await hybridBatchCounts(
+        chunk,
+        (n) => mailManager.batchMoveMessages(n, g.mailbox, g.account || void 0),
+        (im) => imapBatchMove(im, g.mailbox, { account: g.account || void 0 })
+      );
+      moved += success;
+      failed += fail;
+      errors.push(...batchErrs);
+      if (success > 0) {
+        for (const id of chunk) {
+          const m = idToMsg.get(id);
+          if (m) movedFroms.push(m.sender);
+        }
+      }
+    }
+  }
+  return { moved, failed, created, errors, movedFroms };
+}
+server.registerTool(
+  "filter-status",
+  {
+    description: "Use when: checking the self-learning inbox filter \u2014 memory path, how many domain\u2192mailbox mappings exist, LLM config, and top learned categories.\nReturns: mapping counts, mailboxes, confidence stats, whether an LLM API key is configured.\nDo not use when: you want to learn/sort now (use filter-learn / filter-auto-sort).",
+    inputSchema: {
+      memoryPath: external_exports.string().optional().describe("Override path to category-memory.json (default Application Support)")
+    },
+    outputSchema: {
+      mappingCount: external_exports.number().optional(),
+      llmConfigured: external_exports.boolean().optional()
+    }
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    const top = st.mappings.slice(0, 25).map(
+      (m) => `  - ${m.key} \u2192 ${m.mailbox} (conf ${m.confidence.toFixed(2)}, hits ${m.hits}, ${m.source})`
+    ).join("\n");
+    const text = [
+      `Self-learning filter status`,
+      `  memory: ${st.memoryPath}`,
+      `  mappings: ${st.mappingCount}`,
+      `  mailboxes: ${st.mailboxes.join(", ") || "(none yet)"}`,
+      `  LLM: ${st.llmConfigured ? `configured (${st.llmModel} @ ${st.llmBaseUrl})` : "not configured \u2014 domain fallback names only (set XAI_API_KEY)"}`,
+      `  updated: ${st.updatedAt}`,
+      top ? `Top mappings:
+${top}` : "  (no mappings \u2014 run filter-learn)"
+    ].join("\n");
+    return successResponse(text, st);
+  }, "Error reading filter status")
+);
+server.registerTool(
+  "filter-memory",
+  {
+    description: "Use when: listing everything the self-learning filter has stored (domain/email \u2192 mailbox, confidence, hits).\nReturns: full mapping table from category-memory.json.\nDo not use when: you want a short summary (use filter-status) or to change a mapping (use filter-correct / filter-forget).",
+    inputSchema: {
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      mappingCount: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    if (st.mappingCount === 0) {
+      return successResponse(
+        "No learned mappings yet. Run filter-learn on the inbox first.",
+        st
+      );
+    }
+    const lines = st.mappings.map(
+      (m) => `  ${m.key} \u2192 ${m.mailbox}  conf=${m.confidence.toFixed(2)} hits=${m.hits} [${m.source}]`
+    ).join("\n");
+    return successResponse(
+      `Learned ${st.mappingCount} mapping(s) in ${st.memoryPath}:
+${lines}`,
+      st
+    );
+  }, "Error listing filter memory")
+);
+function runNewsletterSmartMailboxes(opts) {
+  const result = mailManager.createNewsletterSmartMailboxes(opts.dryRun, opts.minCount, opts.days);
+  const lines = (result.createdOrProposed || []).map((c) => {
+    const state = opts.dryRun ? "would create" : c.alreadyExisted ? "already existed" : c.success ? "created" : c.error ? `error: ${c.error}` : "ok";
+    return `  - ${c.name || "?"} <${c.email || "?"}> score ${c.score ?? "?"} [${state}]`;
+  }).join("\n");
+  const prefix = opts.dryRun ? `Newsletter smart mailboxes (dry-run): would create ${result.count}` : `Newsletter smart mailboxes: ${result.count} processed`;
+  return {
+    dryRun: result.dryRun,
+    count: result.count,
+    createdOrProposed: result.createdOrProposed,
+    text: `${prefix}:
+${lines || "  (none met the newsletter threshold)"}`
+  };
+}
+server.registerTool(
+  "filter-learn",
+  {
+    description: 'Use when: teaching the self-learning inbox filter from current INBOX mail \u2014 clusters by sender domain, names folders via LLM (or domain fallback), writes category-memory.json. By default also discovers newsletters and creates Apple Mail smart mailboxes named "NL: \u2026" per sender. Optionally apply moves immediately (apply=true).\nReturns: clusters, newsletter smart-mailbox results, optional move stats.\nNo preset categories: names emerge from your mail. Set XAI_API_KEY for semantic folder names.\nDo not use when: you only want to apply existing memory (use filter-auto-sort) or only newsletters (use create-newsletter-smart-mailboxes).',
+    inputSchema: {
+      account: external_exports.string().optional().describe("Limit to one Mail account"),
+      limit: external_exports.number().int().min(1).max(500).default(150).describe("Max INBOX messages to scan (default 150)"),
+      apply: external_exports.boolean().default(false).describe("If true, also auto-sort after learning (high-confidence moves)"),
+      aggressive: external_exports.boolean().default(false).describe("When apply=true, lower confidence threshold to 0.5"),
+      forceFallback: external_exports.boolean().default(false).describe("Skip LLM even if API key is set; name folders from domains only"),
+      newsletters: external_exports.boolean().default(true).describe(
+        'If true (default), discover newsletter senders and create "NL: \u2026" smart mailboxes'
+      ),
+      newsletterDryRun: external_exports.boolean().default(false).describe("If true, only propose newsletter smart mailboxes (no plist write)"),
+      newsletterMinCount: external_exports.number().int().min(1).default(3).describe("Min messages from a sender to treat as newsletter (default 3)"),
+      newsletterDays: external_exports.number().int().min(1).default(90).describe("Look back this many days for newsletter discovery (default 90)"),
+      actions: external_exports.boolean().default(true).describe(
+        "If true (default), derive actions from mail (reply/pay/meeting/\u2026) and execute them (flag, Reminders, reply drafts \u2014 never auto-send)"
+      ),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      namedCount: external_exports.number().optional(),
+      usedLlm: external_exports.boolean().optional(),
+      moved: external_exports.number().optional(),
+      newsletterCount: external_exports.number().optional(),
+      actionsExecuted: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      apply,
+      aggressive,
+      forceFallback,
+      newsletters,
+      newsletterDryRun,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath
+    }) => {
+      const messages = listInboxForFilter(account, limit ?? 150);
+      if (messages.length === 0 && newsletters === false) {
+        return successResponse("INBOX is empty (or unreadable) \u2014 nothing to learn.", {
+          namedCount: 0,
+          usedLlm: false,
+          scanned: 0
+        });
+      }
+      const learned = messages.length > 0 ? await learnFromMessages(messages, {
+        memoryPath,
+        forceFallback: !!forceFallback
+      }) : {
+        memoryPath: memoryPath || defaultMemoryPath(),
+        clusters: [],
+        namedCount: 0,
+        usedLlm: false,
+        llmError: void 0,
+        llmModel: void 0,
+        memory: void 0
+      };
+      const clusterLines = learned.clusters.map(
+        (c) => `  - ${c.domain} (${c.count} msg): \u2192 "${c.mailbox}" [${c.source}] e.g. ${c.sampleSubjects[0] || "(no subject)"}`
+      ).join("\n");
+      let moveSection = "";
+      let moved = 0;
+      let failed = 0;
+      if (apply && messages.length > 0) {
+        const plan = planAutoSort(messages, {
+          memoryPath: learned.memoryPath,
+          aggressive: !!aggressive
+        });
+        const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+        moved = exec.moved;
+        failed = exec.failed;
+        if (exec.movedFroms.length) bumpMoves(exec.movedFroms, learned.memoryPath);
+        moveSection = `
+
+Apply: moved ${moved}, failed ${failed}, created mailboxes: ${exec.created.join(", ") || "(none)"}`;
+        if (exec.errors.length) moveSection += `
+Errors: ${exec.errors.slice(0, 5).join("; ")}`;
+      }
+      let newsletterSection = "";
+      let newsletterPayload = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!newsletterDryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90
+        });
+        newsletterSection = `
+
+${newsletterPayload.text}`;
+      }
+      let actionSection = "";
+      let actionResult = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30
+        });
+        actionSection = `
+
+${actionResult.text}`;
+      }
+      const llmNote = learned.usedLlm ? `LLM naming via ${learned.llmModel}` : `Domain fallback names${learned.llmError ? ` (${learned.llmError})` : ""}`;
+      return successResponse(
+        `Learned from ${messages.length} INBOX message(s) \u2192 ${learned.namedCount} cluster(s). ${llmNote}.
+Memory: ${learned.memoryPath}
+${clusterLines || "  (no clusters)"}${moveSection}${newsletterSection}${actionSection}${apply ? "" : "\n\nTip: re-run with apply=true to move, or call filter-auto-sort."}`,
+        {
+          namedCount: learned.namedCount,
+          usedLlm: learned.usedLlm,
+          llmError: learned.llmError,
+          llmModel: learned.llmModel,
+          memoryPath: learned.memoryPath,
+          clusters: learned.clusters,
+          scanned: messages.length,
+          moved,
+          failed,
+          applied: !!apply,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload ? {
+            dryRun: newsletterPayload.dryRun,
+            count: newsletterPayload.count,
+            createdOrProposed: newsletterPayload.createdOrProposed
+          } : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0
+        }
+      );
+    },
+    "Error running filter-learn"
+  )
+);
+server.registerTool(
+  "filter-auto-sort",
+  {
+    description: 'Use when: automatically filing INBOX mail using the self-learned memory only (no LLM). High-confidence mappings move to their mailboxes; unknown senders stay in INBOX. Creates destination mailboxes as needed. By default also creates "NL: \u2026" newsletter smart mailboxes for bulk senders.\nReturns: move/skip counts, newsletter smart-mailbox results, and a per-message plan summary.\nDefault threshold confidence \u2265 0.8 (use aggressive=true for \u2265 0.5). dryRun=true only plans (moves + newsletters).\nDo not use when: memory is empty \u2014 run filter-learn first. Prefer filter-correct if a move was wrong.',
+    inputSchema: {
+      account: external_exports.string().optional(),
+      limit: external_exports.number().int().min(1).max(500).default(150),
+      dryRun: external_exports.boolean().default(false).describe("If true, only report what would move (default false = actually move)"),
+      aggressive: external_exports.boolean().default(false).describe("Lower confidence threshold to 0.5"),
+      categories: external_exports.array(external_exports.string()).optional().describe("Only move into these destination mailbox names"),
+      newsletters: external_exports.boolean().default(true).describe('If true (default), also create "NL: \u2026" smart mailboxes for newsletter senders'),
+      newsletterMinCount: external_exports.number().int().min(1).default(3),
+      newsletterDays: external_exports.number().int().min(1).default(90),
+      actions: external_exports.boolean().default(true).describe(
+        "If true (default), derive + execute mail actions (flag, Reminders, reply drafts). Skipped when dryRun=true."
+      ),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      moved: external_exports.number().optional(),
+      skipped: external_exports.number().optional(),
+      dryRun: external_exports.boolean().optional(),
+      newsletterCount: external_exports.number().optional(),
+      actionsExecuted: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      dryRun,
+      aggressive,
+      categories,
+      newsletters,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath
+    }) => {
+      const path = memoryPath || defaultMemoryPath();
+      const st = memoryStatus(path);
+      if (st.mappingCount === 0) {
+        return errorResponse(
+          "No learned mappings yet. Run filter-learn first so the filter can invent categories from your inbox."
+        );
+      }
+      const messages = listInboxForFilter(account, limit ?? 150);
+      const plan = planAutoSort(messages, {
+        memoryPath: path,
+        aggressive: !!aggressive,
+        categories
+      });
+      const preview = plan.items.slice(0, 40).map(
+        (i) => `  [${i.action}] ${i.id}: ${i.from.slice(0, 40)} \u2192 ${i.destMailbox || "\u2014"} (${i.reason})`
+      ).join("\n");
+      let newsletterPayload = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!dryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90
+        });
+      }
+      const nlText = newsletterPayload ? `
+
+${newsletterPayload.text}` : "";
+      if (dryRun) {
+        return successResponse(
+          `DRY RUN filter-auto-sort: would move ${plan.moveCount}, skip ${plan.skipCount} of ${messages.length}.
+${preview}${nlText}`,
+          {
+            dryRun: true,
+            moved: 0,
+            wouldMove: plan.moveCount,
+            skipped: plan.skipCount,
+            plan: plan.items,
+            newsletterCount: newsletterPayload?.count ?? 0,
+            newsletters: newsletterPayload ? {
+              dryRun: true,
+              count: newsletterPayload.count,
+              createdOrProposed: newsletterPayload.createdOrProposed
+            } : null
+          }
+        );
+      }
+      const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+      if (exec.movedFroms.length) bumpMoves(exec.movedFroms, path);
+      let actionSection = "";
+      let actionResult = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30
+        });
+        actionSection = `
+
+${actionResult.text}`;
+      }
+      return successResponse(
+        `filter-auto-sort: moved ${exec.moved}, failed ${exec.failed}, skipped ${plan.skipCount} of ${messages.length}.
+Created: ${exec.created.join(", ") || "(none)"}
+${preview}${nlText}${actionSection}${exec.errors.length ? `
+Errors: ${exec.errors.slice(0, 5).join("; ")}` : ""}`,
+        {
+          dryRun: false,
+          moved: exec.moved,
+          failed: exec.failed,
+          skipped: plan.skipCount,
+          created: exec.created,
+          plan: plan.items,
+          errors: exec.errors,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload ? {
+            dryRun: false,
+            count: newsletterPayload.count,
+            createdOrProposed: newsletterPayload.createdOrProposed
+          } : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0
+        }
+      );
+    },
+    "Error running filter-auto-sort"
+  )
+);
+function makeActionDeps() {
+  return {
+    flagMessage: (id, colorIndex) => mailManager.flagMessage(id, colorIndex),
+    replyDraft: (id, body) => mailManager.replyToMessage(id, body, false, false),
+    createReminder: (title, body, dueDate) => createMailReminder(title, body, dueDate)
+  };
+}
+function runActionPipeline(opts) {
+  const queuePath = opts.queuePath || defaultActionQueuePath();
+  const messages = listInboxForFilter(opts.account, opts.limit);
+  const queue = loadQueue(queuePath);
+  const allDerived = [];
+  const candidates = [...messages].slice(0, opts.bodyLimit);
+  for (const m of candidates) {
+    let body = "";
+    try {
+      const content = mailManager.getMessageContent(m.id, false, {
+        account: m.account,
+        mailbox: m.mailbox
+      });
+      body = content?.plainText?.slice(0, 3500) ?? "";
+    } catch {
+      body = "";
+    }
+    const derived = deriveActionsHeuristic({
+      id: m.id,
+      subject: m.subject,
+      sender: m.sender,
+      body
+    });
+    allDerived.push(...derived);
+  }
+  const { added } = mergeIntoQueue(queue, allDerived);
+  let executed = 0;
+  let failed = 0;
+  if (opts.execute) {
+    const run2 = runPendingActions(queue, makeActionDeps(), { limit: opts.executeLimit });
+    executed = run2.done;
+    failed = run2.failed;
+  }
+  saveQueue(queue, queuePath);
+  const summary = queueSummary(queue);
+  const sample = queue.actions.filter((a) => a.status === "pending" || a.status === "done").slice(-15);
+  const lines = sample.map(
+    (a) => `  [${a.status}] ${a.kind}: ${a.title} (msg ${a.messageId}${a.dueDate ? `, due ${a.dueDate}` : ""})`
+  ).join("\n");
+  const text = [
+    `Actions: scanned ${messages.length} msgs, read body of ${candidates.length}, derived ${allDerived.length}, added ${added} to queue.`,
+    opts.execute ? `Executed: done=${executed}, failed=${failed}.` : "Not executed (execute=false). Call filter-actions-run or re-run with execute=true.",
+    `Queue: pending=${summary.pending}, done=${summary.done}, failed=${summary.failed} @ ${queuePath}`,
+    lines ? `Recent:
+${lines}` : "  (no actions)"
+  ].join("\n");
+  return {
+    scanned: messages.length,
+    derived: allDerived.length,
+    added,
+    executed,
+    failed,
+    summary,
+    sample,
+    text
+  };
+}
+server.registerTool(
+  "filter-actions-scan",
+  {
+    description: 'Use when: deriving actionable items from INBOX emails (reply needed, payment/invoice, meeting, review, follow-up) via heuristics on subject+body. Writes a local action queue. With execute=true (default), immediately works them off: flag mail, create Reminders in list "Mail Actions", open reply drafts (never auto-sends).\nReturns: counts and a sample of actions.\nDo not use when: you only want folder sorting (filter-auto-sort) without task extraction.',
+    inputSchema: {
+      account: external_exports.string().optional(),
+      limit: external_exports.number().int().min(1).max(200).default(40).describe("Inbox messages to consider"),
+      bodyLimit: external_exports.number().int().min(1).max(50).default(20).describe("How many messages to open for body analysis (slower)"),
+      execute: external_exports.boolean().default(true).describe("If true (default), run pending actions after scan"),
+      executeLimit: external_exports.number().int().min(1).max(100).default(30),
+      queuePath: external_exports.string().optional()
+    },
+    outputSchema: {
+      derived: external_exports.number().optional(),
+      executed: external_exports.number().optional(),
+      pending: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ account, limit, bodyLimit, execute, executeLimit, queuePath }) => {
+    const r = runActionPipeline({
+      account,
+      limit: limit ?? 40,
+      bodyLimit: bodyLimit ?? 20,
+      execute: execute !== false,
+      executeLimit: executeLimit ?? 30,
+      queuePath
+    });
+    return successResponse(r.text, {
+      derived: r.derived,
+      added: r.added,
+      executed: r.executed,
+      failed: r.failed,
+      scanned: r.scanned,
+      pending: r.summary.pending,
+      summary: r.summary,
+      sample: r.sample
+    });
+  }, "Error scanning mail actions")
+);
+server.registerTool(
+  "filter-actions-run",
+  {
+    description: "Use when: executing pending items already in the action queue (flag, Reminders, reply drafts). Does not re-scan mail \u2014 use filter-actions-scan to derive first.\nNever sends email automatically.\nReturns: done/failed counts.",
+    inputSchema: {
+      limit: external_exports.number().int().min(1).max(100).default(30),
+      queuePath: external_exports.string().optional()
+    },
+    outputSchema: {
+      done: external_exports.number().optional(),
+      failed: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ limit, queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const pendingBefore = queue.actions.filter((a) => a.status === "pending").length;
+    if (pendingBefore === 0) {
+      return successResponse(`No pending actions in ${path}`, {
+        done: 0,
+        failed: 0,
+        pending: 0
+      });
+    }
+    const run2 = runPendingActions(queue, makeActionDeps(), { limit: limit ?? 30 });
+    saveQueue(run2.queue, path);
+    const summary = queueSummary(run2.queue);
+    const lines = run2.results.map((r) => `  [${r.action.status}] ${r.action.kind}: ${r.action.title} \u2192 ${r.note}`).join("\n");
+    return successResponse(
+      `Ran actions: done=${run2.done}, failed=${run2.failed} (had ${pendingBefore} pending).
+${lines}`,
+      {
+        done: run2.done,
+        failed: run2.failed,
+        pending: summary.pending,
+        results: run2.results.map((r) => ({
+          id: r.action.id,
+          kind: r.action.kind,
+          status: r.action.status,
+          note: r.note
+        }))
+      }
+    );
+  }, "Error running mail actions")
+);
+server.registerTool(
+  "filter-actions-status",
+  {
+    description: "Use when: checking the mail action queue (pending/done/failed, by kind).\nReturns: summary of the local action-queue.json.",
+    inputSchema: {
+      queuePath: external_exports.string().optional()
+    },
+    outputSchema: {
+      pending: external_exports.number().optional(),
+      done: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const summary = queueSummary(queue);
+    const pending = queue.actions.filter((a) => a.status === "pending").slice(0, 20).map((a) => `  - ${a.kind}: ${a.title}`).join("\n");
+    return successResponse(
+      `Action queue @ ${path}
+  pending=${summary.pending} done=${summary.done} failed=${summary.failed}
+  byKind: ${JSON.stringify(summary.byKind)}
+${pending || "  (no pending)"}`,
+      { ...summary, queuePath: path }
+    );
+  }, "Error reading action queue")
+);
+server.registerTool(
+  "filter-correct",
+  {
+    description: "Use when: teaching the filter that a sender belongs in a different mailbox (user correction). Updates memory with high confidence so future filter-auto-sort uses the new destination.\nPass either message id (to resolve From) or an explicit from address, plus mailbox name.\nDo not use when: bulk re-learning (use filter-learn) or deleting a mapping (use filter-forget).",
+    inputSchema: {
+      mailbox: external_exports.string().min(1, "Destination mailbox name is required"),
+      from: external_exports.string().optional().describe("Sender address or From header"),
+      id: external_exports.string().optional().describe("Message id \u2014 used to resolve From if from omitted"),
+      apply: external_exports.boolean().default(false).describe("If true and id given, also move that message now"),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      key: external_exports.string().optional(),
+      mailbox: external_exports.string().optional()
+    }
+  },
+  withErrorHandling(async ({ mailbox, from, id, apply, memoryPath }) => {
+    let sender = from;
+    if (!sender && id) {
+      const msg = mailManager.getMessageById(id);
+      if (!msg) return errorResponse(`Message "${id}" not found`);
+      sender = msg.sender;
+    }
+    if (!sender) {
+      return errorResponse("Provide from or id so the filter knows which sender to correct");
+    }
+    const result = applyCorrection(sender, mailbox, memoryPath);
+    let moveNote = "";
+    if (apply && id) {
+      const { success, error: error2 } = mailManager.moveMessage(id, mailbox);
+      if (!success) {
+        const batch = await hybridBatchCounts(
+          [id],
+          (n) => mailManager.batchMoveMessages(n, mailbox),
+          (im) => imapBatchMove(im, mailbox, {})
+        );
+        if (batch.success === 0) {
+          moveNote = ` (move failed: ${error2 || batch.errors.join("; ") || "unknown"})`;
+        } else {
+          bumpMoves([sender], result.memoryPath);
+          moveNote = " (message moved)";
+        }
+      } else {
+        bumpMoves([sender], result.memoryPath);
+        moveNote = " (message moved)";
+      }
+    }
+    return successResponse(
+      `Corrected: ${result.key} \u2192 "${result.mapping.mailbox}" (confidence ${result.mapping.confidence})${moveNote}. Future auto-sort will use this.`,
+      {
+        key: result.key,
+        mailbox: result.mapping.mailbox,
+        confidence: result.mapping.confidence,
+        memoryPath: result.memoryPath
+      }
+    );
+  }, "Error correcting filter mapping")
+);
+server.registerTool(
+  "filter-forget",
+  {
+    description: "Use when: removing a learned mapping by domain/email key or dropping all keys that point at a mailbox name.\nReturns: how many mappings were removed.\nDoes not delete Apple Mail folders or messages.",
+    inputSchema: {
+      key: external_exports.string().optional().describe("Domain or email key to forget (e.g. amazon.de)"),
+      mailbox: external_exports.string().optional().describe("Forget all mappings that target this mailbox name"),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      removed: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ key, mailbox, memoryPath }) => {
+    if (!key && !mailbox) {
+      return errorResponse("Provide key and/or mailbox to forget");
+    }
+    const result = applyForget({ key, mailbox, memoryPath });
+    return successResponse(
+      `Forgot ${result.removed} mapping(s). Memory: ${result.memoryPath}`,
+      result
+    );
+  }, "Error forgetting filter mapping")
 );
 server.registerTool(
   "list-accounts",
