@@ -68,7 +68,7 @@ cat > "$PLIST" <<PLIST
   <key>StartInterval</key>
   <integer>${INTERVAL}</integer>
   <key>RunAtLoad</key>
-  <true/>
+  <false/>
   <key>WorkingDirectory</key>
   <string>${ROOT}</string>
   <key>StandardOutPath</key>
