@@ -205,6 +205,67 @@ User: "Delete that spam"
 Action: Use delete-message with the message ID
 ```
 
+### Self-learning auto-sort (no preset categories)
+
+When the user wants the inbox sorted automatically by theme without predefined rules:
+
+```
+User: "Sort my inbox automatically" / "learn and file my mail"
+→ 1. filter-status (see if memory exists)
+→ 2. filter-learn (cluster + LLM/domain names → memory + NL smart mailboxes);
+     use apply=true to also move in one step
+→ 3. Later: filter-auto-sort (memory only, auto-move + refresh newsletter smart mailboxes)
+
+User: "That belongs in Steuer, not Amazon"
+→ filter-correct with from or id + mailbox="Steuer" (optionally apply=true to move now)
+
+User: "Forget amazon.de"
+→ filter-forget with key="amazon.de"
+```
+
+| Tool | Purpose |
+|------|---------|
+| `filter-status` | Memory path, mapping counts, LLM config |
+| `filter-memory` | List all learned domain→mailbox mappings |
+| `filter-learn` | Cluster INBOX → name folders → memory; **creates `NL: …` smart mailboxes** (default); optional apply |
+| `filter-auto-sort` | Apply memory + **newsletter smart mailboxes** (dryRun supported) |
+| `filter-correct` | User correction (high confidence) |
+| `filter-forget` | Drop a mapping or mailbox group |
+| `create-newsletter-smart-mailboxes` | Newsletter-only discovery (standalone; also used internally) |
+
+**Newsletters:** `filter-learn` / `filter-auto-sort` default `newsletters=true` → smart mailboxes named `NL: <sender>` (virtual views via SyncedSmartMailboxes.plist). Toggle off with `newsletters=false`. Preview only: `newsletterDryRun=true` on learn, or `dryRun=true` on auto-sort. Mail may need a relaunch to show new smart mailboxes.
+
+**Actions (auto derive + work off):** Default `actions=true` on learn/auto-sort. Also:
+| Tool | Purpose |
+|------|---------|
+| `filter-actions-scan` | Read subjects/bodies → queue actions → execute (default) |
+| `filter-actions-run` | Execute pending queue only |
+| `filter-actions-status` | Queue summary |
+
+Detected kinds: `reply_draft`, `pay`, `appointment`, `review`, `follow_up`.  
+Auto-executes: flag mail, Reminders list **Mail Actions**, reply **drafts** (never sends).  
+Queue: `~/Library/Application Support/apple-mail-mcp/action-queue.json`
+
+Memory file: `~/Library/Application Support/apple-mail-mcp/category-memory.json`  
+LLM naming: set `XAI_API_KEY` or `APPLE_MAIL_MCP_LLM_API_KEY` (optional; domain names work without it).
+
+### MAX automation (background daemon)
+
+For hands-off operation (no chat needed):
+
+```bash
+cd ~/Developer/apple-mail-mcp
+pnpm run build
+pnpm auto:install          # LaunchAgent every 15 min
+node build/auto.js --dry-run   # preview once
+node build/auto.js             # full run once
+tail -f ~/Library/Application\ Support/apple-mail-mcp/auto-launchd.log
+pnpm auto:uninstall        # stop daemon
+```
+
+Pipeline each tick: learn (every N runs) → aggressive sort → NL smart mailboxes → derive+execute actions.  
+**Never auto-sends.** Config: `~/Library/Application Support/apple-mail-mcp/auto-config.json`.
+
 ## Important Guidelines
 
 1. **Message IDs**: All message operations require an ID. Get IDs from `list-messages` or `search-messages` first.

@@ -7,7 +7,8 @@
   "main": "build/index.js",
   "bin": {
     "apple-mail-mcp": "build/index.js",
-    "apple-mail-send": "build/cli.js"
+    "apple-mail-send": "build/cli.js",
+    "apple-mail-auto": "build/auto.js"
   },
   "files": [
     "build",
@@ -17,8 +18,13 @@
   ],
   "scripts": {
     "preinstall": "node -e \"const fs=require('fs');const ua=process.env.npm_config_user_agent||'';if(fs.existsSync('.git')&&!ua.startsWith('pnpm')){console.error('\\nThis repo uses pnpm. npm/yarn resolve dependencies off-lockfile and the committed bundle will mismatch CI.\\n\\n  corepack enable && pnpm install --frozen-lockfile\\n');process.exit(1)}\"",
-    "build": "tsc --noEmit && esbuild src/index.ts src/cli.ts --bundle --platform=node --format=esm --target=node20 --outdir=build --banner:js=\"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);\"",
+    "build": "tsc --noEmit && esbuild src/index.ts src/cli.ts src/auto.ts --bundle --platform=node --format=esm --target=node20 --outdir=build --banner:js=\"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);\"",
+    "build:ai": "bash swift-helper/build.sh",
+    "build:all": "pnpm run build && pnpm run build:ai",
     "start": "node build/index.js",
+    "auto": "node build/auto.js",
+    "auto:install": "bash scripts/install-auto-agent.sh",
+    "auto:uninstall": "bash scripts/uninstall-auto-agent.sh",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",

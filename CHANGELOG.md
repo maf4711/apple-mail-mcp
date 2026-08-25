@@ -1,5 +1,20 @@
 ## [Unreleased]
 
+### Added
+- **On-device Apple Intelligence helper** — Swift CLI `apple-mail-ai` (`swift-helper/`, FoundationModels `SystemLanguageModel`) names clusters and can classify actions **locally** (no cloud, no IMAP). Build: `pnpm build:ai` → `build/apple-mail-ai`. Prefer over xAI/OpenAI for filter naming; override with `APPLE_MAIL_MCP_FORCE_CLOUD_LLM=1`.
+- **On My Mac sort path (no IMAP)** — when Gmail/iCloud server folders cannot be created via AppleScript, auto-sort creates **local** mailboxes and `batchMoveToLocalMailbox` moves INBOX mail there. Also keeps `AI: …` smart mailbox views. New APIs: `createLocalMailbox`, `batchMoveToLocalMailbox`.
+- **Self-learning inbox filter** — cluster INBOX by sender domain, invent folder names via Apple AI / cloud LLM / domain fallback, persist domain→mailbox memory, auto-sort without preset categories. New tools: `filter-status`, `filter-memory`, `filter-learn`, `filter-auto-sort`, `filter-correct`, `filter-forget`. Memory: `~/Library/Application Support/apple-mail-mcp/category-memory.json` (override `APPLE_MAIL_MCP_CATEGORY_MEMORY`). LLM: Apple AI first, then `XAI_API_KEY` / `APPLE_MAIL_MCP_LLM_API_KEY`.
+- **Newsletter smart mailboxes in the filter flow** — `filter-learn` and `filter-auto-sort` default to creating `NL: …` smart mailboxes for bulk/newsletter senders (same discovery as `create-newsletter-smart-mailboxes`). Params: `newsletters`, `newsletterDryRun` / `dryRun`, `newsletterMinCount`, `newsletterDays`.
+- **Mail action pipeline** — derive tasks from email subject/body (reply, pay, appointment, review, follow-up) and auto-work them: flag, Reminders list "Mail Actions", reply drafts (never auto-send). Tools: `filter-actions-scan`, `filter-actions-run`, `filter-actions-status`. Integrated into `filter-learn` / `filter-auto-sort` via `actions=true` (default). Queue: `action-queue.json`.
+- **MAX automation daemon** — CLI `apple-mail-auto` (`src/auto.ts`) runs learn/sort/newsletter smart mailboxes/actions without MCP. LaunchAgent install: `pnpm auto:install` (every 20 min). Config: `~/Library/Application Support/apple-mail-mcp/auto-config.json`. Hard rule: never auto-sends email.
+- **Real On My Mac filing** — `moveFromInboxesToLocal` scopes moves to each account's INBOX only (no full-tree walk). Gmail/IMAP messages are filed into local mailboxes without IMAP credentials. Overlap lock prevents concurrent LaunchAgent thrash.
+
+### Removed
+- **`.hermes-plugin/` packaging docs** (`README.md`, `config.yaml`). Hermes Agent has no plugin/marketplace drop-in, so a directory of manifest-looking files was easy to misread as an installable package. The setup it documented is not lost — the `hermes mcp add` command, the `~/.hermes/config.yaml` `mcp_servers:` snippet, and the restart note now live inline in the README's "Other Hosts" section, which is where users actually look. Thanks to @maf4711 (#115). No effect on the published package: `.hermes-plugin/` was never in `package.json` `files[]`.
+
+### Fixed
+- **`pnpm version` no longer fails after the `.hermes-plugin/` removal.** The `version` lifecycle script still ran `git add … .hermes-plugin …`; `git add` exits 128 on a pathspec that matches nothing, which would have broken the documented release step (`pnpm version <patch|minor|major> --no-git-tag-version`) for every subsequent release. The stale path is dropped from the `git add` list (#115).
+
 ## [2.17.1] - 2026-08-25
 
 ### Fixed
