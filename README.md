@@ -1249,6 +1249,131 @@ Create a draft from a template, with optional overrides.
 
 ---
 
+### Self-learning inbox filter
+
+Memory lives in `~/Library/Application Support/apple-mail-mcp/category-memory.json`. Sorting files into local **On My Mac** mailboxes. Action tools never auto-send mail.
+
+#### `filter-status`
+
+Summary of learned domain→mailbox mappings, LLM config, and top categories.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `memoryPath` | string | No | Override path to category-memory.json |
+
+---
+
+#### `filter-memory`
+
+Full mapping table (domain/email → mailbox, confidence, hits).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `memoryPath` | string | No | Override path to category-memory.json |
+
+---
+
+#### `filter-learn`
+
+Cluster current INBOX by sender domain, name folders (Apple Intelligence / LLM / domain fallback), write memory. Optionally apply moves, newsletter smart mailboxes, and the action pipeline.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `account` | string | No | Limit to one Mail account |
+| `limit` | number | No | Max INBOX messages to scan (default 150, max 500) |
+| `apply` | boolean | No | If true, also auto-sort after learning |
+| `aggressive` | boolean | No | When apply=true, lower confidence threshold to 0.5 |
+| `forceFallback` | boolean | No | Skip LLM; name folders from domains only |
+| `newsletters` | boolean | No | Create `NL: …` smart mailboxes (default true) |
+| `newsletterDryRun` | boolean | No | Propose newsletter mailboxes only |
+| `newsletterMinCount` | number | No | Min messages from a sender (default 3) |
+| `newsletterDays` | number | No | Lookback days (default 90) |
+| `actions` | boolean | No | Derive + execute mail actions (default true) |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-auto-sort`
+
+File INBOX using learned memory only (no LLM). Unknown senders stay in INBOX.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `account` | string | No | Limit to one Mail account |
+| `limit` | number | No | Max INBOX messages (default 150) |
+| `dryRun` | boolean | No | Plan only; do not move |
+| `aggressive` | boolean | No | Confidence threshold 0.5 instead of 0.8 |
+| `categories` | string[] | No | Only move into these mailbox names |
+| `newsletters` | boolean | No | Also create `NL: …` smart mailboxes (default true) |
+| `newsletterMinCount` | number | No | Min messages from a sender (default 3) |
+| `newsletterDays` | number | No | Lookback days (default 90) |
+| `actions` | boolean | No | Derive + execute actions (skipped when dryRun) |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-correct`
+
+Teach the filter that a sender belongs in a different mailbox.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `mailbox` | string | Yes | Destination mailbox name |
+| `from` | string | No | Sender address |
+| `id` | string | No | Message id used to resolve From if `from` omitted |
+| `apply` | boolean | No | If true and `id` given, also move that message |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-forget`
+
+Remove a learned mapping by key and/or mailbox. Does not delete Mail folders or messages.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `key` | string | No | Domain or email key to forget |
+| `mailbox` | string | No | Forget all mappings that target this mailbox |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-actions-scan`
+
+Derive reply/pay/meeting/review/follow-up actions from INBOX. Writes a local action queue. Never auto-sends.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `account` | string | No | Limit to one Mail account |
+| `limit` | number | No | Inbox messages to consider (default 40) |
+| `bodyLimit` | number | No | Messages opened for body analysis (default 20) |
+| `execute` | boolean | No | Run pending actions after scan (default true) |
+| `executeLimit` | number | No | Max actions to run (default 30) |
+| `queuePath` | string | No | Override action-queue.json path |
+
+---
+
+#### `filter-actions-run`
+
+Execute pending items already in the action queue (flag, Reminders, reply drafts). Does not re-scan mail.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | No | Max actions to run (default 30) |
+| `queuePath` | string | No | Override action-queue.json path |
+
+---
+
+#### `filter-actions-status`
+
+Summarize the local action queue (pending/done/failed, by kind).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `queuePath` | string | No | Override action-queue.json path |
+
+---
+
 ### Diagnostics
 
 #### `health-check`
