@@ -1,5 +1,0 @@
----
-triple:          'arm64-apple-darwin'
-binary-path:     '/Users/a321/Developer/apple-mail-mcp/swift-helper/.build/out/Products/Release/apple-mail-ai'
-relocations:     []
-...
