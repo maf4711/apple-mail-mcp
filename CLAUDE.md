@@ -24,11 +24,11 @@ Keychain gotchas). Verify with the `doctor` tool.
 
 The MCP protocol uses JSON for parameters. In JSON, `\` is an escape character. To include a literal backslash:
 
-| You want    | Send in JSON parameter |
-|-------------|------------------------|
-| `\`         | `\\`                   |
-| `\\`        | `\\\\`                 |
-| `C:\Users\` | `C:\\Users\\`          |
+| You want            | Send in JSON parameter |
+|---------------------|------------------------|
+| `\`                 | `\\`                   |
+| `\\`                | `\\\\`                 |
+| `Mobile\ Documents` | `Mobile\\ Documents`   |
 
 ### Why This Matters
 
@@ -40,16 +40,26 @@ If you send a single backslash without escaping:
 
 ### Examples
 
-**Correct - Windows path in email:**
+**Correct - shell path with an escaped space:**
 
 ```text
-body: "The file is at C:\\Users\\Documents\\report.pdf"
+body: "Run: cp ~/Library/Mobile\\ Documents/report.pdf ~/Desktop/"
 ```
+
+→ arrives as: `Run: cp ~/Library/Mobile\ Documents/report.pdf ~/Desktop/`
+
+**Correct - regex in the body:**
+
+```text
+body: "Invoice numbers match \\d+"
+```
+
+→ arrives as: `Invoice numbers match \d+`
 
 **Incorrect - Will fail:**
 
 ```text
-body: "The file is at C:\Users\Documents\report.pdf"
+body: "Run: cp ~/Library/Mobile\ Documents/report.pdf ~/Desktop/"
 ```
 
 ## Tool Usage Tips
@@ -57,6 +67,25 @@ body: "The file is at C:\Users\Documents\report.pdf"
 ### Using Message IDs (Required)
 
 All message operations require an `id` parameter. **Always get IDs first** using `list-messages` or `search-messages`:
+
+**A bare numeric ID is only meaningful together with the mailbox it came from.** Mail.app numbers
+messages per mailbox, and a label store (Gmail, iCloud) reports the *same* message under the *same*
+id in several mailboxes at once — `INBOX`, `Important` and `All Mail` will all answer to id `75815`.
+Moving or deleting the `All Mail` copy is a different operation from moving or deleting the `INBOX`
+copy, so the server binds each id to the mailbox you listed it from and operates only there.
+
+Practical consequences:
+
+- **List or search the mailbox you intend to act on, immediately before acting on it.** Don't carry
+  numeric ids across from an unrelated listing, and don't invent them.
+- An id the server has never seen listed is resolved only if exactly one mailbox holds it. If
+  several do, the call **fails** and names them — re-list the mailbox you meant rather than retrying
+  the same id or trying a different tool.
+- `imap:…` ids (returned when an IMAP account is configured) already encode account + mailbox +
+  UID, so they are unambiguous anywhere and are never subject to this.
+- A batch call's success count reports messages the server actually operated on. Treat a `notfound`
+  or an ambiguity error for some ids as a partial result and re-list, rather than assuming the whole
+  batch applied.
 
 ```text
 # List messages returns IDs
@@ -374,8 +403,9 @@ Replaced `with opening window` with `without opening window` for both `reply` an
 Before sending emails with paths or special characters, verify escaping:
 
 - `~/path/to/file` - No escaping needed (no backslashes)
-- `C:\Users\` - Needs escaping: `C:\\Users\\`
+- `~/Library/Mobile\ Documents` - Needs escaping: `~/Library/Mobile\\ Documents`
 - `file\ name.txt` - Needs escaping: `file\\ name.txt`
+- `\d+` - Needs escaping: `\\d+`
 
 ## Recurring macOS permission prompts → offer the official-Node fix
 

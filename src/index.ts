@@ -29,7 +29,11 @@ import {
 import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { AppleMailManager, resolveAttachmentSaveTarget } from "@/services/appleMailManager.js";
+import {
+  AppleMailManager,
+  resolveAttachmentSaveTarget,
+  LOCAL_STORE_LABEL,
+} from "@/services/appleMailManager.js";
 import { writeFileSync } from "fs";
 import { join as joinPath } from "path";
 import {
@@ -64,7 +68,6 @@ import {
   imapBatchDelete,
   imapBatchMove,
   imapThread,
-  type ImapBatchResult,
   imapCreateMailbox,
   imapDeleteMailbox,
   imapRenameMailbox,
@@ -86,6 +89,9 @@ import {
   currentCallTiming,
   messageSummary,
 } from "@/tools/respond.js";
+import { unlistableStoreError } from "@/tools/mailboxListing.js";
+import { hybridBatchCounts, batchResponse } from "@/tools/batchResults.js";
+import { runBatchDelete, runBatchMove } from "@/tools/batchMutations.js";
 import {
   fanOutImapMessages,
   mergeMessages,
@@ -99,14 +105,43 @@ import { routeMessage } from "@/services/messageRouter.js";
 import { runDoctor, formatDoctorReport } from "@/tools/doctor.js";
 import { registerResourcesAndPrompts } from "@/tools/resourcesAndPrompts.js";
 import {
-  isInlineAttachmentBase64WithinLimit,
-  MAX_INLINE_ATTACHMENT_BASE64_INPUT_CHARS,
-} from "@/utils/attachmentLimits.js";
+  ATTACHMENTS_SCHEMA,
+  BATCH_IDS_SCHEMA,
+  DATE_FILTER_SCHEMA,
+  MESSAGE_ID_SCHEMA,
+} from "@/schemas.js";
 import { normalizeSubject, subjectFromGetMessage } from "@/tools/thread.js";
 import { extractRfcMessageIdFromSource } from "@/utils/mimeParse.js";
+import {
+  learnFromMessages,
+  planAutoSort,
+  applyCorrection,
+  applyForget,
+  bumpMoves,
+  memoryStatus,
+  type ClusterMessage,
+} from "@/services/categoryFilter.js";
+import { defaultMemoryPath } from "@/services/categoryMemory.js";
+import {
+  deriveActionsHeuristic,
+  mergeIntoQueue,
+  loadQueue,
+  saveQueue,
+  runPendingActions,
+  queueSummary,
+  createMailReminder,
+  defaultActionQueuePath,
+  type DerivedAction,
+} from "@/services/mailActions.js";
 import { ImapIdleWatcher } from "@/services/imapIdle.js";
 import { loadFileConfig } from "@/services/fileConfig.js";
 import { isOrphaned } from "@/utils/orphan.js";
+import { withJsonSchema2020_12 } from "@/utils/jsonSchemaDialect.js";
+import {
+  writeDestructiveAudit,
+  reconciliationWarnings,
+  type DestructiveOpReport,
+} from "@/services/auditLog.js";
 
 // Load file-based config FIRST (2.1.1) — before anything reads APPLE_MAIL_MCP_*.
 // Lets users configure the server when the host app strips the MCP env block.
@@ -116,21 +151,24 @@ loadFileConfig();
 // Shared Validation Schemas
 // =============================================================================
 
-/** A single-message id is EITHER an AppleScript numeric id OR an IMAP composite
- *  token (`imap:<base64url>`, emitted by the IMAP read path). The IMAP form is
- *  base64url so it stays injection-safe; it never reaches AppleScript (it's
- *  decoded and routed to IMAP instead). */
-const MESSAGE_ID_SCHEMA = z
+/** Source scope for a batch of NUMERIC ids: the account+mailbox they were listed
+ *  from. A numeric Mail.app id can match in several mailboxes at once (Gmail
+ *  label aliasing puts one message in INBOX, All Mail and Important), so without
+ *  a scope the server resolves each id and REFUSES any that is ambiguous rather
+ *  than guessing (#152). `imap:` ids already carry their mailbox and ignore this. */
+const BATCH_SOURCE_MAILBOX_SCHEMA = z
   .string()
-  .regex(/^(\d+|imap:[A-Za-z0-9_-]+)$/, "Message ID must be numeric or an IMAP id (imap:…)");
+  .optional()
+  .describe(
+    "Mailbox the numeric ids were listed from (e.g. 'INBOX'). Must be paired with sourceAccount to form an unambiguous scope. Ignored for imap: ids."
+  );
 
-/** Batch operations accept numeric (AppleScript) and/or imap: ids (I2) and are
- *  capped to prevent unbounded loops / DoS. Numeric ids run via AppleScript;
- *  imap: ids are grouped by mailbox and applied in a single UID command. */
-const BATCH_IDS_SCHEMA = z
-  .array(MESSAGE_ID_SCHEMA)
-  .min(1, "At least one message ID is required")
-  .max(100, "Cannot process more than 100 messages in a single batch");
+const BATCH_SOURCE_ACCOUNT_SCHEMA = z
+  .string()
+  .optional()
+  .describe(
+    "Account the numeric ids were listed from. Required when sourceMailbox is supplied; on its own it pins nothing."
+  );
 
 /** Apple Mail flag colors → the 0-6 palette index. `grey` is an alias for `gray`.
  *  Works on BOTH routes: AppleScript sets `flag index`, and the IMAP path writes
@@ -154,48 +192,6 @@ const FLAG_COLOR_SCHEMA = z
     "Optional flag color (Apple Mail palette: red, orange, yellow, green, blue, purple, gray — 'grey' accepted). Omit for Mail's default flag. The color is applied on both routes: AppleScript sets the flag index, and IMAP writes the equivalent $MailFlagBit0/1/2 keywords Mail.app reads — so a smart mailbox keyed on flag color matches either way."
   );
 
-/** Date filter strings must look like natural-language dates (e.g. "March 1, 2026").
- *  Block characters that could escape an AppleScript `date "..."` literal. */
-const DATE_FILTER_SCHEMA = z
-  .string()
-  .regex(
-    /^[a-zA-Z0-9 ,/\-:]+$/,
-    "Date must contain only alphanumeric characters, spaces, commas, slashes, hyphens, and colons"
-  )
-  .refine((val) => !isNaN(new Date(val).getTime()), {
-    message: "Date string must be a valid date (e.g., 'January 1, 2026' or '2026-03-15')",
-  })
-  .optional();
-
-// Attachments: absolute file paths and/or inline base64 content (B4).
-const ATTACHMENTS_SCHEMA = z
-  .array(
-    z.union([
-      z.string().describe("Absolute path to an existing file"),
-      z.object({
-        filename: z.string().min(1).max(255).describe("Filename to give the attachment"),
-        contentBase64: z
-          .string()
-          .min(1)
-          .max(
-            MAX_INLINE_ATTACHMENT_BASE64_INPUT_CHARS,
-            "Inline attachment exceeds the 25 MiB decoded size limit"
-          )
-          .refine(
-            isInlineAttachmentBase64WithinLimit,
-            "Inline attachment exceeds the 25 MiB decoded size limit"
-          )
-          .describe("Base64-encoded file content (maximum 25 MiB decoded)"),
-      }),
-    ])
-  )
-  .max(20, "Cannot attach more than 20 files")
-  .optional()
-  .describe(
-    "Files to attach: absolute paths (e.g. '/Users/me/report.pdf') and/or " +
-      "inline {filename, contentBase64} objects up to 25 MiB decoded each."
-  );
-
 // =============================================================================
 // Shared Output Schemas (MCP outputSchema)
 //
@@ -213,8 +209,7 @@ const ATTACHMENTS_SCHEMA = z
 const MESSAGE_ROW_SCHEMA = z.object({}).passthrough();
 
 /** Shape returned by list/search style tools (messages + count + optional
- *  partial-coverage diagnostics). Diagnostics only appear on the AppleScript
- *  path, so they are optional. */
+ *  partial-coverage diagnostics from either backend). */
 const LIST_OUTPUT_SCHEMA = {
   messages: z.array(MESSAGE_ROW_SCHEMA).optional(),
   count: z.number().optional(),
@@ -222,6 +217,7 @@ const LIST_OUTPUT_SCHEMA = {
   skippedLargeMailboxes: z.array(z.string()).optional(),
   notSearchedMailboxes: z.array(z.string()).optional(),
   timedOutAccounts: z.array(z.string()).optional(),
+  failedMailboxes: z.array(z.string()).optional(),
 };
 
 /** Shape returned by the batch count tools. */
@@ -230,7 +226,72 @@ const BATCH_COUNT_OUTPUT_SCHEMA = {
   success: z.number().optional(),
   failed: z.number().optional(),
   mailbox: z.string().optional(),
+  // Declared so the failure channel is part of the tool's advertised CONTRACT:
+  // a client can rely on `errors` being string[] and code against it, and it
+  // shows up in generated types and docs. Declaring is not what makes it
+  // deliverable — registerTool() wraps every outputSchema in
+  // `z.object(shape).passthrough()`, so these tools advertise
+  // `additionalProperties: true` (verified against the built server) and an
+  // undeclared key would be carried through, not rejected. Enumerating it is a
+  // promise to callers, not a workaround for a validator.
+  errors: z.array(z.string()).optional(),
+  // Set when `errors` was capped (MAX_STRUCTURED_BATCH_ERRORS distinct reasons),
+  // so a short list is never mistaken for the complete one.
+  errorsTruncated: z.boolean().optional(),
 };
+
+/**
+ * Always-on effect reconciliation for the destructive tools (#155).
+ *
+ * Declared on `delete-message`, `move-message`, `batch-delete-messages` and
+ * `batch-move-messages` so "what did this operation actually do to the mailbox"
+ * is part of the advertised contract and not something a client has to scrape
+ * out of the text. One entry per affected SOURCE mailbox; an array even for the
+ * single-message tools so one shape covers all four.
+ */
+const COUNT_DELTA_OUTPUT_SCHEMA = z
+  .array(
+    z.object({
+      account: z.string().optional(),
+      mailbox: z.string().optional(),
+      before: z.number().nullable().optional(),
+      after: z.number().nullable().optional(),
+      // Nullable for the same reason before/after/observed are: null means no
+      // comparison was possible. For `expected` that is a move whose
+      // destination IS the source mailbox — it always pairs with
+      // `status: "unknown"`, and never with a warning.
+      expected: z.number().nullable().optional(),
+      observed: z.number().nullable().optional(),
+      status: z.enum(["match", "over", "unknown"]).optional(),
+      // Declared explicitly: the SDK stamps additionalProperties:false on a bare
+      // zod shape, so an undeclared key makes the CLIENT reject the result.
+      unknownReason: z
+        .enum(["count-unreadable", "no-expectation", "count-did-not-move", "count-partial"])
+        .optional(),
+      note: z.string().optional(),
+    })
+  )
+  .optional();
+
+/**
+ * Whether a mutation the server ACCEPTED was corroborated by observing its
+ * effect (#181). Distinct from `ok`: `ok` says the command was not rejected,
+ * this says whether anyone checked that it did anything.
+ *
+ * `unverified` is not a failure — it means "accepted, no observation either
+ * way" — and must never be rendered as one. Modelled as a flat object rather
+ * than a discriminated union so the emitted JSON Schema stays simple; exactly
+ * one of `how`/`why` is populated, matching the verdict.
+ */
+const VERIFICATION_OUTPUT_SCHEMA = z
+  .object({
+    verdict: z.enum(["verified", "unverified"]),
+    /** Present on `verified`: what was observed. */
+    how: z.string().optional(),
+    /** Present on `unverified`: why no observation was possible. */
+    why: z.string().optional(),
+  })
+  .optional();
 
 /** A health/doctor check item — loose to accept both health-check
  *  ({name, passed, message}) and doctor ({name, status, detail}) items. */
@@ -298,7 +359,12 @@ function appleScanForAccounts(
  * @param verb "matched" (search) or "listed" (list) — only affects empty-state text.
  */
 function mergedMessageResponse(
-  fan: { rows: MessageRow[]; accountsQueried: string[]; accountsFailed: string[] },
+  fan: {
+    rows: MessageRow[];
+    accountsQueried: string[];
+    accountsFailed: string[];
+    failedMailboxes: string[];
+  },
   apple: AppleScan,
   limit: number,
   verb: "matched" | "listed"
@@ -308,8 +374,10 @@ function mergedMessageResponse(
   // partial merge is never mistaken for a confirmed "no such mail".
   const diagnostics: SearchDiagnostics = {
     ...apple.diagnostics,
-    partial: apple.diagnostics.partial || fan.accountsFailed.length > 0,
+    partial:
+      apple.diagnostics.partial || fan.accountsFailed.length > 0 || fan.failedMailboxes.length > 0,
     timedOutAccounts: [...apple.diagnostics.timedOutAccounts, ...fan.accountsFailed],
+    notSearchedMailboxes: [...apple.diagnostics.notSearchedMailboxes, ...fan.failedMailboxes],
   };
   const structured = {
     messages: merged,
@@ -318,6 +386,7 @@ function mergedMessageResponse(
     skippedLargeMailboxes: diagnostics.skippedLargeMailboxes,
     notSearchedMailboxes: diagnostics.notSearchedMailboxes,
     timedOutAccounts: diagnostics.timedOutAccounts,
+    failedMailboxes: fan.failedMailboxes,
   };
   const coverageBlock = partialCoverageBlock(diagnostics);
   if (merged.length === 0) {
@@ -408,34 +477,35 @@ registerResourcesAndPrompts(server, mailManager);
 // Response helpers, the AppleScript serial gate, withErrorHandling, and the
 // message backend router now live in @/tools/respond and @/services/messageRouter.
 
+// The batch fan-out (hybridBatchCounts) and result shaping (batchResponse) live
+// in @/tools/batchResults — one shaping path for all six batch tools, and the
+// only way that half can be unit-tested (this module opens a transport on
+// import, so a test can never load it).
+
 /**
- * Split a batch of ids into numeric (AppleScript) and imap: (IMAP) groups, run
- * each path, and merge into success/fail counts (I2). imap: ids apply in a
- * single UID command per mailbox; numeric ids use the existing AppleScript batch.
+ * Collect the forensic report the destructive operation just produced (#155),
+ * write the opt-in audit record, and hand back what the tool response has to
+ * carry: the always-on `countDelta` and any reconciliation warning.
+ *
+ * Read IMMEDIATELY after the manager call and never awaited across — every
+ * AppleScript path is synchronous, so nothing can interleave.
+ *
+ * `imap:` ids do not reach this: an IMAP UID names exactly one message in
+ * exactly one mailbox, so the mis-targeting class this instrumentation exists
+ * for cannot occur there. A batch of only `imap:` ids therefore yields no
+ * `countDelta`, which is the honest answer rather than a fabricated one.
  */
-async function hybridBatchCounts(
-  ids: string[],
-  appleFn: (numericIds: string[]) => { success: boolean }[],
-  imapFn: (imapIds: string[]) => Promise<ImapBatchResult>
-): Promise<{ success: number; fail: number; errors: string[] }> {
-  const imapIds = ids.filter((i) => i.startsWith("imap:"));
-  const numericIds = ids.filter((i) => !i.startsWith("imap:"));
-  let success = 0;
-  let fail = 0;
-  const errors: string[] = [];
-  if (numericIds.length > 0) {
-    const res = appleFn(numericIds);
-    const s = res.filter((r) => r.success).length;
-    success += s;
-    fail += res.length - s;
-  }
-  if (imapIds.length > 0) {
-    const r = await imapFn(imapIds);
-    success += r.success;
-    fail += r.failed;
-    errors.push(...r.errors);
-  }
-  return { success, fail, errors };
+function collectForensics(
+  tool: string,
+  args: Record<string, unknown>
+): { countDelta?: DestructiveOpReport["countDeltas"]; warnings: string[] } {
+  const report = mailManager.consumeLastForensics();
+  if (!report) return { warnings: [] };
+  writeDestructiveAudit({ tool, args, serverVersion: version }, report);
+  return {
+    ...(report.countDeltas.length > 0 ? { countDelta: report.countDeltas } : {}),
+    warnings: reconciliationWarnings(report),
+  };
 }
 
 // =============================================================================
@@ -515,6 +585,7 @@ registerTool(
             messages: r.messages,
             count: r.count,
             partial: r.partial,
+            failedMailboxes: r.failedMailboxes,
           });
         }
         const fan = await fanOutImapMessages(imapArgs, "search");
@@ -651,7 +722,10 @@ registerTool(
             account,
             mailbox,
           });
-          if (!content) return errorResponse(`Message with ID "${id}" not found`);
+          if (!content) {
+            const lookupError = mailManager.consumeLastMessageLookupError();
+            return errorResponse(lookupError ?? `Message with ID "${id}" not found`);
+          }
           const isHtml = preferHtml === true && !!content.htmlContent;
           const body = isHtml ? content.htmlContent! : content.plainText;
           return successResponse(`Subject: ${content.subject}\n\n${body}`, {
@@ -687,6 +761,7 @@ registerTool(
       messages: z.array(MESSAGE_ROW_SCHEMA).optional(),
       count: z.number().optional(),
       partial: z.boolean().optional(),
+      failedMailboxes: z.array(z.string()).optional(),
     },
   },
   withErrorHandling(async ({ id, account, mailbox, limit = 50 }) => {
@@ -727,6 +802,7 @@ registerTool(
           messages: r.messages,
           count: r.count,
           partial: r.partial,
+          failedMailboxes: r.failedMailboxes,
         });
       }
       const fan = await fanOutImapMessages({ subject: base, mailbox, limit }, "search");
@@ -756,17 +832,22 @@ registerTool(
             (a.dateReceived ? new Date(a.dateReceived as string).getTime() : 0) -
             (b.dateReceived ? new Date(b.dateReceived as string).getTime() : 0)
         );
-      const partial = apple.diagnostics.partial || fan.accountsFailed.length > 0;
+      const partial =
+        apple.diagnostics.partial ||
+        fan.accountsFailed.length > 0 ||
+        fan.failedMailboxes.length > 0;
       const coverage = partialCoverageBlock({
         ...apple.diagnostics,
         partial,
         timedOutAccounts: [...apple.diagnostics.timedOutAccounts, ...fan.accountsFailed],
+        notSearchedMailboxes: [...apple.diagnostics.notSearchedMailboxes, ...fan.failedMailboxes],
       });
       const structured = {
         subject: base,
         messages: orderedRows,
         count: orderedRows.length,
         partial,
+        failedMailboxes: fan.failedMailboxes,
       };
       if (orderedRows.length === 0) {
         return successResponse(`No messages found in thread "${base}".${coverage}`, structured);
@@ -861,6 +942,7 @@ registerTool(
           messages: r.messages,
           count: r.count,
           partial: r.partial,
+          failedMailboxes: r.failedMailboxes,
         });
       }
       const fan = await fanOutImapMessages({ mailbox, limit, offset, from, unreadOnly }, "list");
@@ -1138,6 +1220,40 @@ function resolveSmtpOrFallback(): SmtpConfig | null {
 }
 
 /** Reply to a message over direct SMTP with RFC 5322 threading headers. */
+/**
+ * Reply and forward drive Mail.app's `reply`/`forward` verbs, which take a
+ * NUMERIC Mail.app id — `findMessageScript` interpolates `Number(id)`, so an
+ * `imap:` id became `whose id is NaN` and simply never matched.
+ *
+ * The id schema accepts both forms, so callers reasonably passed `imap:` ids
+ * (every read tool returns them when IMAP is configured) and got an
+ * unexplained "not found". Rather than reject, resolve: the same RFC
+ * Message-ID lookup `resolve-message-id` uses, done for the caller.
+ */
+async function toNumericMailId(id: string): Promise<{ numericId?: string; error?: string }> {
+  const ref = decodeImapId(id);
+  if (!ref) return { numericId: id }; // already numeric
+
+  const messageId = await imapFetchMessageId(id);
+  if (!messageId) {
+    return {
+      error:
+        `could not read the RFC Message-ID for "${id}" over IMAP, which is what maps it to a ` +
+        `Mail.app id. Pass the numeric id instead (see the resolve-message-id tool).`,
+    };
+  }
+  const numericId = mailManager.findNumericIdByMessageId(messageId, ref.account);
+  if (!numericId) {
+    return {
+      error:
+        `Mail.app has no message with Message-ID <${messageId}> in account "${ref.account}", so ` +
+        `this IMAP message has no numeric id to reply to or forward. It may not have synced to ` +
+        `Mail.app yet.`,
+    };
+  }
+  return { numericId };
+}
+
 async function sendReplyViaSmtp(
   id: string,
   body: string,
@@ -1234,10 +1350,20 @@ registerTool(
       }
     }
 
-    const success = mailManager.replyToMessage(id, body, replyAll, send);
+    const resolvedReply = await toNumericMailId(id);
+    if (!resolvedReply.numericId) {
+      return errorResponse(`Failed to reply to message "${id}": ${resolvedReply.error}`);
+    }
+    const outcome = mailManager.replyToMessage(resolvedReply.numericId, body, replyAll, send);
 
-    if (!success) {
-      return errorResponse(`Failed to reply to message "${id}"`);
+    if (!outcome.success) {
+      // Surface Mail's own reason. An ambiguous id names its candidate
+      // mailboxes and tells the caller to re-list; a bare failure did not.
+      return errorResponse(
+        outcome.error
+          ? `Failed to reply to message "${id}": ${outcome.error}`
+          : `Failed to reply to message "${id}"`
+      );
     }
 
     return successResponse(send ? "Reply sent" : "Reply saved as draft", {
@@ -1289,10 +1415,18 @@ registerTool(
       }
     }
 
-    const success = mailManager.forwardMessage(id, to, body, send);
+    const resolvedFwd = await toNumericMailId(id);
+    if (!resolvedFwd.numericId) {
+      return errorResponse(`Failed to forward message "${id}": ${resolvedFwd.error}`);
+    }
+    const outcome = mailManager.forwardMessage(resolvedFwd.numericId, to, body, send);
 
-    if (!success) {
-      return errorResponse(`Failed to forward message "${id}"`);
+    if (!outcome.success) {
+      return errorResponse(
+        outcome.error
+          ? `Failed to forward message "${id}": ${outcome.error}`
+          : `Failed to forward message "${id}"`
+      );
     }
 
     return successResponse(
@@ -1435,7 +1569,12 @@ registerTool(
     inputSchema: {
       id: MESSAGE_ID_SCHEMA,
     },
-    outputSchema: { ok: z.boolean().optional(), id: z.string().optional() },
+    outputSchema: {
+      ok: z.boolean().optional(),
+      id: z.string().optional(),
+      countDelta: COUNT_DELTA_OUTPUT_SCHEMA,
+      verification: VERIFICATION_OUTPUT_SCHEMA,
+    },
   },
   withErrorHandling(
     ({ id }) =>
@@ -1443,8 +1582,16 @@ registerTool(
         imap: () => imapDeleteMessageById(id),
         apple: () => {
           const { success, error } = mailManager.deleteMessage(id);
+          const { countDelta, warnings } = collectForensics("delete-message", { id });
           return success
-            ? successResponse("Message deleted", { ok: true, id })
+            ? successResponse(
+                `Message deleted${warnings.length ? `\n\n${warnings.join("\n")}` : ""}`,
+                {
+                  ok: true,
+                  id,
+                  ...(countDelta ? { countDelta } : {}),
+                }
+              )
             : errorResponse(error || `Failed to delete message "${id}"`);
         },
         ok: "Message deleted",
@@ -1471,6 +1618,8 @@ registerTool(
       ok: z.boolean().optional(),
       id: z.string().optional(),
       mailbox: z.string().optional(),
+      countDelta: COUNT_DELTA_OUTPUT_SCHEMA,
+      verification: VERIFICATION_OUTPUT_SCHEMA,
     },
   },
   withErrorHandling(
@@ -1479,8 +1628,16 @@ registerTool(
         imap: () => imapMoveMessageById(id, mailbox),
         apple: () => {
           const { success, error } = mailManager.moveMessage(id, mailbox, account);
+          const { countDelta, warnings } = collectForensics("move-message", {
+            id,
+            mailbox,
+            account,
+          });
           return success
-            ? successResponse(`Message moved to "${mailbox}"`, { ok: true, id, mailbox })
+            ? successResponse(
+                `Message moved to "${mailbox}"${warnings.length ? `\n\n${warnings.join("\n")}` : ""}`,
+                { ok: true, id, mailbox, ...(countDelta ? { countDelta } : {}) }
+              )
             : errorResponse(error || `Failed to move message to "${mailbox}"`);
         },
         ok: `Message moved to "${mailbox}"`,
@@ -1491,34 +1648,46 @@ registerTool(
   )
 );
 
+/**
+ * The live wiring the batch mutation handlers run against (#156 item 4). The
+ * handlers themselves live in `@/tools/batchMutations.js` so this forwarding is
+ * assertable without importing `index.ts`, which opens a stdio transport at
+ * import and therefore cannot be loaded by a unit test.
+ */
+const batchMutationDeps = {
+  batchDeleteMessages: (ids: string[], scope: { account?: string; mailbox?: string }) =>
+    mailManager.batchDeleteMessages(ids, scope),
+  batchMoveMessages: (
+    ids: string[],
+    mailbox: string,
+    account: string | undefined,
+    scope: { account?: string; mailbox?: string }
+  ) => mailManager.batchMoveMessages(ids, mailbox, account, scope),
+  imapBatchDelete: (ids: string[]) => imapBatchDelete(ids),
+  imapBatchMove: (ids: string[], mailbox: string, opts: { account?: string }) =>
+    imapBatchMove(ids, mailbox, opts),
+  collectForensics: (tool: string, args: Record<string, unknown>) => collectForensics(tool, args),
+};
+
 // --- batch-delete-messages ---
 
 registerTool(
   "batch-delete-messages",
   {
     description:
-      "Use when: deleting multiple messages in one call (1–100 ids; moves them to Trash).\nReturns: counts of how many were deleted and how many failed.\nDo not use when: deleting just one (use delete-message) or filing messages away (use batch-move-messages).\nSafety: destructive and applies to many messages at once — require explicit user confirmation, and search-messages/list-messages first to confirm every id is correct before deleting.",
+      "Use when: deleting multiple messages in one call (1–100 ids; moves them to Trash).\nReturns: counts of how many were deleted and how many failed, plus the distinct reasons for any failures.\nDo not use when: deleting just one (use delete-message) or filing messages away (use batch-move-messages).\nSafety: destructive and applies to many messages at once — require explicit user confirmation, and search-messages/list-messages first to confirm every id is correct before deleting. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA,
     },
-    outputSchema: BATCH_COUNT_OUTPUT_SCHEMA,
+    outputSchema: { ...BATCH_COUNT_OUTPUT_SCHEMA, countDelta: COUNT_DELTA_OUTPUT_SCHEMA },
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
-      ids,
-      (n) => mailManager.batchDeleteMessages(n),
-      (im) => imapBatchDelete(im)
-    );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-
-    if (failCount === 0) {
-      return successResponse(`Successfully deleted ${successCount} message(s)`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to delete all ${failCount} message(s)`);
-    } else {
-      return successResponse(`Deleted ${successCount} message(s), ${failCount} failed`, structured);
-    }
-  }, "Error batch deleting messages")
+  withErrorHandling(
+    async ({ ids, sourceMailbox, sourceAccount }) =>
+      runBatchDelete(batchMutationDeps, { ids, sourceMailbox, sourceAccount }),
+    "Error batch deleting messages"
+  )
 );
 
 // --- batch-move-messages ---
@@ -1527,36 +1696,21 @@ registerTool(
   "batch-move-messages",
   {
     description:
-      "Use when: moving multiple messages (1–100 ids) into the same destination mailbox/folder in one call, e.g. bulk archiving.\nReturns: counts of how many were moved and how many failed.\nDo not use when: moving just one (use move-message) or deleting (use batch-delete-messages). Use list-mailboxes to confirm the destination name exists.\nSafety: moves many real messages at once — confirm the destination mailbox, and search-messages/list-messages first to confirm the ids.",
+      "Use when: moving multiple messages (1–100 ids) into the same destination mailbox/folder in one call, e.g. bulk archiving.\nReturns: counts of how many were moved and how many failed, plus the distinct reasons for any failures.\nDo not use when: moving just one (use move-message) or deleting (use batch-delete-messages). Use list-mailboxes to confirm the destination name exists.\nSafety: moves many real messages at once — confirm the destination mailbox, and search-messages/list-messages first to confirm the ids. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from — not the destination) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
       mailbox: z.string().min(1, "Destination mailbox is required"),
       account: z.string().optional().describe("Account containing the destination mailbox"),
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA,
     },
-    outputSchema: BATCH_COUNT_OUTPUT_SCHEMA,
+    outputSchema: { ...BATCH_COUNT_OUTPUT_SCHEMA, countDelta: COUNT_DELTA_OUTPUT_SCHEMA },
   },
-  withErrorHandling(async ({ ids, mailbox, account }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
-      ids,
-      (n) => mailManager.batchMoveMessages(n, mailbox, account),
-      (im) => imapBatchMove(im, mailbox, { account })
-    );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount, mailbox };
-
-    if (failCount === 0) {
-      return successResponse(
-        `Successfully moved ${successCount} message(s) to "${mailbox}"`,
-        structured
-      );
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to move all ${failCount} message(s)`);
-    } else {
-      return successResponse(
-        `Moved ${successCount} message(s) to "${mailbox}", ${failCount} failed`,
-        structured
-      );
-    }
-  }, "Error batch moving messages")
+  withErrorHandling(
+    async ({ ids, mailbox, account, sourceMailbox, sourceAccount }) =>
+      runBatchMove(batchMutationDeps, { ids, mailbox, account, sourceMailbox, sourceAccount }),
+    "Error batch moving messages"
+  )
 );
 
 // --- batch-mark-as-read ---
@@ -1565,30 +1719,25 @@ registerTool(
   "batch-mark-as-read",
   {
     description:
-      "Use when: marking multiple messages (1–100 ids) as read in one call.\nReturns: counts of how many were marked read and how many failed.\nDo not use when: marking just one (use mark-as-read) or marking unread (use batch-mark-as-unread). Get the ids from search-messages or list-messages first.",
+      "Use when: marking multiple messages (1–100 ids) as read in one call.\nReturns: counts of how many were marked read and how many failed.\nDo not use when: marking just one (use mark-as-read) or marking unread (use batch-mark-as-unread). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA,
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA,
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+  withErrorHandling(async ({ ids, sourceMailbox, sourceAccount }) => {
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchMarkAsRead(n),
+      (n) => mailManager.batchMarkAsRead(n, { account: sourceAccount, mailbox: sourceMailbox }),
       (im) => imapBatchMarkRead(im)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-
-    if (failCount === 0) {
-      return successResponse(`Successfully marked ${successCount} message(s) as read`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to mark all ${failCount} message(s) as read`);
-    } else {
-      return successResponse(
-        `Marked ${successCount} message(s) as read, ${failCount} failed`,
-        structured
-      );
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully marked ${n} message(s) as read`,
+      allFailed: (n) => `Failed to mark all ${n} message(s) as read`,
+      partial: (ok, failed) => `Marked ${ok} message(s) as read, ${failed} failed`,
+    });
   }, "Error batch marking messages as read")
 );
 
@@ -1598,33 +1747,25 @@ registerTool(
   "batch-mark-as-unread",
   {
     description:
-      "Use when: marking multiple messages (1–100 ids) as unread in one call.\nReturns: counts of how many were marked unread and how many failed.\nDo not use when: marking just one (use mark-as-unread) or marking read (use batch-mark-as-read). Get the ids from search-messages or list-messages first.",
+      "Use when: marking multiple messages (1–100 ids) as unread in one call.\nReturns: counts of how many were marked unread and how many failed.\nDo not use when: marking just one (use mark-as-unread) or marking read (use batch-mark-as-read). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA,
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA,
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+  withErrorHandling(async ({ ids, sourceMailbox, sourceAccount }) => {
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchMarkAsUnread(n),
+      (n) => mailManager.batchMarkAsUnread(n, { account: sourceAccount, mailbox: sourceMailbox }),
       (im) => imapBatchMarkUnread(im)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-
-    if (failCount === 0) {
-      return successResponse(
-        `Successfully marked ${successCount} message(s) as unread`,
-        structured
-      );
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to mark all ${failCount} message(s) as unread`);
-    } else {
-      return successResponse(
-        `Marked ${successCount} message(s) as unread, ${failCount} failed`,
-        structured
-      );
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully marked ${n} message(s) as unread`,
+      allFailed: (n) => `Failed to mark all ${n} message(s) as unread`,
+      partial: (ok, failed) => `Marked ${ok} message(s) as unread, ${failed} failed`,
+    });
   }, "Error batch marking messages as unread")
 );
 
@@ -1634,29 +1775,31 @@ registerTool(
   "batch-flag-messages",
   {
     description:
-      "Use when: flagging multiple messages (1–100 ids) in one call, optionally with a color (red/orange/yellow/green/blue/purple/gray).\nReturns: counts of how many were flagged and how many failed.\nDo not use when: flagging just one (use flag-message) or removing flags (use batch-unflag-messages). Get the ids from search-messages or list-messages first.\nNote: the color is applied on both routes — AppleScript sets the flag index, IMAP writes the equivalent $MailFlagBit0/1/2 keywords Mail.app reads — so a mixed batch of numeric and `imap:` ids all end up colored.",
+      "Use when: flagging multiple messages (1–100 ids) in one call, optionally with a color (red/orange/yellow/green/blue/purple/gray).\nReturns: counts of how many were flagged and how many failed.\nDo not use when: flagging just one (use flag-message) or removing flags (use batch-unflag-messages). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.\nNote: the color is applied on both routes — AppleScript sets the flag index, IMAP writes the equivalent $MailFlagBit0/1/2 keywords Mail.app reads — so a mixed batch of numeric and `imap:` ids all end up colored.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
       color: FLAG_COLOR_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA,
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA,
   },
-  withErrorHandling(async ({ ids, color }) => {
+  withErrorHandling(async ({ ids, color, sourceMailbox, sourceAccount }) => {
     const colorIndex = color ? FLAG_COLOR_INDEX[color] : undefined;
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchFlagMessages(n, colorIndex),
+      (n) =>
+        mailManager.batchFlagMessages(n, colorIndex, {
+          account: sourceAccount,
+          mailbox: sourceMailbox,
+        }),
       (im) => imapBatchFlag(im, colorIndex)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-
-    if (failCount === 0) {
-      return successResponse(`Successfully flagged ${successCount} message(s)`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to flag all ${failCount} message(s)`);
-    } else {
-      return successResponse(`Flagged ${successCount} message(s), ${failCount} failed`, structured);
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully flagged ${n} message(s)`,
+      allFailed: (n) => `Failed to flag all ${n} message(s)`,
+      partial: (ok, failed) => `Flagged ${ok} message(s), ${failed} failed`,
+    });
   }, "Error batch flagging messages")
 );
 
@@ -1666,30 +1809,25 @@ registerTool(
   "batch-unflag-messages",
   {
     description:
-      "Use when: removing flags from multiple messages (1–100 ids) in one call.\nReturns: counts of how many were unflagged and how many failed.\nDo not use when: unflagging just one (use unflag-message) or adding flags (use batch-flag-messages). Get the ids from search-messages or list-messages first.",
+      "Use when: removing flags from multiple messages (1–100 ids) in one call.\nReturns: counts of how many were unflagged and how many failed.\nDo not use when: unflagging just one (use unflag-message) or adding flags (use batch-flag-messages). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA,
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA,
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+  withErrorHandling(async ({ ids, sourceMailbox, sourceAccount }) => {
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchUnflagMessages(n),
+      (n) => mailManager.batchUnflagMessages(n, { account: sourceAccount, mailbox: sourceMailbox }),
       (im) => imapBatchUnflag(im)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-
-    if (failCount === 0) {
-      return successResponse(`Successfully unflagged ${successCount} message(s)`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to unflag all ${failCount} message(s)`);
-    } else {
-      return successResponse(
-        `Unflagged ${successCount} message(s), ${failCount} failed`,
-        structured
-      );
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully unflagged ${n} message(s)`,
+      allFailed: (n) => `Failed to unflag all ${n} message(s)`,
+      partial: (ok, failed) => `Unflagged ${ok} message(s), ${failed} failed`,
+    });
   }, "Error batch unflagging messages")
 );
 
@@ -1821,7 +1959,7 @@ registerTool(
       if (!r.success || !r.base64) {
         return errorResponse(r.error || `Failed to fetch attachment "${attachmentName}"`);
       }
-      writeFileSync(target.savedPath, Buffer.from(r.base64, "base64"));
+      writeFileSync(target.savedPath, Buffer.from(r.base64, "base64"), { flag: "wx", mode: 0o600 });
       return successResponse(`Attachment "${attachmentName}" saved to ${savePath}`, {
         ok: true,
         attachmentName,
@@ -1849,7 +1987,7 @@ registerTool(
   "fetch-attachment",
   {
     description:
-      "Use when: retrieving an attachment's raw bytes inline as base64 (by message id and attachmentName), e.g. to process its contents without touching disk.\nReturns: the attachment's bytes base64-encoded, with its size and (for IMAP) MIME type.\nDo not use when: you don't know the attachment name (use list-attachments first) or you just want it saved to disk (use save-attachment).",
+      "Use when: retrieving an attachment's raw bytes inline as base64 (by message id and attachmentName), e.g. to process its contents without keeping a file.\nReturns: the attachment's bytes base64-encoded, with its size and (for IMAP) MIME type.\nDo not use when: you don't know the attachment name (use list-attachments first) or you just want it saved to disk (use save-attachment).\nSafety: leaves no file behind, but the AppleScript path is not disk-free — Mail writes the attachment into a private temp directory, which is read back and then deleted. Needs no Full Disk Access either way: Mail performs that write under the Automation grant, and this server never reads the mail store itself.",
     inputSchema: {
       id: MESSAGE_ID_SCHEMA,
       attachmentName: z.string().min(1, "Attachment name is required"),
@@ -1892,17 +2030,52 @@ registerTool(
 
 // --- list-mailboxes ---
 
+/**
+ * Append Mail's LOCAL ("On My Mac") mailboxes to an unscoped listing. (#183)
+ *
+ * They are not children of any account, so every `accounts` → `mailboxes of
+ * acct` loop is structurally blind to them; this is the only way they appear
+ * without being asked for by name. A failure is NAMED in `failedAccounts`
+ * rather than dropped, for the same reason an unreadable account is: a short
+ * list that looks complete is the bug this tool just stopped shipping.
+ *
+ * Called LAST so a slow local store cannot delay the account results.
+ */
+function appendLocalStoreRows(
+  rows: { name: string; account: string; unreadCount: number; messageCount: number }[],
+  failedAccounts: string[]
+): void {
+  const checked = mailManager.listMailboxesChecked(LOCAL_STORE_LABEL);
+  if (checked.failed) {
+    console.error(`list-mailboxes failed for "${LOCAL_STORE_LABEL}": ${checked.error}`);
+    failedAccounts.push(LOCAL_STORE_LABEL);
+    return;
+  }
+  for (const mb of checked.mailboxes) {
+    rows.push({
+      name: `${LOCAL_STORE_LABEL}/${mb.name}`,
+      account: LOCAL_STORE_LABEL,
+      unreadCount: mb.unreadCount,
+      messageCount: mb.messageCount,
+    });
+  }
+}
+
 registerTool(
   "list-mailboxes",
   {
     description:
-      "Use when: discovering the mailbox/folder names (and unread/message counts) available in an account, e.g. before moving messages or searching a specific mailbox.\nReturns: each mailbox's name with its unread (and, for IMAP, total message) count, plus a count.\nDo not use when: you want the messages inside a mailbox (use list-messages or search-messages) or the list of accounts (use list-accounts).",
+      'Use when: discovering the mailbox/folder paths (and unread/message counts) available in an account, e.g. before moving messages or searching a specific mailbox.\nReturns: each mailbox\'s canonical account-relative path in `name`, unread/message counts, and a total count. Use the full path for nested mailboxes (for example `Archive/Inbox`); a top-level `Inbox` remains `Inbox`. A source that could not be read is NAMED — the result carries `partial: true` + `failedAccounts` and the list is a floor, not the complete set — and a listing Mail refused outright (e.g. an account that does not exist) returns an ERROR naming the accounts that do exist, never an empty list.\nDo not use when: you want the messages inside a mailbox (use list-messages or search-messages) or the list of accounts (use list-accounts).\nNote: Mail\'s local "On My Mac" mailboxes are not part of any account, so they are reported under the synthetic account label "On My Mac" — an unscoped call includes them, and `account: "On My Mac"` lists only them. They will not appear in list-accounts, which reports real accounts only.',
     inputSchema: {
       account: z.string().optional().describe("Account to list mailboxes from"),
     },
     outputSchema: {
       mailboxes: z.array(z.object({}).passthrough()).optional(),
       count: z.number().optional(),
+      // Declared explicitly: the SDK stamps additionalProperties:false on a bare
+      // zod shape, so an undeclared key makes the CLIENT reject the result.
+      partial: z.boolean().optional(),
+      failedAccounts: z.array(z.string()).optional(),
     },
   },
   withErrorHandling(async ({ account }) => {
@@ -1931,6 +2104,10 @@ registerTool(
       const configs = resolveImapConfigs();
       const rows: { name: string; account: string; unreadCount: number; messageCount: number }[] =
         [];
+      // #183: a source that could not be read is NAMED. Dropping it left the
+      // caller with a short list that looked complete — the same absent-vs-empty
+      // confusion, one level up. Matches get-mail-stats' partial/failedAccounts.
+      const failedAccounts: string[] = [];
       for (const config of configs) {
         try {
           const boxes = await imapListMailboxes({ config });
@@ -1946,12 +2123,19 @@ registerTool(
           }
         } catch (e) {
           console.error(`IMAP list-mailboxes failed for "${config.accountLabel}": ${String(e)}`);
+          failedAccounts.push(config.accountLabel);
         }
       }
       // AppleScript for the accounts IMAP doesn't cover (no double-listing).
       const { appleScriptOnly } = partitionAccountsForCounts(mailManager.listAccounts(), configs);
       for (const acct of appleScriptOnly) {
-        for (const mb of mailManager.listMailboxes(acct.name)) {
+        const checked = mailManager.listMailboxesChecked(acct.name);
+        if (checked.failed) {
+          console.error(`list-mailboxes failed for "${acct.name}": ${checked.error}`);
+          failedAccounts.push(acct.name);
+          continue;
+        }
+        for (const mb of checked.mailboxes) {
           rows.push({
             name: `${acct.name}/${mb.name}`,
             account: acct.name,
@@ -1960,14 +2144,60 @@ registerTool(
           });
         }
       }
-      const structured = { mailboxes: rows, count: rows.length };
-      if (rows.length === 0) return successResponse("No mailboxes found", structured);
+      // #183: Mail's LOCAL store is not an account, so the loops above can
+      // never reach it. Append it under its synthetic label. Ordered LAST so a
+      // slow local store never delays the account results a caller is more
+      // likely to want.
+      appendLocalStoreRows(rows, failedAccounts);
+      const partial = failedAccounts.length > 0;
+      const structured = {
+        mailboxes: rows,
+        count: rows.length,
+        ...(partial ? { partial, failedAccounts } : {}),
+      };
+      // A partial list is a FLOOR, not an answer — say so rather than letting a
+      // short list read as the complete set.
+      const caveat = partial
+        ? `\n\nPARTIAL — could not read: ${failedAccounts.join(", ")}. This list is incomplete.`
+        : "";
+      if (rows.length === 0) {
+        return partial
+          ? errorResponse(
+              `Could not list mailboxes from any source. Failed: ${failedAccounts.join(", ")}.`
+            )
+          : successResponse("No mailboxes found", structured);
+      }
       const list = rows.map((b) => `  - ${b.name} (${b.unreadCount} unread)`).join("\n");
-      return successResponse(`Found ${rows.length} mailbox(es):\n${list}`, structured);
+      return successResponse(`Found ${rows.length} mailbox(es):\n${list}${caveat}`, structured);
     }
 
-    const mailboxes = mailManager.listMailboxes(account);
-    const structured = { mailboxes, count: mailboxes.length };
+    // #183: read through the CHECKED variant. `listMailboxes` returns `[]` both
+    // when an account genuinely has no mailboxes and when Mail REFUSED the
+    // request — an account that does not exist raises `Can't get account "X"`
+    // — so reporting the empty list as a success made "this store is not
+    // addressable" indistinguishable from "you have no mail". That is the
+    // absent-vs-empty confusion this codebase refuses to make everywhere else
+    // (the collateral diff withholds rather than reports an empty array).
+    const { mailboxes, failed, error } = mailManager.listMailboxesChecked(account);
+    if (failed) {
+      return errorResponse(
+        unlistableStoreError(
+          account,
+          error,
+          mailManager.listAccounts().map((a) => a.name)
+        )
+      );
+    }
+    // #183: an UNSCOPED call resolves to one default account, which can never
+    // include the local store. Append it so "list my mailboxes" sees On My Mac
+    // on the pure-AppleScript path too, not only when IMAP is configured.
+    const localFailures: string[] = [];
+    if (account === undefined) appendLocalStoreRows(mailboxes, localFailures);
+    const structured = {
+      mailboxes,
+      count: mailboxes.length,
+      ...(localFailures.length ? { partial: true, failedAccounts: localFailures } : {}),
+    };
 
     if (mailboxes.length === 0) {
       return successResponse("No mailboxes found", structured);
@@ -2336,6 +2566,888 @@ registerTool(
 );
 
 // =============================================================================
+// Self-learning inbox filter (cluster → LLM name → memory → auto-sort)
+// =============================================================================
+
+function toClusterMessages(
+  messages: { id: string; subject: string; sender: string; account: string; mailbox: string }[]
+): ClusterMessage[] {
+  return messages.map((m) => ({
+    id: m.id,
+    subject: m.subject ?? "",
+    sender: m.sender ?? "",
+    account: m.account ?? "",
+    mailbox: m.mailbox ?? "INBOX",
+  }));
+}
+
+function listInboxForFilter(account: string | undefined, limit: number): ClusterMessage[] {
+  const { messages } = mailManager.listMessagesWithDiagnostics("INBOX", account, limit);
+  return toClusterMessages(messages);
+}
+
+/**
+ * Ensure destination mailboxes exist, then batch-move plan items marked "move".
+ * Groups by (account, destMailbox). Returns move stats.
+ */
+async function executeSortPlan(
+  plan: ReturnType<typeof planAutoSort>,
+  messages: ClusterMessage[],
+  opts: { ensureMailboxes: boolean }
+): Promise<{
+  moved: number;
+  failed: number;
+  created: string[];
+  errors: string[];
+  movedFroms: string[];
+}> {
+  const byAccountMailbox = new Map<string, { account: string; mailbox: string; ids: string[] }>();
+  const idToMsg = new Map(messages.map((m) => [m.id, m]));
+  const created: string[] = [];
+  const errors: string[] = [];
+  const movedFroms: string[] = [];
+
+  for (const item of plan.items) {
+    if (item.action !== "move") continue;
+    const msg = idToMsg.get(item.id);
+    const account = item.account || msg?.account || "";
+    const key = `${account}\0${item.destMailbox}`;
+    let g = byAccountMailbox.get(key);
+    if (!g) {
+      g = { account, mailbox: item.destMailbox, ids: [] };
+      byAccountMailbox.set(key, g);
+    }
+    g.ids.push(item.id);
+  }
+
+  let moved = 0;
+  let failed = 0;
+
+  for (const g of byAccountMailbox.values()) {
+    if (opts.ensureMailboxes && g.mailbox) {
+      const res = mailManager.createMailbox(g.mailbox, g.account || undefined);
+      if (res.success) {
+        created.push(g.account ? `${g.account}/${g.mailbox}` : g.mailbox);
+      } else if (res.error && !/already exists|existiert bereits|duplicate/i.test(res.error)) {
+        // Continue — mailbox may already exist under another wording
+        errors.push(`create-mailbox "${g.mailbox}": ${res.error}`);
+      }
+    }
+
+    // Batch in chunks of 100
+    for (let i = 0; i < g.ids.length; i += 100) {
+      const chunk = g.ids.slice(i, i + 100);
+      const {
+        success,
+        fail,
+        errors: batchErrs,
+      } = await hybridBatchCounts(
+        chunk,
+        (n) => mailManager.batchMoveMessages(n, g.mailbox, g.account || undefined),
+        (im) => imapBatchMove(im, g.mailbox, { account: g.account || undefined })
+      );
+      moved += success;
+      failed += fail;
+      errors.push(...batchErrs);
+      if (success > 0) {
+        for (const id of chunk) {
+          const m = idToMsg.get(id);
+          if (m) movedFroms.push(m.sender);
+        }
+      }
+    }
+  }
+
+  return { moved, failed, created, errors, movedFroms };
+}
+
+// --- filter-status ---
+
+server.registerTool(
+  "filter-status",
+  {
+    description:
+      "Use when: checking the self-learning inbox filter — memory path, how many domain→mailbox mappings exist, LLM config, and top learned categories.\nReturns: mapping counts, mailboxes, confidence stats, whether an LLM API key is configured.\nDo not use when: you want to learn/sort now (use filter-learn / filter-auto-sort).",
+    inputSchema: {
+      memoryPath: z
+        .string()
+        .optional()
+        .describe("Override path to category-memory.json (default Application Support)"),
+    },
+    outputSchema: {
+      mappingCount: z.number().optional(),
+      llmConfigured: z.boolean().optional(),
+    },
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    const top = st.mappings
+      .slice(0, 25)
+      .map(
+        (m) =>
+          `  - ${m.key} → ${m.mailbox} (conf ${m.confidence.toFixed(2)}, hits ${m.hits}, ${m.source})`
+      )
+      .join("\n");
+    const text = [
+      `Self-learning filter status`,
+      `  memory: ${st.memoryPath}`,
+      `  mappings: ${st.mappingCount}`,
+      `  mailboxes: ${st.mailboxes.join(", ") || "(none yet)"}`,
+      `  LLM: ${st.llmConfigured ? `configured (${st.llmModel} @ ${st.llmBaseUrl})` : "not configured — domain fallback names only (set XAI_API_KEY)"}`,
+      `  updated: ${st.updatedAt}`,
+      top ? `Top mappings:\n${top}` : "  (no mappings — run filter-learn)",
+    ].join("\n");
+    return successResponse(text, st as unknown as Record<string, unknown>);
+  }, "Error reading filter status")
+);
+
+// --- filter-memory ---
+
+server.registerTool(
+  "filter-memory",
+  {
+    description:
+      "Use when: listing everything the self-learning filter has stored (domain/email → mailbox, confidence, hits).\nReturns: full mapping table from category-memory.json.\nDo not use when: you want a short summary (use filter-status) or to change a mapping (use filter-correct / filter-forget).",
+    inputSchema: {
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      mappingCount: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    if (st.mappingCount === 0) {
+      return successResponse(
+        "No learned mappings yet. Run filter-learn on the inbox first.",
+        st as unknown as Record<string, unknown>
+      );
+    }
+    const lines = st.mappings
+      .map(
+        (m) =>
+          `  ${m.key} → ${m.mailbox}  conf=${m.confidence.toFixed(2)} hits=${m.hits} [${m.source}]`
+      )
+      .join("\n");
+    return successResponse(
+      `Learned ${st.mappingCount} mapping(s) in ${st.memoryPath}:\n${lines}`,
+      st as unknown as Record<string, unknown>
+    );
+  }, "Error listing filter memory")
+);
+
+/** Create NL:… smart mailboxes for discovered newsletter senders. */
+function runNewsletterSmartMailboxes(opts: { dryRun: boolean; minCount: number; days: number }): {
+  dryRun: boolean;
+  count: number;
+  createdOrProposed: {
+    name?: string;
+    email?: string;
+    score?: number;
+    success?: boolean;
+    alreadyExisted?: boolean;
+    wouldCreate?: boolean;
+    error?: string;
+  }[];
+  text: string;
+} {
+  const result = mailManager.createNewsletterSmartMailboxes(opts.dryRun, opts.minCount, opts.days);
+  const lines = (result.createdOrProposed || [])
+    .map((c) => {
+      const state = opts.dryRun
+        ? "would create"
+        : c.alreadyExisted
+          ? "already existed"
+          : c.success
+            ? "created"
+            : c.error
+              ? `error: ${c.error}`
+              : "ok";
+      return `  - ${c.name || "?"} <${c.email || "?"}> score ${c.score ?? "?"} [${state}]`;
+    })
+    .join("\n");
+  const prefix = opts.dryRun
+    ? `Newsletter smart mailboxes (dry-run): would create ${result.count}`
+    : `Newsletter smart mailboxes: ${result.count} processed`;
+  return {
+    dryRun: result.dryRun,
+    count: result.count,
+    createdOrProposed: result.createdOrProposed,
+    text: `${prefix}:\n${lines || "  (none met the newsletter threshold)"}`,
+  };
+}
+
+// --- filter-learn ---
+
+server.registerTool(
+  "filter-learn",
+  {
+    description:
+      'Use when: teaching the self-learning inbox filter from current INBOX mail — clusters by sender domain, names folders via LLM (or domain fallback), writes category-memory.json. By default also discovers newsletters and creates Apple Mail smart mailboxes named "NL: …" per sender. Optionally apply moves immediately (apply=true).\nReturns: clusters, newsletter smart-mailbox results, optional move stats.\nNo preset categories: names emerge from your mail. Set XAI_API_KEY for semantic folder names.\nDo not use when: you only want to apply existing memory (use filter-auto-sort) or only newsletters (use create-newsletter-smart-mailboxes).',
+    inputSchema: {
+      account: z.string().optional().describe("Limit to one Mail account"),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(500)
+        .default(150)
+        .describe("Max INBOX messages to scan (default 150)"),
+      apply: z
+        .boolean()
+        .default(false)
+        .describe("If true, also auto-sort after learning (high-confidence moves)"),
+      aggressive: z
+        .boolean()
+        .default(false)
+        .describe("When apply=true, lower confidence threshold to 0.5"),
+      forceFallback: z
+        .boolean()
+        .default(false)
+        .describe("Skip LLM even if API key is set; name folders from domains only"),
+      newsletters: z
+        .boolean()
+        .default(true)
+        .describe(
+          'If true (default), discover newsletter senders and create "NL: …" smart mailboxes'
+        ),
+      newsletterDryRun: z
+        .boolean()
+        .default(false)
+        .describe("If true, only propose newsletter smart mailboxes (no plist write)"),
+      newsletterMinCount: z
+        .number()
+        .int()
+        .min(1)
+        .default(3)
+        .describe("Min messages from a sender to treat as newsletter (default 3)"),
+      newsletterDays: z
+        .number()
+        .int()
+        .min(1)
+        .default(90)
+        .describe("Look back this many days for newsletter discovery (default 90)"),
+      actions: z
+        .boolean()
+        .default(true)
+        .describe(
+          "If true (default), derive actions from mail (reply/pay/meeting/…) and execute them (flag, Reminders, reply drafts — never auto-send)"
+        ),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      namedCount: z.number().optional(),
+      usedLlm: z.boolean().optional(),
+      moved: z.number().optional(),
+      newsletterCount: z.number().optional(),
+      actionsExecuted: z.number().optional(),
+    },
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      apply,
+      aggressive,
+      forceFallback,
+      newsletters,
+      newsletterDryRun,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath,
+    }) => {
+      const messages = listInboxForFilter(account, limit ?? 150);
+      if (messages.length === 0 && newsletters === false) {
+        return successResponse("INBOX is empty (or unreadable) — nothing to learn.", {
+          namedCount: 0,
+          usedLlm: false,
+          scanned: 0,
+        });
+      }
+
+      const learned =
+        messages.length > 0
+          ? await learnFromMessages(messages, {
+              memoryPath,
+              forceFallback: !!forceFallback,
+            })
+          : {
+              memoryPath: memoryPath || defaultMemoryPath(),
+              clusters: [] as Awaited<ReturnType<typeof learnFromMessages>>["clusters"],
+              namedCount: 0,
+              usedLlm: false,
+              llmError: undefined as string | undefined,
+              llmModel: undefined as string | undefined,
+              memory: undefined as unknown,
+            };
+
+      const clusterLines = learned.clusters
+        .map(
+          (c) =>
+            `  - ${c.domain} (${c.count} msg): → "${c.mailbox}" [${c.source}] e.g. ${c.sampleSubjects[0] || "(no subject)"}`
+        )
+        .join("\n");
+
+      let moveSection = "";
+      let moved = 0;
+      let failed = 0;
+      if (apply && messages.length > 0) {
+        const plan = planAutoSort(messages, {
+          memoryPath: learned.memoryPath,
+          aggressive: !!aggressive,
+        });
+        const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+        moved = exec.moved;
+        failed = exec.failed;
+        if (exec.movedFroms.length) bumpMoves(exec.movedFroms, learned.memoryPath);
+        moveSection = `\n\nApply: moved ${moved}, failed ${failed}, created mailboxes: ${exec.created.join(", ") || "(none)"}`;
+        if (exec.errors.length) moveSection += `\nErrors: ${exec.errors.slice(0, 5).join("; ")}`;
+      }
+
+      let newsletterSection = "";
+      let newsletterPayload: ReturnType<typeof runNewsletterSmartMailboxes> | null = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!newsletterDryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90,
+        });
+        newsletterSection = `\n\n${newsletterPayload.text}`;
+      }
+
+      let actionSection = "";
+      let actionResult: ReturnType<typeof runActionPipeline> | null = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30,
+        });
+        actionSection = `\n\n${actionResult.text}`;
+      }
+
+      const llmNote = learned.usedLlm
+        ? `LLM naming via ${learned.llmModel}`
+        : `Domain fallback names${learned.llmError ? ` (${learned.llmError})` : ""}`;
+
+      return successResponse(
+        `Learned from ${messages.length} INBOX message(s) → ${learned.namedCount} cluster(s). ${llmNote}.\nMemory: ${learned.memoryPath}\n${clusterLines || "  (no clusters)"}${moveSection}${newsletterSection}${actionSection}${apply ? "" : "\n\nTip: re-run with apply=true to move, or call filter-auto-sort."}`,
+        {
+          namedCount: learned.namedCount,
+          usedLlm: learned.usedLlm,
+          llmError: learned.llmError,
+          llmModel: learned.llmModel,
+          memoryPath: learned.memoryPath,
+          clusters: learned.clusters,
+          scanned: messages.length,
+          moved,
+          failed,
+          applied: !!apply,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload
+            ? {
+                dryRun: newsletterPayload.dryRun,
+                count: newsletterPayload.count,
+                createdOrProposed: newsletterPayload.createdOrProposed,
+              }
+            : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0,
+        }
+      );
+    },
+    "Error running filter-learn"
+  )
+);
+
+// --- filter-auto-sort ---
+
+server.registerTool(
+  "filter-auto-sort",
+  {
+    description:
+      'Use when: automatically filing INBOX mail using the self-learned memory only (no LLM). High-confidence mappings move to their mailboxes; unknown senders stay in INBOX. Creates destination mailboxes as needed. By default also creates "NL: …" newsletter smart mailboxes for bulk senders.\nReturns: move/skip counts, newsletter smart-mailbox results, and a per-message plan summary.\nDefault threshold confidence ≥ 0.8 (use aggressive=true for ≥ 0.5). dryRun=true only plans (moves + newsletters).\nDo not use when: memory is empty — run filter-learn first. Prefer filter-correct if a move was wrong.',
+    inputSchema: {
+      account: z.string().optional(),
+      limit: z.number().int().min(1).max(500).default(150),
+      dryRun: z
+        .boolean()
+        .default(false)
+        .describe("If true, only report what would move (default false = actually move)"),
+      aggressive: z.boolean().default(false).describe("Lower confidence threshold to 0.5"),
+      categories: z
+        .array(z.string())
+        .optional()
+        .describe("Only move into these destination mailbox names"),
+      newsletters: z
+        .boolean()
+        .default(true)
+        .describe('If true (default), also create "NL: …" smart mailboxes for newsletter senders'),
+      newsletterMinCount: z.number().int().min(1).default(3),
+      newsletterDays: z.number().int().min(1).default(90),
+      actions: z
+        .boolean()
+        .default(true)
+        .describe(
+          "If true (default), derive + execute mail actions (flag, Reminders, reply drafts). Skipped when dryRun=true."
+        ),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      moved: z.number().optional(),
+      skipped: z.number().optional(),
+      dryRun: z.boolean().optional(),
+      newsletterCount: z.number().optional(),
+      actionsExecuted: z.number().optional(),
+    },
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      dryRun,
+      aggressive,
+      categories,
+      newsletters,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath,
+    }) => {
+      const path = memoryPath || defaultMemoryPath();
+      const st = memoryStatus(path);
+      if (st.mappingCount === 0) {
+        return errorResponse(
+          "No learned mappings yet. Run filter-learn first so the filter can invent categories from your inbox."
+        );
+      }
+
+      const messages = listInboxForFilter(account, limit ?? 150);
+      const plan = planAutoSort(messages, {
+        memoryPath: path,
+        aggressive: !!aggressive,
+        categories,
+      });
+
+      const preview = plan.items
+        .slice(0, 40)
+        .map(
+          (i) =>
+            `  [${i.action}] ${i.id}: ${i.from.slice(0, 40)} → ${i.destMailbox || "—"} (${i.reason})`
+        )
+        .join("\n");
+
+      let newsletterPayload: ReturnType<typeof runNewsletterSmartMailboxes> | null = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!dryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90,
+        });
+      }
+      const nlText = newsletterPayload ? `\n\n${newsletterPayload.text}` : "";
+
+      if (dryRun) {
+        return successResponse(
+          `DRY RUN filter-auto-sort: would move ${plan.moveCount}, skip ${plan.skipCount} of ${messages.length}.\n${preview}${nlText}`,
+          {
+            dryRun: true,
+            moved: 0,
+            wouldMove: plan.moveCount,
+            skipped: plan.skipCount,
+            plan: plan.items,
+            newsletterCount: newsletterPayload?.count ?? 0,
+            newsletters: newsletterPayload
+              ? {
+                  dryRun: true,
+                  count: newsletterPayload.count,
+                  createdOrProposed: newsletterPayload.createdOrProposed,
+                }
+              : null,
+          }
+        );
+      }
+
+      const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+      if (exec.movedFroms.length) bumpMoves(exec.movedFroms, path);
+
+      let actionSection = "";
+      let actionResult: ReturnType<typeof runActionPipeline> | null = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30,
+        });
+        actionSection = `\n\n${actionResult.text}`;
+      }
+
+      return successResponse(
+        `filter-auto-sort: moved ${exec.moved}, failed ${exec.failed}, skipped ${plan.skipCount} of ${messages.length}.\nCreated: ${exec.created.join(", ") || "(none)"}\n${preview}${nlText}${actionSection}${exec.errors.length ? `\nErrors: ${exec.errors.slice(0, 5).join("; ")}` : ""}`,
+        {
+          dryRun: false,
+          moved: exec.moved,
+          failed: exec.failed,
+          skipped: plan.skipCount,
+          created: exec.created,
+          plan: plan.items,
+          errors: exec.errors,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload
+            ? {
+                dryRun: false,
+                count: newsletterPayload.count,
+                createdOrProposed: newsletterPayload.createdOrProposed,
+              }
+            : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0,
+        }
+      );
+    },
+    "Error running filter-auto-sort"
+  )
+);
+
+// --- Action pipeline: derive + execute from mail content ---
+
+function makeActionDeps() {
+  return {
+    flagMessage: (id: string, colorIndex?: number) => mailManager.flagMessage(id, colorIndex),
+    replyDraft: (id: string, body: string) =>
+      Boolean(mailManager.replyToMessage(id, body, false, false).success),
+    createReminder: (title: string, body: string, dueDate?: string) =>
+      createMailReminder(title, body, dueDate),
+  };
+}
+
+/**
+ * Scan recent messages, derive actions from subject/body, merge into queue,
+ * optionally execute pending actions immediately.
+ */
+function runActionPipeline(opts: {
+  account?: string;
+  limit: number;
+  bodyLimit: number;
+  execute: boolean;
+  executeLimit: number;
+  queuePath?: string;
+}): {
+  scanned: number;
+  derived: number;
+  added: number;
+  executed: number;
+  failed: number;
+  summary: ReturnType<typeof queueSummary>;
+  sample: DerivedAction[];
+  text: string;
+} {
+  const queuePath = opts.queuePath || defaultActionQueuePath();
+  const messages = listInboxForFilter(opts.account, opts.limit);
+  const queue = loadQueue(queuePath);
+  const allDerived: DerivedAction[] = [];
+
+  // Prefer unread / recent first for bodies
+  const candidates = [...messages].slice(0, opts.bodyLimit);
+  for (const m of candidates) {
+    let body = "";
+    try {
+      const content = mailManager.getMessageContent(m.id, false, {
+        account: m.account,
+        mailbox: m.mailbox,
+      });
+      body = content?.plainText?.slice(0, 3500) ?? "";
+    } catch {
+      body = "";
+    }
+    const derived = deriveActionsHeuristic({
+      id: m.id,
+      subject: m.subject,
+      sender: m.sender,
+      body,
+    });
+    allDerived.push(...derived);
+  }
+
+  const { added } = mergeIntoQueue(queue, allDerived);
+  let executed = 0;
+  let failed = 0;
+  if (opts.execute) {
+    const run = runPendingActions(queue, makeActionDeps(), { limit: opts.executeLimit });
+    executed = run.done;
+    failed = run.failed;
+  }
+  saveQueue(queue, queuePath);
+
+  const summary = queueSummary(queue);
+  const sample = queue.actions
+    .filter((a) => a.status === "pending" || a.status === "done")
+    .slice(-15);
+  const lines = sample
+    .map(
+      (a) =>
+        `  [${a.status}] ${a.kind}: ${a.title} (msg ${a.messageId}${a.dueDate ? `, due ${a.dueDate}` : ""})`
+    )
+    .join("\n");
+
+  const text = [
+    `Actions: scanned ${messages.length} msgs, read body of ${candidates.length}, derived ${allDerived.length}, added ${added} to queue.`,
+    opts.execute
+      ? `Executed: done=${executed}, failed=${failed}.`
+      : "Not executed (execute=false). Call filter-actions-run or re-run with execute=true.",
+    `Queue: pending=${summary.pending}, done=${summary.done}, failed=${summary.failed} @ ${queuePath}`,
+    lines ? `Recent:\n${lines}` : "  (no actions)",
+  ].join("\n");
+
+  return {
+    scanned: messages.length,
+    derived: allDerived.length,
+    added,
+    executed,
+    failed,
+    summary,
+    sample,
+    text,
+  };
+}
+
+// --- filter-actions-scan ---
+
+server.registerTool(
+  "filter-actions-scan",
+  {
+    description:
+      'Use when: deriving actionable items from INBOX emails (reply needed, payment/invoice, meeting, review, follow-up) via heuristics on subject+body. Writes a local action queue. With execute=true (default), immediately works them off: flag mail, create Reminders in list "Mail Actions", open reply drafts (never auto-sends).\nReturns: counts and a sample of actions.\nDo not use when: you only want folder sorting (filter-auto-sort) without task extraction.',
+    inputSchema: {
+      account: z.string().optional(),
+      limit: z.number().int().min(1).max(200).default(40).describe("Inbox messages to consider"),
+      bodyLimit: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .default(20)
+        .describe("How many messages to open for body analysis (slower)"),
+      execute: z
+        .boolean()
+        .default(true)
+        .describe("If true (default), run pending actions after scan"),
+      executeLimit: z.number().int().min(1).max(100).default(30),
+      queuePath: z.string().optional(),
+    },
+    outputSchema: {
+      derived: z.number().optional(),
+      executed: z.number().optional(),
+      pending: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ account, limit, bodyLimit, execute, executeLimit, queuePath }) => {
+    const r = runActionPipeline({
+      account,
+      limit: limit ?? 40,
+      bodyLimit: bodyLimit ?? 20,
+      execute: execute !== false,
+      executeLimit: executeLimit ?? 30,
+      queuePath,
+    });
+    return successResponse(r.text, {
+      derived: r.derived,
+      added: r.added,
+      executed: r.executed,
+      failed: r.failed,
+      scanned: r.scanned,
+      pending: r.summary.pending,
+      summary: r.summary,
+      sample: r.sample,
+    });
+  }, "Error scanning mail actions")
+);
+
+// --- filter-actions-run ---
+
+server.registerTool(
+  "filter-actions-run",
+  {
+    description:
+      "Use when: executing pending items already in the action queue (flag, Reminders, reply drafts). Does not re-scan mail — use filter-actions-scan to derive first.\nNever sends email automatically.\nReturns: done/failed counts.",
+    inputSchema: {
+      limit: z.number().int().min(1).max(100).default(30),
+      queuePath: z.string().optional(),
+    },
+    outputSchema: {
+      done: z.number().optional(),
+      failed: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ limit, queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const pendingBefore = queue.actions.filter((a) => a.status === "pending").length;
+    if (pendingBefore === 0) {
+      return successResponse(`No pending actions in ${path}`, {
+        done: 0,
+        failed: 0,
+        pending: 0,
+      });
+    }
+    const run = runPendingActions(queue, makeActionDeps(), { limit: limit ?? 30 });
+    saveQueue(run.queue, path);
+    const summary = queueSummary(run.queue);
+    const lines = run.results
+      .map((r) => `  [${r.action.status}] ${r.action.kind}: ${r.action.title} → ${r.note}`)
+      .join("\n");
+    return successResponse(
+      `Ran actions: done=${run.done}, failed=${run.failed} (had ${pendingBefore} pending).\n${lines}`,
+      {
+        done: run.done,
+        failed: run.failed,
+        pending: summary.pending,
+        results: run.results.map((r) => ({
+          id: r.action.id,
+          kind: r.action.kind,
+          status: r.action.status,
+          note: r.note,
+        })),
+      }
+    );
+  }, "Error running mail actions")
+);
+
+// --- filter-actions-status ---
+
+server.registerTool(
+  "filter-actions-status",
+  {
+    description:
+      "Use when: checking the mail action queue (pending/done/failed, by kind).\nReturns: summary of the local action-queue.json.",
+    inputSchema: {
+      queuePath: z.string().optional(),
+    },
+    outputSchema: {
+      pending: z.number().optional(),
+      done: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const summary = queueSummary(queue);
+    const pending = queue.actions
+      .filter((a) => a.status === "pending")
+      .slice(0, 20)
+      .map((a) => `  - ${a.kind}: ${a.title}`)
+      .join("\n");
+    return successResponse(
+      `Action queue @ ${path}\n  pending=${summary.pending} done=${summary.done} failed=${summary.failed}\n  byKind: ${JSON.stringify(summary.byKind)}\n${pending || "  (no pending)"}`,
+      { ...summary, queuePath: path }
+    );
+  }, "Error reading action queue")
+);
+
+// --- filter-correct ---
+
+server.registerTool(
+  "filter-correct",
+  {
+    description:
+      "Use when: teaching the filter that a sender belongs in a different mailbox (user correction). Updates memory with high confidence so future filter-auto-sort uses the new destination.\nPass either message id (to resolve From) or an explicit from address, plus mailbox name.\nDo not use when: bulk re-learning (use filter-learn) or deleting a mapping (use filter-forget).",
+    inputSchema: {
+      mailbox: z.string().min(1, "Destination mailbox name is required"),
+      from: z.string().optional().describe("Sender address or From header"),
+      id: z.string().optional().describe("Message id — used to resolve From if from omitted"),
+      apply: z
+        .boolean()
+        .default(false)
+        .describe("If true and id given, also move that message now"),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      key: z.string().optional(),
+      mailbox: z.string().optional(),
+    },
+  },
+  withErrorHandling(async ({ mailbox, from, id, apply, memoryPath }) => {
+    let sender = from;
+    if (!sender && id) {
+      const msg = mailManager.getMessageById(id);
+      if (!msg) return errorResponse(`Message "${id}" not found`);
+      sender = msg.sender;
+    }
+    if (!sender) {
+      return errorResponse("Provide from or id so the filter knows which sender to correct");
+    }
+
+    const result = applyCorrection(sender, mailbox, memoryPath);
+    let moveNote = "";
+    if (apply && id) {
+      const { success, error } = mailManager.moveMessage(id, mailbox);
+      if (!success) {
+        // try imap path via hybrid
+        const batch = await hybridBatchCounts(
+          [id],
+          (n) => mailManager.batchMoveMessages(n, mailbox),
+          (im) => imapBatchMove(im, mailbox, {})
+        );
+        if (batch.success === 0) {
+          moveNote = ` (move failed: ${error || batch.errors.join("; ") || "unknown"})`;
+        } else {
+          bumpMoves([sender], result.memoryPath);
+          moveNote = " (message moved)";
+        }
+      } else {
+        bumpMoves([sender], result.memoryPath);
+        moveNote = " (message moved)";
+      }
+    }
+
+    return successResponse(
+      `Corrected: ${result.key} → "${result.mapping.mailbox}" (confidence ${result.mapping.confidence})${moveNote}. Future auto-sort will use this.`,
+      {
+        key: result.key,
+        mailbox: result.mapping.mailbox,
+        confidence: result.mapping.confidence,
+        memoryPath: result.memoryPath,
+      }
+    );
+  }, "Error correcting filter mapping")
+);
+
+// --- filter-forget ---
+
+server.registerTool(
+  "filter-forget",
+  {
+    description:
+      "Use when: removing a learned mapping by domain/email key or dropping all keys that point at a mailbox name.\nReturns: how many mappings were removed.\nDoes not delete Apple Mail folders or messages.",
+    inputSchema: {
+      key: z.string().optional().describe("Domain or email key to forget (e.g. amazon.de)"),
+      mailbox: z.string().optional().describe("Forget all mappings that target this mailbox name"),
+      memoryPath: z.string().optional(),
+    },
+    outputSchema: {
+      removed: z.number().optional(),
+    },
+  },
+  withErrorHandling(({ key, mailbox, memoryPath }) => {
+    if (!key && !mailbox) {
+      return errorResponse("Provide key and/or mailbox to forget");
+    }
+    const result = applyForget({ key, mailbox, memoryPath });
+    return successResponse(
+      `Forgot ${result.removed} mapping(s). Memory: ${result.memoryPath}`,
+      result as unknown as Record<string, unknown>
+    );
+  }, "Error forgetting filter mapping")
+);
+
+// =============================================================================
 // Account Tools
 // =============================================================================
 
@@ -2502,7 +3614,10 @@ registerTool(
           "At least one action is required (markRead, markFlagged, delete, or moveTo)"
         ),
       matchAll: z.boolean().default(true),
-      enabled: z.boolean().default(true),
+      enabled: z
+        .boolean()
+        .default(false)
+        .describe("Enable immediately; defaults to false so the rule must be reviewed first"),
     },
     outputSchema: {
       name: z.string().optional(),
@@ -3223,7 +4338,11 @@ process.on("unhandledRejection", (reason) => {
   console.error("[unhandledRejection]", reason);
 });
 
-const transport = new StdioServerTransport();
+// The SDK stamps every emitted inputSchema/outputSchema with the draft-07
+// dialect, which current MCP clients reject outright ("The default validator
+// supports JSON Schema 2020-12 only" — #147). Wrapping the transport rewrites
+// the tools/list payload on the way out; see @/utils/jsonSchemaDialect.
+const transport = withJsonSchema2020_12(new StdioServerTransport());
 await server.connect(transport);
 
 // IMAP IDLE push notifications (B5) — opt-in. When enabled, watch every

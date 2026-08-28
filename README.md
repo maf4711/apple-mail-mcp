@@ -74,7 +74,7 @@ codex plugin marketplace add sweetrb/apple-mail-mcp
 codex plugin add apple-mail@apple-mail-mcp
 ```
 
-The Codex package registers the same `apple-mail` MCP server through `npx -y apple-mail-mcp` and includes the Apple Mail skill guidance.
+The Codex package registers the same `apple-mail` MCP server through an exactly pinned runtime — `npx -y apple-mail-mcp@<plugin version>` — and includes the Apple Mail skill guidance. The pin in `codex/.mcp.json` is rewritten to match `package.json` by `scripts/sync-plugin-version.mjs` on every version bump, so the plugin manifest and the server it launches are always the same release; CI fails the PR if they drift.
 
 ### Other Hosts (Hermes, Antigravity)
 
@@ -202,6 +202,7 @@ Read/list/get tools also return **structured JSON** (`structuredContent`) alongs
 | **Doctor** | Diagnose Mail permission, account state, and each IMAP/SMTP backend with actionable messages |
 | **Statistics** | Message and unread counts per account, recently received stats |
 | **Sync Status** | Check if Mail.app is actively syncing |
+| **Effect reconciliation** | Every delete/move reports what it actually did to the mailbox (`countDelta`), and warns when more messages left than were operated on — see [Auditing destructive operations](#auditing-destructive-operations) |
 
 ### MCP resources & prompts
 
@@ -310,7 +311,7 @@ Send a new email immediately.
 | `cc` | string[] | No | CC recipients |
 | `bcc` | string[] | No | BCC recipients |
 | `account` | string | No | Mail.app account label, or an email-form SMTP From override. An SMTP override must match `APPLE_MAIL_MCP_SMTP_USER`, `APPLE_MAIL_MCP_SMTP_FROM`, or an address in `APPLE_MAIL_MCP_SMTP_ALLOWED_FROM` |
-| `attachments` | (string \| {filename, contentBase64})[] | No | Up to 20 attachments: absolute file paths (e.g., `"/Users/me/report.pdf"`) and/or inline `{filename, contentBase64}` objects up to 25 MiB decoded each |
+| `attachments` | (string \| {filename, contentBase64})[] | No | Up to 20 attachments: absolute file paths inside the configured read roots (e.g., `"/Users/me/Documents/report.pdf"`) and/or inline `{filename, contentBase64}` objects up to 25 MiB decoded each |
 | `transport` | `"applescript"` \| `"smtp"` | No | Send transport. If omitted, **SMTP is used automatically when configured** (otherwise AppleScript). Pass `"smtp"` to require clean MIME, or `"applescript"` to force the Mail.app path — see [SMTP transport](#smtp-transport) |
 
 **Example:**
@@ -357,12 +358,19 @@ fallback.
 Configure SMTP via environment variables on the MCP server. The password is
 read from the macOS **Keychain** by default, so no secret goes in config:
 
+Non-implicit-TLS SMTP connections fail closed if STARTTLS is unavailable.
+`APPLE_MAIL_MCP_SMTP_ALLOW_PLAINTEXT=1` is a deliberate escape hatch for a
+trusted isolated server or test fixture; it disables the upgrade requirement and
+can expose credentials and message content. The server emits a warning when it
+is used. Keep the default unset.
+
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `APPLE_MAIL_MCP_SMTP_HOST` | Yes | — | SMTP server hostname (e.g. `smtp.fastmail.com`) |
 | `APPLE_MAIL_MCP_SMTP_USER` | Yes | — | SMTP username |
 | `APPLE_MAIL_MCP_SMTP_PORT` | No | `465` if secure, else `587` | SMTP port |
 | `APPLE_MAIL_MCP_SMTP_SECURE` | No | `false` | `true` for implicit TLS (port 465); otherwise STARTTLS |
+| `APPLE_MAIL_MCP_SMTP_ALLOW_PLAINTEXT` | No | `0` | Set `1` only for an explicitly trusted plaintext test/server; otherwise STARTTLS is required |
 | `APPLE_MAIL_MCP_SMTP_FROM` | No | = user | From address |
 | `APPLE_MAIL_MCP_SMTP_ALLOWED_FROM` | No | — | Comma-separated sender aliases permitted as per-message From overrides |
 | `APPLE_MAIL_MCP_SMTP_PASSWORD` | No | — | Password (if set, used instead of the Keychain) |
@@ -462,11 +470,20 @@ matching `account` is passed. There are three cases:
   sort newest-first; count tools (`get-unread-count`, `get-mail-stats`) count each
   account via exactly one backend so a coverage mismatch can never double- (or
   under-) count.
-  - **Default mailbox is resolved per account.** When you don't pin a `mailbox`, a
-    fan-out search scopes each account to its own default — Gmail/Workspace to
-    `[Gmail]/All Mail`, every other IMAP host (iCloud, etc.) to `INBOX` (since
-    `[Gmail]/All Mail` is Gmail-only and selecting it elsewhere would silently drop
-    that account). Pin a `mailbox` to search a wider scope on non-Gmail accounts.
+  - **An omitted mailbox on `search-messages` searches the account's entire
+    store, not just one default folder** (v2.17.1, [#199](https://github.com/sweetrb/apple-mail-mcp/issues/199)).
+    Per account, the fan-out uses the server-advertised RFC 6154 `\All`
+    mailbox when one exists (Gmail/Workspace's `[Gmail]/All Mail`); otherwise
+    it searches every selectable mailbox the server lists (iCloud, generic
+    IMAP), merges the matches, de-duplicates by Message-ID, and sorts
+    newest-first before applying `limit`/`offset`. A mailbox that can't be
+    selected or searched is named in the result instead of silently dropping
+    coverage. Scanning every mailbox on a large, deeply-nested account costs
+    one `SEARCH` + a bounded `FETCH` per mailbox over the pooled IMAP
+    connection — pin a `mailbox` to skip the fan-out when you already know
+    where to look. `list-messages` (no query) still defaults an omitted
+    mailbox to `INBOX` on every provider — only unscoped *search* scans the
+    whole account.
 
 If IMAP is **not** configured at all, every read behaves exactly as before
 (pure AppleScript). The three mailbox-**write** ops (`create-mailbox`,
@@ -479,6 +496,7 @@ for an explicitly-named IMAP account, never on an omitted account.
 | `APPLE_MAIL_MCP_IMAP_ACCOUNT` | No | = user | Mail account name to match for routing |
 | `APPLE_MAIL_MCP_IMAP_HOST` | No | `imap.gmail.com` | IMAP server hostname |
 | `APPLE_MAIL_MCP_IMAP_PORT` | No | `993` | IMAP port (993 = implicit TLS) |
+| `APPLE_MAIL_MCP_IMAP_ALLOW_PLAINTEXT` | No | `0` | Set `1` only for an explicitly trusted plaintext test/server; otherwise STARTTLS is required |
 | `APPLE_MAIL_MCP_IMAP_PASSWORD` | No | — | Password (if set, used instead of the Keychain) |
 | `APPLE_MAIL_MCP_IMAP_KEYCHAIN_SERVICE` | No | — | Keychain item service/server name |
 | `APPLE_MAIL_MCP_IMAP_KEYCHAIN_ACCOUNT` | No | = user | Keychain item account |
@@ -493,6 +511,12 @@ for an explicitly-named IMAP account, never on an omitted account.
 Each entry accepts `account`, `user`, `host`, `port`, `password`, `keychainService`,
 `keychainAccount`. Calls route to the account matching their `account` argument (or the
 decoded `imap:` id), and each account keeps its own pooled connection.
+
+Non-implicit-TLS IMAP connections require STARTTLS and fail closed when the server
+does not offer a usable upgrade. `APPLE_MAIL_MCP_IMAP_ALLOW_PLAINTEXT=1` is a
+deliberate escape hatch for a trusted isolated server or test fixture; it disables
+the upgrade requirement and can expose credentials and message content. Keep the
+default unset.
 
 As with SMTP, the password is read from the macOS **Keychain** by default (use
 an app-specific password for Gmail/Workspace/iCloud), so no secret goes in
@@ -579,7 +603,7 @@ Dropped connections reconnect with backoff, and the watchers shut down cleanly o
 
 Enable it in your MCP client config alongside the IMAP settings:
 
-```jsonc
+```json
 {
   "mcpServers": {
     "apple-mail": {
@@ -650,7 +674,7 @@ Save an email to Drafts without sending.
 | `cc` | string[] | No | CC recipients |
 | `bcc` | string[] | No | BCC recipients |
 | `account` | string | No | Account for draft |
-| `attachments` | (string \| {filename, contentBase64})[] | No | Up to 20 attachments: absolute file paths and/or inline `{filename, contentBase64}` objects up to 25 MiB decoded each |
+| `attachments` | (string \| {filename, contentBase64})[] | No | Up to 20 attachments: absolute file paths inside the configured read roots and/or inline `{filename, contentBase64}` objects up to 25 MiB decoded each |
 
 **Returns:** Confirmation that draft was created.
 
@@ -677,6 +701,20 @@ Return an attachment's bytes as base64 (the read counterpart to inline-base64 se
 | `attachmentName` | string | Yes | Attachment filename (from `list-attachments`) |
 
 **Returns:** The attachment bytes, base64-encoded (also in `structuredContent.contentBase64`).
+
+---
+
+#### `resolve-message-id`
+
+Map `imap:` message IDs to their numeric Mail.app IDs, via each message's RFC 5322 `Message-ID` (the join key both backends share). Needed only for the two tools that are numeric-ID-only — `reply-to-message` and `forward-message`. Numeric IDs pass through unchanged.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ids` | string[] | Yes | 1–100 message IDs, each numeric or `imap:…` |
+
+**Returns:** For each input ID, its `numericId` (or `null` when it can't be resolved) and the `messageId` used, plus `count` and `resolvedCount`. The lookup scopes to the message's account and checks its INBOX first, to avoid scanning a large All Mail/Archive mailbox.
+
+> **You do not need this for flag colors (v2.10.0+).** Colors used to require the numeric-ID path, and older docs and tool descriptions said so. `flag-message` and `batch-flag-messages` now write the color over IMAP directly, as Mail.app's `$MailFlagBit0/1/2` keywords, so a smart mailbox keyed on flag color matches an IMAP-flagged message. Resolving IDs just to apply a color reintroduces the AppleScript/TCC dependency 2.10.0 removed. Flag, move, mark, and delete all accept `imap:` IDs as-is.
 
 ---
 
@@ -765,6 +803,9 @@ Delete a message (move to trash).
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Message ID |
 
+`structuredContent` carries `countDelta` — what the delete actually did to the
+source mailbox. See [Auditing destructive operations](#auditing-destructive-operations).
+
 **⚠️ Safety:** Destructive. Requires explicit user confirmation; search/list first to confirm the message id.
 
 ---
@@ -785,6 +826,9 @@ name matches **more than one** mailbox (e.g. `Archive` under both `Work` and
 the full path. The same applies to `batch-move-messages`, `delete-mailbox` and
 `rename-mailbox`.
 
+`structuredContent` carries `countDelta` — what the move actually did to the
+**source** mailbox. See [Auditing destructive operations](#auditing-destructive-operations).
+
 ---
 
 #### `list-attachments`
@@ -803,6 +847,11 @@ List attachments on a message.
 
 Save a message attachment to disk.
 
+The destination must not already exist: `save-attachment` fails closed instead
+of overwriting an existing file. AppleScript and MIME fallback paths stage the
+bytes privately, commit with an exclusive create, and leave the saved file
+owner-readable/writable (`0600`).
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Message ID |
@@ -815,11 +864,43 @@ Save a message attachment to disk.
 
 All batch operations accept an array of message IDs (max 100 per batch) and return per-item success/failure results.
 
+**Numeric IDs are scoped to the mailbox you listed them from.** Mail.app numbers messages per
+mailbox, so on a label store (Gmail, iCloud) one message answers to the same id in `INBOX`,
+`Important` and `All Mail` at once — and deleting the `All Mail` copy is not the same operation as
+deleting the `INBOX` copy. Each id is therefore bound to the mailbox it was listed/searched from and
+the operation is applied only there, so **list or search the mailbox immediately before acting on
+it**. An id the server hasn't seen listed is accepted only when exactly one mailbox holds it;
+if several do, that id fails with the candidate mailboxes named instead of being applied to an
+arbitrary copy. `imap:…` ids carry their own account + mailbox + UID and are never ambiguous.
+
+**Say which mailbox with `sourceMailbox` / `sourceAccount`.** The binding above is remembered
+per running server, so a client that reconnects, restarts, or replays a saved list of ids has
+nothing recorded and every id takes the slower whole-tree path — where, on a label store, it is
+likely to be refused as ambiguous. Passing the source mailbox explicitly is the reliable way to
+stay scoped, and it overrides the remembered location. These parameters name where the ids **came
+from**; for `batch-move-messages` that is distinct from `mailbox`, the destination.
+
+`sourceMailbox` and `sourceAccount` are an atomic scope pair: provide **both** for numeric ids.
+The server never fills in a missing account from mutable default-send state, because the same
+mailbox name can exist in more than one account and numeric ids are only unique within an account
+and mailbox. A whitespace-only source field is rejected. `sourceAccount` by itself pins nothing,
+since the mailbox is what an id is scoped to; `imap:…` ids ignore both fields because they carry
+their own account, mailbox, and UID identity.
+
+**A repeated id is one message.** `ids` is treated as a set: a duplicate names the same message,
+so it is operated on once, and the batch returns **one result per distinct id**. `success` is
+therefore a count of messages, not of list positions.
+
 #### `batch-delete-messages`
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `ids` | string[] | Yes | Message IDs to delete (max 100) |
+| `sourceMailbox` | string | No | Mailbox the **numeric** ids were listed from — pins them to it. Ignored for `imap:` ids. |
+| `sourceAccount` | string | No | Account the numeric ids were listed from. Required when `sourceMailbox` is supplied; on its own it pins nothing. |
+
+`structuredContent` carries `countDelta` — what the batch actually did to each
+source mailbox. See [Auditing destructive operations](#auditing-destructive-operations).
 
 **⚠️ Safety:** Destructive. Requires explicit user confirmation; search/list first to confirm the message ids.
 
@@ -830,12 +911,19 @@ All batch operations accept an array of message IDs (max 100 per batch) and retu
 | `ids` | string[] | Yes | Message IDs to move (max 100) |
 | `mailbox` | string | Yes | Destination mailbox |
 | `account` | string | No | Account containing mailbox |
+| `sourceMailbox` | string | No | Mailbox the **numeric** ids were listed from — pins them to it. Ignored for `imap:` ids. |
+| `sourceAccount` | string | No | Account the numeric ids were listed from. Required when `sourceMailbox` is supplied; on its own it pins nothing. |
+
+`structuredContent` carries `countDelta` — what the batch actually did to each
+**source** mailbox. See [Auditing destructive operations](#auditing-destructive-operations).
 
 #### `batch-mark-as-read` / `batch-mark-as-unread`
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `ids` | string[] | Yes | Message IDs (max 100) |
+| `sourceMailbox` | string | No | Mailbox the **numeric** ids were listed from — pins them to it. Ignored for `imap:` ids. |
+| `sourceAccount` | string | No | Account the numeric ids were listed from. Required when `sourceMailbox` is supplied; on its own it pins nothing. |
 
 #### `batch-flag-messages` / `batch-unflag-messages`
 
@@ -843,6 +931,8 @@ All batch operations accept an array of message IDs (max 100 per batch) and retu
 |-----------|------|----------|-------------|
 | `ids` | string[] | Yes | Message IDs (max 100) |
 | `color` | string | No | (`batch-flag-messages` only) Flag color — see [`flag-message`](#flag-message--unflag-message). Applied on both routes, so a mixed batch of numeric and `imap:` ids all end up colored. |
+| `sourceMailbox` | string | No | Mailbox the **numeric** ids were listed from — pins them to it. Ignored for `imap:` ids. |
+| `sourceAccount` | string | No | Account the numeric ids were listed from. Required when `sourceMailbox` is supplied; on its own it pins nothing. |
 
 ---
 
@@ -854,9 +944,39 @@ List all mailboxes for an account.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `account` | string | No | Account to list from |
+| `account` | string | No | Account to list from, or `"On My Mac"` for the local store |
 
-**Returns:** List of mailbox names with message and unread counts.
+**Returns:** List of mailbox **paths** (account-relative, e.g. `Archive/Inbox` for
+a nested mailbox — a top-level `Inbox` stays `Inbox`) with message and unread
+counts. A source that could not be read is **named** (`partial: true` +
+`failedAccounts`) rather than dropped, and a listing Mail refused outright
+returns an error naming the accounts that do exist — never an empty list.
+
+**Nested mailboxes and Gmail labels.** Every `mailbox` parameter across this
+server (search-messages, list-messages, get-unread-count, move-message,
+delete-mailbox, rename-mailbox, create-rule's `moveTo`) accepts either the full
+path or a leaf name that is unique across the account — the same rule
+move-message has always used. A leaf name that matches more than one mailbox
+(e.g. a top-level `Inbox` and an `Archive/Inbox` on an Exchange account) is
+refused rather than guessed; pass the full path to disambiguate. This also
+means Gmail's nested special mailboxes now report their real path, e.g.
+`[Gmail]/All Mail` rather than `All Mail` — a visible change from before 2.17.0.
+
+**Mail's local "On My Mac" mailboxes** are not children of any account — they
+hang off the application — so they are reported under the synthetic account label
+**`On My Mac`**. An unscoped call includes them (listed last); `account="On My
+Mac"` lists only them. `on my computer`, `local` and `local folders` are accepted
+as aliases.
+
+They deliberately do **not** appear in `list-accounts`, which reports real
+accounts only: the local store is a store, not an account. Nothing selects it
+implicitly — omitting `account` still resolves to a real account for every other
+tool.
+
+The mail inside them is reachable too: `list-messages` and `search-messages`
+accept `account="On My Mac"`, and `get-message` resolves an id that lives only in
+a local mailbox. An id present **both** in an account mailbox and locally is
+reported as ambiguous rather than silently resolving to the account copy.
 
 ---
 
@@ -1018,9 +1138,14 @@ Create a Mail rule with one or more conditions and actions.
 | `conditions` | object[] | Yes | One or more `{field, operator, value}` (see below) |
 | `actions` | object | Yes | At least one of `markRead`, `markFlagged`, `delete`, `moveTo` |
 | `matchAll` | boolean | No | `true` (default) = all conditions must match; `false` = any |
-| `enabled` | boolean | No | Whether the rule is enabled on creation (default `true`) |
+| `enabled` | boolean | No | Whether the rule is enabled on creation (default `false`) |
 
 Each condition is `{ field, operator, value }` where `field` is one of `from`, `to`, `cc`, `subject`, `content` and `operator` is one of `contains`, `notContains`, `equals`, `beginsWith`, `endsWith`. Actions: `markRead` / `markFlagged` / `delete` (booleans), `moveTo` (mailbox name) with optional `moveToAccount`.
+
+New rules are created **disabled by default**, including rules that delete or move
+messages. Review the conditions and actions with `list-rules` and in Mail.app,
+then call `enable-rule` explicitly when the rule is approved. Set
+`enabled: true` only when immediate activation is deliberate.
 
 **Example:**
 ```json
@@ -1124,6 +1249,131 @@ Create a draft from a template, with optional overrides.
 
 ---
 
+### Self-learning inbox filter
+
+Memory lives in `~/Library/Application Support/apple-mail-mcp/category-memory.json`. Sorting files into local **On My Mac** mailboxes. Action tools never auto-send mail.
+
+#### `filter-status`
+
+Summary of learned domain→mailbox mappings, LLM config, and top categories.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `memoryPath` | string | No | Override path to category-memory.json |
+
+---
+
+#### `filter-memory`
+
+Full mapping table (domain/email → mailbox, confidence, hits).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `memoryPath` | string | No | Override path to category-memory.json |
+
+---
+
+#### `filter-learn`
+
+Cluster current INBOX by sender domain, name folders (Apple Intelligence / LLM / domain fallback), write memory. Optionally apply moves, newsletter smart mailboxes, and the action pipeline.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `account` | string | No | Limit to one Mail account |
+| `limit` | number | No | Max INBOX messages to scan (default 150, max 500) |
+| `apply` | boolean | No | If true, also auto-sort after learning |
+| `aggressive` | boolean | No | When apply=true, lower confidence threshold to 0.5 |
+| `forceFallback` | boolean | No | Skip LLM; name folders from domains only |
+| `newsletters` | boolean | No | Create `NL: …` smart mailboxes (default true) |
+| `newsletterDryRun` | boolean | No | Propose newsletter mailboxes only |
+| `newsletterMinCount` | number | No | Min messages from a sender (default 3) |
+| `newsletterDays` | number | No | Lookback days (default 90) |
+| `actions` | boolean | No | Derive + execute mail actions (default true) |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-auto-sort`
+
+File INBOX using learned memory only (no LLM). Unknown senders stay in INBOX.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `account` | string | No | Limit to one Mail account |
+| `limit` | number | No | Max INBOX messages (default 150) |
+| `dryRun` | boolean | No | Plan only; do not move |
+| `aggressive` | boolean | No | Confidence threshold 0.5 instead of 0.8 |
+| `categories` | string[] | No | Only move into these mailbox names |
+| `newsletters` | boolean | No | Also create `NL: …` smart mailboxes (default true) |
+| `newsletterMinCount` | number | No | Min messages from a sender (default 3) |
+| `newsletterDays` | number | No | Lookback days (default 90) |
+| `actions` | boolean | No | Derive + execute actions (skipped when dryRun) |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-correct`
+
+Teach the filter that a sender belongs in a different mailbox.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `mailbox` | string | Yes | Destination mailbox name |
+| `from` | string | No | Sender address |
+| `id` | string | No | Message id used to resolve From if `from` omitted |
+| `apply` | boolean | No | If true and `id` given, also move that message |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-forget`
+
+Remove a learned mapping by key and/or mailbox. Does not delete Mail folders or messages.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `key` | string | No | Domain or email key to forget |
+| `mailbox` | string | No | Forget all mappings that target this mailbox |
+| `memoryPath` | string | No | Override memory path |
+
+---
+
+#### `filter-actions-scan`
+
+Derive reply/pay/meeting/review/follow-up actions from INBOX. Writes a local action queue. Never auto-sends.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `account` | string | No | Limit to one Mail account |
+| `limit` | number | No | Inbox messages to consider (default 40) |
+| `bodyLimit` | number | No | Messages opened for body analysis (default 20) |
+| `execute` | boolean | No | Run pending actions after scan (default true) |
+| `executeLimit` | number | No | Max actions to run (default 30) |
+| `queuePath` | string | No | Override action-queue.json path |
+
+---
+
+#### `filter-actions-run`
+
+Execute pending items already in the action queue (flag, Reminders, reply drafts). Does not re-scan mail.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | No | Max actions to run (default 30) |
+| `queuePath` | string | No | Override action-queue.json path |
+
+---
+
+#### `filter-actions-status`
+
+Summarize the local action queue (pending/done/failed, by kind).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `queuePath` | string | No | Override action-queue.json path |
+
+---
+
 ### Diagnostics
 
 #### `health-check`
@@ -1195,6 +1445,317 @@ Check Mail.app sync activity.
 **Parameters:** None
 
 **Returns:** Whether sync is detected, pending uploads, recent activity, and seconds since last change.
+
+---
+
+## Auditing destructive operations
+
+`delete-message`, `move-message`, `batch-delete-messages` and
+`batch-move-messages` report what they actually did, not merely that Mail.app did
+not raise an error. This exists because of
+[#155](https://github.com/sweetrb/apple-mail-mcp/issues/155): a batch delete was
+reported to have removed two messages whose ids were never passed, and nothing in
+the server recorded enough to explain it.
+
+### `countDelta` — always on, no configuration
+
+Every one of those four tools counts the affected **source** mailbox immediately
+before and immediately after the mutation, **inside the same AppleScript it was
+already running** (no extra `osascript` invocations, no measurable cost), and
+returns the comparison in `structuredContent`:
+
+```json
+{
+  "ok": true,
+  "success": 2,
+  "failed": 0,
+  "countDelta": [
+    {
+      "account": "you@gmail.com",
+      "mailbox": "INBOX",
+      "before": 412,
+      "after": 408,
+      "expected": 2,
+      "observed": 4,
+      "status": "over"
+    }
+  ]
+}
+```
+
+`status` is deliberately not a pass/fail flag:
+
+| `status` | Meaning | Warns? |
+|----------|---------|--------|
+| `match` | Exactly as many messages left the mailbox as the operation acted on. | No |
+| `over` | **More** left than were operated on. Messages are unaccounted for. | **Yes** |
+| `unknown` | No comparison this server is willing to assert. `unknownReason` says which of four situations produced it. | No |
+
+`unknownReason` distinguishes four cases that are *not* interchangeable:
+
+| `unknownReason` | Meaning |
+|-----------------|---------|
+| `count-unreadable` | Mail would not report a count at all (`before`/`after` null). |
+| `no-expectation` | No expectation is predictable, so no comparison exists — a move whose destination **is** the source mailbox. |
+| `count-did-not-move` | The count did not move. On a store that flags deletions instead of removing them this is the **ordinary, correct** reading for an operation that fully succeeded. |
+| `count-partial` | The count moved, but by less than the operation accounted for. A flag-only store cannot produce this, which is why it is worth telling apart. |
+
+> **`under` was removed in 2.11.0.** It used to mean "fewer left than expected"
+> and was documented as routine. Field evidence retired it — see
+> [Why `observed` is a lower bound](#why-observed-is-a-lower-bound-155).
+
+#### What an `over` warning does and does not tell you
+
+Only `over` produces a warning in the tool's text response. Be precise about what
+that warning proves, because a warning is useful only for as long as it is
+trusted:
+
+- **It establishes** that more messages left the source mailbox across the window
+  of the operation than the operation accounted for. That is the data-loss
+  direction, and it is the #155 signature.
+- **It does not establish that this server removed them.** The reading is a
+  before/after pair around a window, so anything else that removes mail from that
+  mailbox inside the window reads identically: a Mail.app rule firing mid-batch,
+  a server-side filter, another client (phone, webmail, a second Mail.app)
+  deleting or moving, or an IMAP expunge landing between the two counts.
+
+**Concurrent departure is the benign cause to rule out first**, and the warning
+text says so. What the asymmetry argument actually buys is the other half:
+concurrent *arrivals* cannot produce `over`, because a message arriving
+mid-operation *raises* the after-count and biases the reading short.
+That is why `over` is the interesting direction — a strong signal, not a proof.
+
+Setting `APPLE_MAIL_MCP_AUDIT_LOG` is what settles which one you have: the
+collateral diff below **names** the messages that disappeared, and "the
+newsletter my rule files every morning" is a very different report from a message
+nothing should have touched.
+
+#### Why `observed` is a lower bound (#155)
+
+**`observed` is the movement of Mail's count. It is a lower bound on how many
+messages left, not a count of how many left.**
+
+On iCloud, @scottstern0325 ran the check that settled this: for two batches
+reporting `observed: 0`, the messages were located **in Trash**, matched by
+`date received` + sender against the audit log's pre-image. The deletes had
+happened. Mail's count had not caught up. Across four readings — 0 of 4, 0 of 1
+(a *single-id* delete), 15 of 16, and 14 of 15 — the shortfall bore no relation
+to batch size, which is what a lagging count looks like and not what a
+store-behaviour rule looks like.
+
+So a short reading is not evidence about your operation. **The per-id outcomes
+are what report success; this number is not. Do not retry on the strength of
+it** — that is how a message gets deleted twice.
+
+Two things follow:
+
+- A count that does not move at all is still the ordinary reading on a store that
+  flags deletions instead of removing them (Gmail label mailboxes, IMAP accounts
+  with "move deleted messages to Trash" off). It reports
+  `unknownReason: "count-did-not-move"` and says so, and it is never warned about
+  — a warning that fires on every ordinary Gmail delete would be ignored exactly
+  when it matters.
+- **To confirm where messages went, match them at the destination by `date
+  received` plus sender — not by the numeric ids you passed.** Ids are renumbered
+  by the move and do not survive it.
+
+**Removed in 2.11.0: the "reported success with no observed effect" warning.**
+Shipped in 2.10.30, it fired when the count was flat, the snapshot read cleanly
+and nothing had disappeared. Its premise was that the snapshot corroborated the
+count — but both are read back-to-back in the same script, and the record that
+prompted it turns out to have had *both* instruments stale at once. It therefore
+fired on stores that had done exactly what they were asked. It is gone rather
+than narrowed; `over` is the only surviving assertion.
+
+Three more honesty rules:
+
+- The **expectation is per source mailbox**. On a Gmail label store, deleting the
+  `INBOX` copy drops the `\Inbox` label and deleting the `[Gmail]/All Mail` copy
+  trashes the message — different operations, but either way the mailbox the ids
+  came from loses exactly one entry per id. That is what is compared. A move's
+  **destination** count is not checked.
+- A move whose destination **is** the source mailbox is **not compared at all**.
+  No message should leave, but what Mail does to the count when a message is
+  re-filed into the mailbox it already occupies is unspecified — so `expected` is
+  `null`, `status` is `unknown`, `note` says why, and no warning is raised. A
+  warning computed against a guessed expectation would fire on an operation that
+  did exactly what it was asked to, which is the one thing this instrumentation
+  must never do.
+
+  **This makes a self-move a blind spot for the always-on layer**, and the cost is
+  worth stating plainly: if messages genuinely do disappear during a self-move,
+  nothing warns you, because there was no expectation to compare against. `status`
+  is `unknown` rather than `match`, so the result does not claim the operation was
+  clean — but it does not flag it either. The collateral diff still names anything
+  that vanished, so **enable `APPLE_MAIL_MCP_AUDIT_LOG` if you need coverage for
+  same-mailbox moves.**
+- A **repeated id is one message**. The batch tools operate on each distinct id
+  once and return one result per distinct id, so `success` counts messages rather
+  than list positions — and `expected` stays comparable with the mailbox instead
+  of double-counting a duplicate into a false `over`.
+
+**`imap:` ids are reconciled too, as of 2.15.0.** `batch-delete-messages` and
+`batch-move-messages` return the same `countDelta` structure on the IMAP path, so
+one shape covers both backends and a mixed batch reports an entry per source
+mailbox from whichever backend handled it. The entries are **concatenated, never
+summed** — Mail's own count can lag (#155) while the server's `STATUS` cannot, and
+averaging the two would hide which reading you were looking at.
+
+Only the operations that actually remove messages from their source reconcile.
+`batch-mark-as-read` and the flag tools change no count, so emitting
+`expected: N, observed: 0` for them would manufacture an alarm; they report no
+`countDelta` at all.
+
+Note the mis-targeting class `countDelta` was originally built for cannot occur
+on the IMAP path — a UID names exactly one message in exactly one mailbox — so
+there the value is effect confirmation rather than target confirmation.
+
+Single-message tools carry a post-condition check instead. `delete-message` and
+`move-message` on an `imap:` id return a **`verification`** object in
+`structuredContent`:
+
+```json
+{
+  "verification": {
+    "verdict": "verified",
+    "how": "COPYUID: UID 5 arrived in \"Archive\" as UID 91"
+  }
+}
+```
+
+| `verdict` | Meaning |
+|---|---|
+| `verified` | The effect was **observed** — either the server's UIDPLUS `COPYUID` named the message's new UID in the destination, or the UID is no longer in the source mailbox. |
+| `unverified` | The server **accepted** the command and nothing could confirm the effect. Populates `why`. |
+
+`unverified` is **not a failure** and must not be rendered as one — it means
+"accepted, no observation either way". It is reported rather than hidden because
+an absent verification must never read as a successful one, the same rule the
+collateral diff follows. A message that is still in the source mailbox after an
+accepted move is reported `unverified` rather than failed, because a Gmail label
+store can legitimately keep a message visible in an all-mail view after a move.
+
+### `APPLE_MAIL_MCP_AUDIT_LOG` — opt-in forensic log
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APPLE_MAIL_MCP_AUDIT_LOG` | *(off)* | Absolute path to an NDJSON file. Setting it enables the audit log **and** the collateral diff below |
+| `APPLE_MAIL_MCP_AUDIT_SUBJECTS` | `0` | Set `1` to also record message **subjects**. Separate, deliberate second opt-in — see Privacy |
+| `APPLE_MAIL_MCP_AUDIT_SNAPSHOT_MAX` | `2000` | Skip the collateral snapshot for mailboxes larger than this many messages. `0` disables the snapshot entirely |
+| `APPLE_MAIL_MCP_AUDIT_SNAPSHOT_CHUNK` | `250` | How many messages the collateral snapshot reads from Mail per request. Lower it if Mail declines slices on a very large mailbox |
+
+When set, each destructive operation appends **one JSON object per line**
+containing: timestamp, tool name, server version, the arguments it was called
+with, the **pre-image** of every message it resolved (account, mailbox, numeric
+id, RFC Message-ID, `date received`), the per-id outcome (`ok` / `notfound` /
+`error` + reason), the `countDelta` above, and the collateral diff.
+
+The pre-image is the part that matters after the fact: a Mail.app numeric id is
+unique only within a mailbox and is reused, so on its own it proves nothing about
+which message was acted on. The RFC Message-ID does.
+
+**The record is framed against its own contents.** The Message-ID and (when
+enabled) the subject are written by whoever sent the mail, so the control
+characters this server frames records with are stripped out of every such value
+before it is written — a Message-ID crafted to close a record and open a forged
+one cannot invent evidence in the log it is being recorded in. The same stripping
+is applied to every other value read out of Mail at runtime (`date received`,
+mailbox and account names, the text of an error Mail raised, the candidate list
+behind an "ambiguous id" refusal), so no emitter is an exception. A value that
+arrives with those characters in it (which a well-formed Message-ID never does)
+is logged with each of them replaced by `U+FFFD`, so the record shows that the
+value was altered rather than quietly shortening it.
+
+### Collateral identification — which messages actually disappeared
+
+Also gated on `APPLE_MAIL_MCP_AUDIT_LOG`. The mailbox's `(numeric id, Message-ID)`
+pairs are captured before and after the mutation and diffed, so the log names
+every message that left — **including ones the caller never listed**:
+
+```json
+{
+  "account": "you@gmail.com",
+  "mailbox": "INBOX",
+  "snapshot": "ok",
+  "disappeared": [
+    { "id": "75811", "messageId": "a@example.com" },
+    { "id": "75814", "messageId": "d@example.com" }
+  ],
+  "unrequested": [{ "id": "75814", "messageId": "d@example.com" }],
+  "appeared": []
+}
+```
+
+A non-empty `unrequested` **is** the #155 symptom, with names attached. Please
+attach that line to the issue if you ever see one.
+
+`id` is always the plain decimal id you passed, even on a mailbox whose ids
+exceed AppleScript's 2^29 integer range (where Mail hands them back as
+`9.99999999E+8`). That normalisation is also what keeps `unrequested` truthful:
+compared in the raw form, a message you explicitly asked to delete would be
+reported here as collateral.
+
+This is O(mailbox size), so it is bounded by `APPLE_MAIL_MCP_AUDIT_SNAPSHOT_MAX`.
+When the bound bites, the record says so explicitly (`"snapshot": "skipped"` with
+a reason) rather than omitting the field — a silently skipped snapshot would read
+as "nothing collateral happened", which is worse than no snapshot at all.
+`countDelta` is unaffected by the skip and still reconciles the counts.
+
+#### Partial snapshots on large mailboxes
+
+The mailbox is read in `APPLE_MAIL_MCP_AUDIT_SNAPSHOT_CHUNK`-sized slices, each
+retried once on its own. It used to be a single whole-mailbox read, which meant
+Mail declining that one request lost the **entire** diff — and the bigger the
+mailbox, the more likely that was. The mechanism that attributes collateral
+damage was therefore least reliable exactly when the blast radius was largest.
+
+When a slice still will not read, the snapshot is reported as `partial` and it
+**names its own gap**:
+
+```json
+{
+  "snapshot": "partial",
+  "unobserved": [{ "phase": "after", "ranges": "251-500" }],
+  "appeared": [],
+  "skipReason": "Mail would not read 251-500 (after) of this mailbox, so the snapshot has a hole in it. …"
+}
+```
+
+Each half of the diff is withheld when the snapshot that could **refute** it has
+a hole, because a wrong name here is worse than a missing one:
+
+| Hole in | `disappeared` / `unrequested` | `appeared` |
+|---------|-------------------------------|------------|
+| neither (`"ok"`) | reported | reported |
+| `before` | reported (an undercount — a message never read before cannot be missed after) | withheld |
+| `after` | **withheld** — a message absent from a partial `after` may merely be unread, and naming it would present an innocent message as evidence of data loss | reported |
+| both | withheld | withheld |
+
+**An absent field means "not computable", never "empty".** Check
+`"snapshot": "ok"` before reading `disappeared` as a clean bill of health.
+
+> ⚠️ **`"ok"` is necessary, not sufficient.** The enumeration's range is bounded
+> by Mail's own message count, and #155 established that count can lag the
+> mutation. A count reading **low** truncates the enumeration silently — the
+> unread tail is never requested, so it never registers as a failed slice and the
+> status still says `"ok"` — and messages past that bound would then look like
+> they disappeared. Until that is fixed, treat a `disappeared` entry as a lead to
+> check, not a proof.
+
+### Privacy, and what the file costs you
+
+- **Default:** identifying metadata only — Message-ID, date, mailbox, account,
+  numeric id. Enough to say *which* message, nothing about what it says.
+- **Subjects are behind their own opt-in** (`APPLE_MAIL_MCP_AUDIT_SUBJECTS=1`)
+  because a subject line is frequently the entire sensitive payload, and it is
+  not needed to diagnose #155.
+- **Message bodies are never logged, under any setting.**
+- The file **grows without bound** and is never rotated or truncated by this
+  server. Point it somewhere you control, and delete it when you are done. It is
+  written with your user's permissions, wherever you point it; there is no
+  default location precisely so that turning it on is a deliberate act.
+- Writes go to that file and nowhere else. Diagnostics go to **stderr**; nothing
+  is ever written to stdout, which is the JSON-RPC transport.
 
 ---
 
@@ -1272,6 +1833,13 @@ AI: [calls move-message for each, with mailbox="Archive"]
 
 ---
 
+## Documentation
+
+- [Threat model](https://github.com/sweetrb/apple-mail-mcp/blob/main/docs/THREAT-MODEL.md)
+- [IMAP / SMTP setup guide](https://github.com/sweetrb/apple-mail-mcp/blob/main/docs/IMAP-SETUP.md)
+- [Node runtime and TCC permissions](https://github.com/sweetrb/apple-mail-mcp/blob/main/docs/NODE-RUNTIME-AND-TCC-PERMISSIONS.md)
+- [Stability and performance audit](https://github.com/sweetrb/apple-mail-mcp/blob/main/docs/STABILITY-PERF-AUDIT-2026-06-17.md)
+
 ## Installation Options
 
 ### npm (Recommended)
@@ -1309,7 +1877,7 @@ This repo ships a `.mcp.json` at its root so that, when you run `claude` from in
 
 The entrypoint is written as:
 
-```json
+```text
 "args": ["${CLAUDE_PROJECT_DIR:-.}/build/index.js"]
 ```
 
@@ -1327,6 +1895,16 @@ The entrypoint is written as:
 - **Permission required** - macOS will prompt for automation permission on first use.
 - **No credential storage** - The server doesn't store any passwords or authentication tokens.
 - **Email safety** - Use `create-draft` to review emails before sending.
+- **Attachment read boundary** - Outbound file attachments may come from
+  ordinary files under the home directory, `/Volumes`, or temporary directories
+  by default. Hidden files and known credential/configuration locations
+  (including `.ssh`, `.aws`, `.config/gh`, Keychains, and
+  application `config.json` files) are denied. Set
+  `APPLE_MAIL_MCP_ATTACHMENT_READ_ROOTS` to a colon-separated list of explicit
+  absolute additional roots when a deliberate other location is required.
+  Paths are canonicalized before use, so symlink escapes are rejected. `/tmp`
+  is world-writable and is a convenience root, not a user-content trust
+  boundary. Inline base64 attachments are unaffected.
 
 ---
 
@@ -1336,7 +1914,7 @@ The entrypoint is written as:
 |------------|--------|
 | macOS only | Apple Mail and AppleScript are macOS-specific |
 | MCP `send-email` is plain-text | The `send-email` tool sends plain text (reading HTML content is supported). To send HTML, use the bundled `apple-mail-send` CLI with `--html-body-file` (sends `multipart/alternative` via SMTP) |
-| Attachments require absolute paths | File attachments must use full absolute paths (e.g., `/Users/me/file.pdf`) |
+| Attachment read path restrictions | Outbound file attachments must use full absolute paths inside the default home-directory, `/Volumes`, or temporary roots, except hidden files and protected credential/configuration locations. Set `APPLE_MAIL_MCP_ATTACHMENT_READ_ROOTS` to add an explicit absolute root for another deliberate location; symlink escapes are rejected. |
 | Smart mailboxes need Mail quit | Smart mailboxes are supported (see [Smart Mailbox Operations](#smart-mailbox-operations-intelligente-postfächer)), but `create-`/`delete-smart-mailbox` edit `SyncedSmartMailboxes.plist` directly — a running Mail may not show a new one until relaunched, and can overwrite plist edits it didn't make. Quit Mail first. Reading them needs Full Disk Access for the Node runtime |
 | Very large mailboxes not searchable *via AppleScript* | Apple Mail's AppleScript bridge times out on mailboxes with tens of thousands of messages, so unscoped `search-messages` skips mailboxes above `APPLE_MAIL_MAX_SEARCH_MAILBOX` (default 5000) and reports them as a partial result. Scope with `mailbox` + a date window — or configure the [IMAP backend](#imap-backend--opt-in), which searches these server-side in well under a second. ([#24](https://github.com/sweetrb/apple-mail-mcp/issues/24)) |
 | Can't delete/rename server-side mailboxes or mutate drafts *via AppleScript* | Mail.app's AppleScript bridge can only `delete`/`rename` **local "On My Mac"** mailboxes and cannot delete/move drafts — it throws `AppleEvent handler failed` for IMAP/Gmail/Workspace/iCloud/Exchange mailboxes (the GUI can do it). Without IMAP configured, `delete-mailbox`/`rename-mailbox`/`delete-message`/`move-message` return a clear "do it in Mail.app directly" error instead of a generic failure. With the [IMAP backend](#imap-backend--opt-in) configured for the account, these operations run via IMAP and succeed. ([#42](https://github.com/sweetrb/apple-mail-mcp/issues/42)) |
@@ -1345,6 +1923,7 @@ The entrypoint is written as:
 | Date filter format | Date filters must be valid parseable dates (e.g., "January 1, 2026" or "2026-03-15"); bare numbers or non-date strings are rejected |
 | Attachment save path restrictions | `save-attachment` only allows saving to home directory, `/tmp`, `/private/tmp`, and `/Volumes`; path traversal is blocked |
 | Attachment count limit | `send-email` and `create-draft` accept a maximum of 20 file attachments |
+| IMAP attachment fetch size | `fetch-attachment` / `save-attachment` over IMAP refuse a part larger than 25 MiB — rejected before download when the server declares the size, and the stream is cut off at the limit when it does not |
 
 ### Mail.app `<blockquote>` wrapping on macOS 15+ (workaround in v1.6.0)
 
@@ -1375,21 +1954,33 @@ When sending content containing backslashes (`\`) to this MCP server, **you must
 
 **Why:** The MCP protocol uses JSON for parameter passing. In JSON, a single backslash is an escape character. To include a literal backslash in content, it must be escaped as `\\`.
 
-**Example - Email with file path:**
+**Correct — email containing a shell path with an escaped space:**
+
 ```json
 {
   "to": ["colleague@company.com"],
   "subject": "File Location",
-  "body": "The file is at C:\\\\Users\\\\Documents\\\\report.pdf"
+  "body": "Run: cp ~/Library/Mobile\\ Documents/report.pdf ~/Desktop/"
 }
 ```
 
-The `\\\\` in JSON becomes `\\` in the actual string, which represents a single `\` in the email.
+→ arrives as: `Run: cp ~/Library/Mobile\ Documents/report.pdf ~/Desktop/`
+
+In a JSON string literal, `\\` — two characters — denotes **one** literal backslash. Four backslashes (`\\\\`) denote **two** literal backslashes, so send those only when the text genuinely contains `\\`.
+
+**Incorrect — the unescaped backslash makes this invalid JSON:**
+
+```text
+"body": "Run: cp ~/Library/Mobile\ Documents/report.pdf ~/Desktop/"
+```
+
+`\ ` (backslash-space) is not a valid JSON escape sequence, so the call is rejected — or, with a laxer parser, the backslash is silently dropped.
 
 **Common patterns requiring escaping:**
-- Windows paths: `C:\Users\` → `C:\\\\Users\\\\` in JSON
-- Shell escaped spaces: `Mobile\ Documents` → `Mobile\\\\ Documents` in JSON
-- Regex patterns: `\d+` → `\\\\d+` in JSON
+
+- Shell escaped spaces: `Mobile\ Documents` → `Mobile\\ Documents` in JSON
+- Regex patterns: `\d+` → `\\d+` in JSON
+- A literal double backslash: `\\` → `\\\\` in JSON
 
 **If you see errors** when sending emails with backslashes, double-check that backslashes are properly escaped in the JSON payload.
 
@@ -1412,6 +2003,15 @@ The `\\\\` in JSON becomes `\\` in the actual string, which represents a single 
 - Message IDs change if the message is moved between mailboxes
 - Use `search-messages` to find the current message ID
 
+### "... is present in more than one mailbox"
+- A bare numeric ID identifies a message only *within a mailbox*, and a label store (Gmail, iCloud)
+  reports the same message under the same ID in `INBOX`, `Important` and `All Mail` at once. The
+  server refuses rather than guessing which copy you meant.
+- Fix it by running `list-messages`/`search-messages` on the mailbox you actually want to act on,
+  then using the IDs from that result — the operation is then scoped to that mailbox.
+- It only affects IDs the server hasn't seen listed (carried over from an earlier session, or typed
+  by hand). `imap:…` IDs encode their own mailbox and never hit this.
+
 ### `search-messages` says "Partial results" or skips a mailbox
 - This is expected for very large IMAP/Gmail mailboxes (e.g. Gmail's `All Mail`, `Important`): Apple Mail can't scan them via AppleScript before timing out, so they're skipped and named in the result rather than silently returning empty.
 - To search inside one, scope the call with `mailbox` **and** a `dateFrom`/`dateTo` window.
@@ -1426,6 +2026,11 @@ The `\\\\` in JSON becomes `\\` in the actual string, which represents a single 
 - Check your network connection
 - Verify Mail.app can send emails manually
 - Check if the account is configured correctly in Mail.app
+
+### "invalid outputSchema … unsupported dialect" — every tool is refused
+- Full text: `Tool '<name>' has an invalid outputSchema: JSON Schema declares an unsupported dialect ("$schema": "http://json-schema.org/draft-07/schema#"). The default validator supports JSON Schema 2020-12 only.` The server connects, but **no tool is usable**.
+- **Upgrade to 2.10.12 or later.** Earlier versions advertised their tool schemas in JSON Schema **draft-07** (the MCP SDK's converter default); MCP has since standardized on **2020-12** and clients reject anything else. 2.10.12 normalizes every advertised `inputSchema`/`outputSchema` to 2020-12 on the way out. See [issue #147](https://github.com/sweetrb/apple-mail-mcp/issues/147).
+- Nothing to configure — restart your host app after upgrading so it re-reads the tool list.
 
 ### `apple-mail` server fails to connect when run from a clone
 - The root `.mcp.json` resolves its entrypoint via `${CLAUDE_PROJECT_DIR:-.}/build/index.js`. **Launch `claude` from inside the repo directory** — `CLAUDE_PROJECT_DIR` only resolves to the repo root in that case; the bare `.` fallback uses the launching shell's working directory and will point at the wrong place otherwise.

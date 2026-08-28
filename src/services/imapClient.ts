@@ -19,6 +19,7 @@
  *   APPLE_MAIL_MCP_IMAP_HOST      (default imap.gmail.com)
  *   APPLE_MAIL_MCP_IMAP_PORT      (default 993, implicit TLS)
  *   APPLE_MAIL_MCP_IMAP_PASSWORD  (else Keychain via the two vars below)
+ *   APPLE_MAIL_MCP_IMAP_ALLOW_PLAINTEXT (explicitly allow a non-TLS connection; default off)
  *   APPLE_MAIL_MCP_IMAP_KEYCHAIN_SERVICE / _KEYCHAIN_ACCOUNT
  *   APPLE_MAIL_MCP_IMAP_ACCOUNTS  (JSON array; the multi-account form — see
  *                                  listImapAccountSpecs. Sufficient on its own)
@@ -29,6 +30,8 @@ import { ImapFlow } from "imapflow";
 import { readKeychainPassword } from "@/services/smtpMailer.js";
 import { SETUP_HINT } from "@/utils/docsUrls.js";
 import { extractHtmlBody, extractTextBody } from "@/utils/mimeParse.js";
+import { classifyCountStatus, type CountDelta } from "@/services/auditLog.js";
+import { MAX_IMAP_ATTACHMENT_BYTES } from "@/utils/attachmentLimits.js";
 
 export const IMAP_ENV = {
   user: "APPLE_MAIL_MCP_IMAP_USER",
@@ -38,6 +41,7 @@ export const IMAP_ENV = {
   password: "APPLE_MAIL_MCP_IMAP_PASSWORD",
   keychainService: "APPLE_MAIL_MCP_IMAP_KEYCHAIN_SERVICE",
   keychainAccount: "APPLE_MAIL_MCP_IMAP_KEYCHAIN_ACCOUNT",
+  allowPlaintext: "APPLE_MAIL_MCP_IMAP_ALLOW_PLAINTEXT",
   // C2 multi-account: JSON array of additional accounts, e.g.
   // [{"account":"Work","user":"me@co.com","host":"imap.co.com","keychainService":"imap.co.com"}]
   accounts: "APPLE_MAIL_MCP_IMAP_ACCOUNTS",
@@ -47,6 +51,8 @@ export interface ImapConfig {
   host: string;
   port: number;
   secure: boolean;
+  /** Deliberate insecure escape hatch; false/undefined requires STARTTLS. */
+  allowPlaintext?: boolean;
   user: string;
   pass: string;
   accountLabel: string;
@@ -86,6 +92,13 @@ export interface ImapBodyStructure {
   parameters?: Record<string, string>;
   size?: number;
   encoding?: string;
+  /**
+   * Content-ID header, when the part has one. This is what distinguishes an
+   * image the HTML body embeds (`<img src="cid:...">`) from a file the sender
+   * attached — see `collectAttachments`. imapflow has always populated it; it
+   * simply was not declared here.
+   */
+  id?: string;
   childNodes?: ImapBodyStructure[];
 }
 interface ImapMessage {
@@ -108,8 +121,21 @@ interface ImapMailboxListing {
   name: string;
   /** RFC 6154 special-use flag ("\\Trash", "\\Sent", …) when the server advertises it. */
   specialUse?: string;
+  /** Includes "\\Noselect" for hierarchy containers that cannot be opened. */
+  flags?: Set<string>;
 }
 type FlagOpts = { uid: boolean };
+/**
+ * What imapflow's `messageMove`/`messageCopy` resolve to on success. `uidMap` and
+ * `uidValidity` are present only when the server advertises UIDPLUS (COPYUID);
+ * their ABSENCE is not a failure signal, so nothing here may branch on it.
+ */
+export interface ImapMoveResult {
+  path: string;
+  destination: string;
+  uidValidity?: bigint;
+  uidMap?: Map<number, number>;
+}
 export interface ImapClientLike {
   connect(): Promise<void>;
   getMailboxLock(path: string): Promise<MailboxLock>;
@@ -135,7 +161,14 @@ export interface ImapClientLike {
   mailboxDelete(path: string): Promise<{ path: string }>;
   messageFlagsAdd(range: number[], flags: string[], opts: FlagOpts): Promise<boolean>;
   messageFlagsRemove(range: number[], flags: string[], opts: FlagOpts): Promise<boolean>;
-  messageMove(range: number[], destination: string, opts: FlagOpts): Promise<unknown>;
+  /** `false` on failure — see `assertMutated`. Typed as a union deliberately:
+   *  it used to be `Promise<unknown>`, which made the failure channel
+   *  unreachable through the interface and hid #181 from the type checker. */
+  messageMove(
+    range: number[],
+    destination: string,
+    opts: FlagOpts
+  ): Promise<ImapMoveResult | false>;
   messageDelete(range: number[], opts: FlagOpts): Promise<boolean>;
   noop(): Promise<void>;
   logout(): Promise<void>;
@@ -234,6 +267,10 @@ interface ImapAccountSpec {
   password?: string;
   keychainService?: string;
   keychainAccount?: string;
+}
+
+function isTruthySetting(value: string | undefined): boolean {
+  return /^(1|true|yes|on)$/i.test(value?.trim() ?? "");
 }
 
 /**
@@ -350,7 +387,7 @@ function listImapAccountSpecs(env: NodeJS.ProcessEnv = process.env): ImapAccount
   return specs;
 }
 
-function specToConfig(spec: ImapAccountSpec): ImapConfig {
+function specToConfig(spec: ImapAccountSpec, allowPlaintext = false): ImapConfig {
   if (!Number.isInteger(spec.port) || spec.port <= 0) {
     throw new Error(`Invalid IMAP port for account "${spec.accountLabel}": "${spec.port}".`);
   }
@@ -368,6 +405,7 @@ function specToConfig(spec: ImapAccountSpec): ImapConfig {
     host: spec.host,
     port: spec.port,
     secure: spec.port === 993,
+    allowPlaintext,
     user: spec.user,
     pass,
     accountLabel: spec.accountLabel,
@@ -417,9 +455,10 @@ export function listImapAccountLabels(env: NodeJS.ProcessEnv = process.env): str
  */
 export function resolveImapConfigs(env: NodeJS.ProcessEnv = process.env): ImapConfig[] {
   const out: ImapConfig[] = [];
+  const allowPlaintext = isTruthySetting(env[IMAP_ENV.allowPlaintext]);
   for (const spec of listImapAccountSpecs(env)) {
     try {
-      out.push(specToConfig(spec));
+      out.push(specToConfig(spec, allowPlaintext));
     } catch (e) {
       console.error(`Skipping IMAP account "${spec.accountLabel}": ${String(e)}`);
     }
@@ -453,17 +492,35 @@ export function resolveImapConfig(
   } else {
     spec = specs[0];
   }
-  return specToConfig(spec);
+  return specToConfig(spec, isTruthySetting(env[IMAP_ENV.allowPlaintext]));
 }
 
-const defaultConnect: ImapConnect = async (cfg) => {
-  const client = new ImapFlow({
+/** Build transport options with STARTTLS required unless explicitly opted out. */
+export function buildImapConnectionOptions(cfg: ImapConfig) {
+  return {
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
+    // ImapFlow reads this as a tri-state, and the distinction matters:
+    //   true      -> require STARTTLS; fail if the server does not offer it
+    //   false     -> NEVER STARTTLS, even if the server advertises it
+    //   undefined -> opportunistic upgrade (ImapFlow's documented default)
+    //
+    // secure=true already has implicit TLS, so there is no upgrade to negotiate.
+    // Without the escape hatch the upgrade is required. WITH it we must fall back
+    // to `undefined`, not `false`: the escape hatch means "let me reach a server
+    // that cannot do TLS", not "never encrypt". Sending `false` suppressed the
+    // upgrade even against servers still offering it, so enabling the opt-out for
+    // one broken account silently downgraded every other plaintext-port account
+    // below what it already negotiated before this option existed.
+    doSTARTTLS: cfg.secure || cfg.allowPlaintext ? undefined : true,
     auth: { user: cfg.user, pass: cfg.pass },
-    logger: false,
-  });
+    logger: false as const,
+  };
+}
+
+const defaultConnect: ImapConnect = async (cfg) => {
+  const client = new ImapFlow(buildImapConnectionOptions(cfg));
   // ImapFlow is an EventEmitter: once connect() resolves, a later socket error
   // on this pooled, long-lived client (idle Gmail/iCloud timeout, server BYE,
   // network drop) emits 'error'. With no listener that is an *uncaught*
@@ -471,13 +528,24 @@ const defaultConnect: ImapConnect = async (cfg) => {
   // the error is swallowed; the pool's liveness probe reconnects on next use.
   // Same defect class as defaultIdleConnect in imapIdle.ts.
   client.on("error", () => {});
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    if (!cfg.secure && !cfg.allowPlaintext) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `IMAP connection failed: ${detail}. STARTTLS is required for non-implicit TLS; ` +
+          `to explicitly allow plaintext (not recommended), set ${IMAP_ENV.allowPlaintext}=1.`
+      );
+    }
+    throw error;
+  }
   return client as unknown as ImapClientLike;
 };
 
 /** Map common (Gmail) mailbox names to their IMAP paths. */
-export function resolveMailboxPath(mailbox: string | undefined, mode: "search" | "list"): string {
-  if (!mailbox) return mode === "search" ? "[Gmail]/All Mail" : "INBOX";
+export function resolveMailboxPath(mailbox: string | undefined, _mode: "search" | "list"): string {
+  if (!mailbox) return "INBOX";
   const map: Record<string, string> = {
     "all mail": "[Gmail]/All Mail",
     "sent mail": "[Gmail]/Sent Mail",
@@ -541,7 +609,12 @@ function structuredRow(m: ImapMessage, account: string, path: string): Record<st
     flagColorIndex: mailFlagColorIndex(m.flags),
     mailbox: path,
     account,
-    hasAttachments: false,
+    // Derived from BODYSTRUCTURE, which the list/search fetch now requests.
+    // This was hardcoded `false` from 2.2.0 until 2.11.1 — indistinguishable to
+    // a caller from "no attachments", so every IMAP-sourced message claimed to
+    // have none. Falls back to false only when the fetch carried no
+    // BODYSTRUCTURE at all.
+    hasAttachments: bodyStructureHasAttachments(m.bodyStructure),
     // Message-ID (when the envelope carries it) is the strongest cross-/intra-
     // backend dedup key for the multi-account merge (imapMultiAccount.ts). The
     // AppleScript path does not expose it, so cross-backend dedup falls back to
@@ -561,6 +634,68 @@ export interface ImapListResult {
   messages: Record<string, unknown>[];
   count: number;
   partial: boolean;
+  /** Mailboxes omitted from an unscoped IMAP search because SELECT/SEARCH failed. */
+  failedMailboxes: string[];
+}
+
+interface FetchedMailboxMessage {
+  message: ImapMessage;
+  path: string;
+}
+
+function hasMailboxFlag(mailbox: ImapMailboxListing, wanted: string): boolean {
+  const normalized = wanted.toLowerCase();
+  return [...(mailbox.flags ?? [])].some((flag) => flag.toLowerCase() === normalized);
+}
+
+function messageDateEpoch(message: ImapMessage): number {
+  if (!message.envelope?.date) return 0;
+  const epoch = new Date(message.envelope.date).getTime();
+  return Number.isNaN(epoch) ? 0 : epoch;
+}
+
+function messageIdentity(entry: FetchedMailboxMessage): string {
+  const raw = entry.message.envelope?.messageId?.trim() ?? "";
+  const messageId = raw
+    .replace(/^<+|>+$/g, "")
+    .trim()
+    .toLowerCase();
+  return messageId ? `mid:${messageId}` : `${entry.path}\u0000${entry.message.uid}`;
+}
+
+async function fetchMailboxMatches(
+  client: ImapClientLike,
+  path: string,
+  criteria: Record<string, unknown>,
+  newestCount: number
+): Promise<{ messages: ImapMessage[]; total: number }> {
+  const lock = await client.getMailboxLock(path);
+  try {
+    const found = await client.search(criteria, { uid: true });
+    const uids = Array.isArray(found) ? found : [];
+    if (uids.length === 0 || newestCount === 0) return { messages: [], total: uids.length };
+
+    const newest = uids.slice().reverse().slice(0, newestCount);
+    const byUid = new Map<number, ImapMessage>();
+    for await (const msg of client.fetch(
+      newest.join(","),
+      // BODYSTRUCTURE rides along so `hasAttachments` is computed rather
+      // than assumed. Measured on 50 real messages: ~390ms -> ~465ms for
+      // the fetch (~17%), same single round trip, no extra request.
+      { envelope: true, flags: true, bodyStructure: true },
+      { uid: true }
+    )) {
+      byUid.set(msg.uid, msg);
+    }
+    return {
+      messages: newest
+        .map((uid) => byUid.get(uid))
+        .filter((message): message is ImapMessage => message !== undefined),
+      total: uids.length,
+    };
+  } finally {
+    lock.release();
+  }
 }
 
 async function run(
@@ -573,48 +708,97 @@ async function run(
   return useClient(
     { ...deps, account: deps.account ?? args.account },
     async (client, cfg) => {
-      const path = resolveMailboxPath(args.mailbox, listMode ? "list" : "search");
-      const lock = await client.getMailboxLock(path);
-      try {
-        const found = await client.search(buildCriteria(args, listMode), { uid: true });
-        const uids = Array.isArray(found) ? found : [];
-        if (uids.length === 0) {
-          return {
-            text: `No messages found via IMAP in "${path}" (account ${cfg.accountLabel}).`,
-            messages: [],
-            count: 0,
-            partial: false,
-          };
+      const unscopedSearch = !listMode && !args.mailbox;
+      let paths: string[];
+      let allMailboxCount = 0;
+      if (unscopedSearch) {
+        const listed = await client.list();
+        const selectable = listed.filter((mailbox) => !hasMailboxFlag(mailbox, "\\Noselect"));
+        const allMailbox = selectable.find(
+          (mailbox) => mailbox.specialUse?.toLowerCase() === "\\all"
+        );
+        paths = allMailbox ? [allMailbox.path] : selectable.map((mailbox) => mailbox.path);
+        allMailboxCount = paths.length;
+        if (paths.length === 0) {
+          throw new Error(`No selectable IMAP mailboxes found for account ${cfg.accountLabel}.`);
         }
-        const limit = args.limit ?? 50;
-        const offset = args.offset ?? 0;
-        // UIDs are ascending → newest are the highest. Apply offset+limit from the newest end.
-        const newest = uids
-          .slice()
-          .reverse()
-          .slice(offset, offset + limit);
-        const byUid = new Map<number, ImapMessage>();
-        for await (const msg of client.fetch(
-          newest.join(","),
-          { envelope: true, flags: true },
-          { uid: true }
-        )) {
-          byUid.set(msg.uid, msg);
-        }
-        const ordered = newest
-          .map((u) => byUid.get(u))
-          .filter((m): m is ImapMessage => m !== undefined);
-        const rows = ordered.map((m) => formatRow(m, cfg.accountLabel, path));
-        const messages = ordered.map((m) => structuredRow(m, cfg.accountLabel, path));
-        const verb = listMode ? "listed" : "matched";
-        const text =
-          `Found ${rows.length} message(s) via IMAP (server-side, account ${cfg.accountLabel}, mailbox "${path}"; ${uids.length} total ${verb}):\n` +
-          rows.join("\n") +
-          `\n\nNote: these IMAP IDs (imap:…) work with get-message and the message mutations (mark/flag/move/delete-message), which route back to IMAP.`;
-        return { text, messages, count: messages.length, partial: false };
-      } finally {
-        lock.release();
+      } else {
+        paths = [resolveMailboxPath(args.mailbox, listMode ? "list" : "search")];
       }
+
+      const limit = args.limit ?? 50;
+      const offset = args.offset ?? 0;
+      const criteria = buildCriteria(args, listMode);
+      const newestPerMailbox = offset + limit;
+      const fetched: FetchedMailboxMessage[] = [];
+      const failedMailboxes: string[] = [];
+      let totalMatched = 0;
+
+      for (const path of paths) {
+        try {
+          const result = await fetchMailboxMatches(client, path, criteria, newestPerMailbox);
+          totalMatched += result.total;
+          fetched.push(...result.messages.map((message) => ({ message, path })));
+        } catch (error) {
+          failedMailboxes.push(path);
+          console.error(
+            `IMAP ${listMode ? "list" : "search"} failed for account "${cfg.accountLabel}", mailbox "${path}": ${String(error)}`
+          );
+        }
+      }
+
+      if (failedMailboxes.length === paths.length) {
+        throw new Error(
+          `IMAP ${listMode ? "list" : "search"} failed in every requested mailbox for account ${cfg.accountLabel}: ${failedMailboxes.join(", ")}.`
+        );
+      }
+
+      let ordered = fetched;
+      if (unscopedSearch) {
+        ordered = fetched
+          .slice()
+          .sort((a, b) => messageDateEpoch(b.message) - messageDateEpoch(a.message));
+        const unique = new Map<string, FetchedMailboxMessage>();
+        for (const entry of ordered) {
+          const key = messageIdentity(entry);
+          if (!unique.has(key)) unique.set(key, entry);
+        }
+        ordered = [...unique.values()].slice(offset, offset + limit);
+      } else {
+        ordered = fetched.slice(offset, offset + limit);
+      }
+
+      const rows = ordered.map(({ message, path }) => formatRow(message, cfg.accountLabel, path));
+      const messages = ordered.map(({ message, path }) =>
+        structuredRow(message, cfg.accountLabel, path)
+      );
+      const partial = failedMailboxes.length > 0;
+      const failureNote = partial
+        ? `\n\nPartial result. Could not search mailbox(es): ${failedMailboxes.map((path) => `"${path}"`).join(", ")}.`
+        : "";
+      const verb = listMode ? "listed" : "matched";
+      const scope = unscopedSearch
+        ? allMailboxCount === 1
+          ? `mailbox "${paths[0]}"`
+          : `${allMailboxCount} selectable mailboxes`
+        : `mailbox "${paths[0]}"`;
+
+      if (messages.length === 0) {
+        return {
+          text: `No messages found via IMAP in ${scope} (account ${cfg.accountLabel}).${failureNote}`,
+          messages,
+          count: 0,
+          partial,
+          failedMailboxes,
+        };
+      }
+
+      const text =
+        `Found ${rows.length} message(s) via IMAP (server-side, account ${cfg.accountLabel}, ${scope}; ${totalMatched} total ${verb}):\n` +
+        rows.join("\n") +
+        `\n\nNote: these IMAP IDs (imap:…) work with get-message and the message mutations (mark/flag/move/delete-message), which route back to IMAP.` +
+        failureNote;
+      return { text, messages, count: messages.length, partial, failedMailboxes };
     },
     true
   );
@@ -757,14 +941,110 @@ export function imapMailStats(deps: ImapDeps = {}): Promise<ImapStats> {
 // configured; AppleScript remains the path for everything else.
 // ===========================================================================
 
+/**
+ * Whether the server's acceptance of a mutation was corroborated by observing
+ * the effect. (#181)
+ *
+ * Three-valued on purpose. `success: false` already covers a command the server
+ * REJECTED (#181 part 1). What this adds is the distinction the IMAP path was
+ * missing entirely: a command the server ACCEPTED whose effect was confirmed,
+ * versus one whose effect nobody looked at. Before 2.13.0 both returned a bare
+ * `{success: true}`, so an unverified mutation was indistinguishable from a
+ * verified one — the asymmetry #181 was filed for.
+ *
+ * `unverified` is NOT a failure and must never be rendered as one. It means
+ * exactly "the server accepted this and we have no observation either way".
+ */
+export type ImapVerification =
+  { verdict: "verified"; how: string } | { verdict: "unverified"; why: string };
+
 export interface ImapOpResult {
   success: boolean;
   error?: string;
   info?: string;
+  /** Absent on operations that perform no post-condition check at all. */
+  verification?: ImapVerification;
 }
 
 function errText(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
+}
+
+/**
+ * Gate EVERY imapflow mutation result through here. (#181)
+ *
+ * imapflow 1.6.6 does not throw when the server rejects a command: each
+ * mutation catches the error, logs a warning, and RESOLVES to `false`
+ * (`move.js:55`, `copy.js:42`, `store.js:96`, `expunge.js:55`). So
+ * `await client.messageMove(...)` inside a try/catch cannot fail for the entire
+ * class of server rejections — the catch is unreachable and the caller reports
+ * `{success: true}` for a move that never happened. Discarding the result is
+ * therefore a silent-success bug, not a style issue.
+ *
+ * A falsy result is unambiguous at our call sites. Besides the swallowed
+ * server error, imapflow only returns `false` early when `resolveRange` gets an
+ * EMPTY range (`[].join(",") === ""`), and every caller here builds its uid list
+ * from decoded message ids — never empty. Callers that could pass an empty list
+ * must short-circuit before reaching the client, not rely on this.
+ *
+ * NOTE: this checks only the falsy/truthy channel. It deliberately does NOT
+ * inspect `uidMap`/`uidValidity`: those are UIDPLUS-only, and treating their
+ * absence as failure hard-fails working moves on servers without the extension.
+ */
+function assertMutated<T>(result: T, what: string): Exclude<T, false | null | undefined> {
+  if (!result) throw new Error(`${what}: server rejected the command (IMAP NO/BAD)`);
+  return result as Exclude<T, false | null | undefined>;
+}
+
+/**
+ * Corroborate a MOVE the server already accepted. (#181)
+ *
+ * The AppleScript path has a whole effect-reconciliation layer precisely because
+ * "the command did not throw" is not evidence that anything happened; the IMAP
+ * path had none of it, and since reads route to IMAP whenever an account is
+ * IMAP-configured, that meant the layer was off for essentially all real
+ * traffic.
+ *
+ * Deliberately never returns a failure. A contradicted post-condition is
+ * reported as `unverified` with the contradiction named, because a Gmail label
+ * store can legitimately keep a message visible in an all-mail view after a
+ * move — and hard-failing a working move is the strictly worse error. Callers
+ * that need certainty should read `verdict`, not infer it from `success`.
+ */
+async function verifyMoved(
+  client: ImapClientLike,
+  moved: ImapMoveResult,
+  uid: number,
+  srcPath: string,
+  destPath: string
+): Promise<ImapVerification> {
+  // Strongest evidence and it costs nothing: with UIDPLUS the server's own
+  // COPYUID response names the UID the message received in the destination.
+  const newUid = moved.uidMap?.get(uid);
+  if (newUid !== undefined) {
+    return {
+      verdict: "verified",
+      how: `COPYUID: UID ${uid} arrived in "${destPath}" as UID ${newUid}`,
+    };
+  }
+  // No UIDPLUS. The source mailbox is still selected here, so asking whether the
+  // UID is still in it is one FETCH and needs no extra capability.
+  try {
+    const stillThere = await client.fetchOne(String(uid), { uid: true }, { uid: true });
+    if (!stillThere) {
+      return { verdict: "verified", how: `UID ${uid} is no longer present in "${srcPath}"` };
+    }
+    return {
+      verdict: "unverified",
+      why:
+        `the server accepted the MOVE, but UID ${uid} is still present in "${srcPath}" and ` +
+        `this server does not advertise UIDPLUS, so arrival in "${destPath}" could not be ` +
+        `confirmed. A Gmail label store can legitimately keep a message in an all-mail view ` +
+        `after a move, so this is not reported as a failure`,
+    };
+  } catch (e) {
+    return { verdict: "unverified", why: `the post-move check could not run: ${errText(e)}` };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1318,8 +1598,19 @@ export async function imapMoveMessageById(
     const destPath = dest.kind === "found" ? dest.path : resolveMailboxPath(destMailbox, "list");
     const lock = await client.getMailboxLock(ref.path);
     try {
-      await client.messageMove([ref.uid], destPath, { uid: true });
-      return { success: true, info: `Moved UID ${ref.uid} to "${destPath}" via IMAP.` };
+      const moved = assertMutated(
+        await client.messageMove([ref.uid], destPath, { uid: true }),
+        `IMAP move of UID ${ref.uid} to "${destPath}"`
+      );
+      const verification = await verifyMoved(client, moved, ref.uid, ref.path, destPath);
+      return {
+        success: true,
+        info:
+          verification.verdict === "verified"
+            ? `Moved UID ${ref.uid} to "${destPath}" via IMAP (verified: ${verification.how}).`
+            : `Moved UID ${ref.uid} to "${destPath}" via IMAP — UNVERIFIED: ${verification.why}.`,
+        verification,
+      };
     } catch (e) {
       return {
         success: false,
@@ -1341,9 +1632,14 @@ export async function imapMoveMessageById(
  * actually trashed Gmail mail*. A move to `[Gmail]/Trash` is what Gmail treats
  * as "trash" (and matches the tools' documented "moves to Trash" contract).
  */
+/** Created only when the account demonstrably has no Trash mailbox at all. */
+const FALLBACK_TRASH_PATH = "Trash";
+
 async function resolveTrashPath(client: ImapClientLike): Promise<string> {
+  let listed = false;
   try {
     const boxes = await client.list();
+    listed = true;
     const special = boxes.find((b) => b.specialUse === "\\Trash");
     if (special) return special.path;
     const named = boxes.find(
@@ -1352,9 +1648,26 @@ async function resolveTrashPath(client: ImapClientLike): Promise<string> {
     );
     if (named) return named.path;
   } catch {
-    // Fall through to the Gmail default if LIST fails.
+    // LIST failed, so we cannot tell what exists — the Gmail default is the
+    // best remaining guess. A wrong guess now fails loudly (#181) instead of
+    // silently discarding the delete.
   }
-  return resolveMailboxPath("trash", "list");
+  if (!listed) return resolveMailboxPath("trash", "list");
+
+  // LIST succeeded and this account has no Trash mailbox of any kind. Returning
+  // the Gmail default here is what made `delete-message` a SILENT NO-OP on every
+  // non-Gmail server without a Trash folder: the MOVE drew `NO [TRYCREATE]`,
+  // imapflow resolved it to `false`, and the discarded result was reported as a
+  // successful delete. Create the mailbox instead — "recoverable" is the
+  // contract these tools document, and a hard delete is never an option.
+  try {
+    const created = await client.mailboxCreate(FALLBACK_TRASH_PATH);
+    return created?.path || FALLBACK_TRASH_PATH;
+  } catch {
+    // Racing another client that just created it is fine; if it genuinely could
+    // not be created, the MOVE below now fails loudly rather than silently.
+    return FALLBACK_TRASH_PATH;
+  }
 }
 
 /**
@@ -1367,14 +1680,43 @@ async function trashUids(
   client: ImapClientLike,
   uids: number[],
   srcPath: string
-): Promise<{ dest: string; expunged: boolean }> {
+): Promise<{ dest: string; expunged: boolean; moved?: ImapMoveResult }> {
   const dest = await resolveTrashPath(client);
   if (srcPath.trim().toLowerCase() === dest.trim().toLowerCase()) {
-    await client.messageDelete(uids, { uid: true });
+    assertMutated(
+      await client.messageDelete(uids, { uid: true }),
+      `IMAP expunge of ${uids.length} message(s) from "${srcPath}"`
+    );
     return { dest, expunged: true };
   }
-  await client.messageMove(uids, dest, { uid: true });
-  return { dest, expunged: false };
+  const moved = assertMutated(
+    await client.messageMove(uids, dest, { uid: true }),
+    `IMAP move of ${uids.length} message(s) from "${srcPath}" to "${dest}"`
+  );
+  return { dest, expunged: false, moved };
+}
+
+/**
+ * Corroborate an EXPUNGE the server already accepted. Same contract as
+ * `verifyMoved`: never a failure, only "confirmed" vs "nobody looked". (#181)
+ */
+async function verifyExpunged(
+  client: ImapClientLike,
+  uid: number,
+  path: string
+): Promise<ImapVerification> {
+  try {
+    const stillThere = await client.fetchOne(String(uid), { uid: true }, { uid: true });
+    if (!stillThere) {
+      return { verdict: "verified", how: `UID ${uid} is no longer present in "${path}"` };
+    }
+    return {
+      verdict: "unverified",
+      why: `the server accepted the EXPUNGE but UID ${uid} is still present in "${path}"`,
+    };
+  } catch (e) {
+    return { verdict: "unverified", why: `the post-delete check could not run: ${errText(e)}` };
+  }
 }
 
 export async function imapDeleteMessageById(
@@ -1385,12 +1727,21 @@ export async function imapDeleteMessageById(
   if (!ref) return { success: false, error: `Not an IMAP message id: "${id}".` };
   return withMailbox(ref.path, depsForMessageRef(ref, deps), async (client) => {
     try {
-      const { dest, expunged } = await trashUids(client, [ref.uid], ref.path);
+      const { dest, expunged, moved } = await trashUids(client, [ref.uid], ref.path);
+      const verification =
+        expunged || !moved
+          ? await verifyExpunged(client, ref.uid, ref.path)
+          : await verifyMoved(client, moved, ref.uid, ref.path, dest);
+      const what = expunged
+        ? `Permanently deleted UID ${ref.uid} from Trash ("${ref.path}") via IMAP`
+        : `Moved UID ${ref.uid} to Trash ("${dest}") via IMAP`;
       return {
         success: true,
-        info: expunged
-          ? `Permanently deleted UID ${ref.uid} from Trash ("${ref.path}") via IMAP.`
-          : `Moved UID ${ref.uid} to Trash ("${dest}") via IMAP.`,
+        info:
+          verification.verdict === "verified"
+            ? `${what} (verified: ${verification.how}).`
+            : `${what} — UNVERIFIED: ${verification.why}.`,
+        verification,
       };
     } catch (e) {
       return { success: false, error: `IMAP delete failed for UID ${ref.uid}: ${errText(e)}` };
@@ -1421,13 +1772,36 @@ export interface ImapAttachmentInfo {
   size: number;
 }
 
-/** Walk a BODYSTRUCTURE tree collecting attachment parts (disposition or filename). */
+/**
+ * Walk a BODYSTRUCTURE tree collecting attachment parts.
+ *
+ * ## `inline` does not mean "not an attachment"
+ *
+ * RFC 2183 `inline` means "display this in place if you can" — it says nothing
+ * about whether the part is a file the user attached. **Apple Mail sends
+ * genuine attachments as `inline`**, because it inlines them into the message
+ * flow rather than appending them. Excluding every inline part therefore hid
+ * every attachment sent from Mail.app, and because `fetch-attachment` and
+ * `save-attachment` resolve by name against this same walk, those files were
+ * not merely unlisted — they were unfetchable.
+ *
+ * Measured over 300 real messages: of 27 parts carrying a filename, 4 were
+ * excluded by the old rule. Three were invoice PDFs (inline, no Content-ID) and
+ * one was a signature logo (inline, `image/png`, **with** a Content-ID).
+ *
+ * So the discriminator is the **Content-ID**, not the disposition: a part the
+ * HTML body references as `cid:` is embedded content, and anything else with a
+ * filename is a file. An explicit `attachment` disposition always wins — real
+ * mail carries `attachment` parts that also have a Content-ID, and letting the
+ * Content-ID veto those would trade one silent omission for another.
+ */
 function collectAttachments(node: ImapBodyStructure, out: AttachmentPart[] = []): AttachmentPart[] {
   if (!node) return out;
   const filename = node.dispositionParameters?.filename || node.parameters?.name;
   const disposition = node.disposition?.toLowerCase();
+  const isEmbeddedByReference = disposition === "inline" && !!node.id;
   const isAttachment =
-    !!node.part && (disposition === "attachment" || (!!filename && disposition !== "inline"));
+    !!node.part && (disposition === "attachment" || (!!filename && !isEmbeddedByReference));
   if (isAttachment) {
     out.push({
       part: node.part as string,
@@ -1440,9 +1814,30 @@ function collectAttachments(node: ImapBodyStructure, out: AttachmentPart[] = [])
   return out;
 }
 
-async function streamToBuffer(content: AsyncIterable<Uint8Array>): Promise<Buffer> {
+/**
+ * Does this message carry at least one attachment part?
+ *
+ * Shares `collectAttachments`' walk deliberately: if the two ever disagreed,
+ * `hasAttachments` would promise a file that `list-attachments` then refuses to
+ * show (or vice versa), which is the shape of bug this pair already had once.
+ */
+export function bodyStructureHasAttachments(node?: ImapBodyStructure): boolean {
+  return !!node && collectAttachments(node).length > 0;
+}
+
+async function streamToBuffer(
+  content: AsyncIterable<Uint8Array>,
+  maxBytes: number
+): Promise<Buffer> {
   const chunks: Buffer[] = [];
-  for await (const chunk of content) chunks.push(Buffer.from(chunk));
+  let total = 0;
+  for await (const chunk of content) {
+    total += chunk.byteLength;
+    if (total > maxBytes) {
+      throw new Error(`IMAP attachment exceeds the ${maxBytes / 1024 / 1024} MiB size limit.`);
+    }
+    chunks.push(Buffer.from(chunk));
+  }
   return Buffer.concat(chunks);
 }
 
@@ -1496,14 +1891,24 @@ export async function imapFetchAttachment(
         error: `Attachment "${attachmentName}" not found on UID ${ref.uid}. Available: ${names}.`,
       };
     }
-    const dl = await client.download(String(ref.uid), match.part, { uid: true });
-    const buf = await streamToBuffer(dl.content);
-    return {
-      success: true,
-      base64: buf.toString("base64"),
-      bytes: buf.length,
-      mimeType: match.mimeType,
-    };
+    if (match.size > MAX_IMAP_ATTACHMENT_BYTES) {
+      return {
+        success: false,
+        error: `IMAP attachment "${attachmentName}" is ${match.size} bytes; the maximum is ${MAX_IMAP_ATTACHMENT_BYTES} bytes (25 MiB).`,
+      };
+    }
+    try {
+      const dl = await client.download(String(ref.uid), match.part, { uid: true });
+      const buf = await streamToBuffer(dl.content, MAX_IMAP_ATTACHMENT_BYTES);
+      return {
+        success: true,
+        base64: buf.toString("base64"),
+        bytes: buf.length,
+        mimeType: match.mimeType,
+      };
+    } catch (e) {
+      return { success: false, error: `IMAP attachment fetch failed: ${errText(e)}` };
+    }
   });
 }
 
@@ -1519,12 +1924,37 @@ export interface ImapBatchResult {
   success: number;
   failed: number;
   errors: string[];
+  /**
+   * What the operation actually did to each SOURCE mailbox. (#181)
+   *
+   * Present only for operations that remove messages from their source — the
+   * batch move and delete — because those are the ones where "how many left"
+   * is a meaningful question. Marking read or flagging changes no count, and
+   * emitting `expected: N, observed: 0` for them would manufacture an alarm.
+   *
+   * Same shape and the same classification as the AppleScript path, so a caller
+   * reads one structure regardless of backend. Unlike that path, the numbers
+   * come from the server's own `STATUS`, so they are not subject to the
+   * Mail.app count lag #155 is about.
+   */
+  countDelta?: CountDelta[];
+}
+
+/** Server-side message count, or null when STATUS would not answer. */
+async function mailboxCount(client: ImapClientLike, path: string): Promise<number | null> {
+  try {
+    const st = await client.status(path, { messages: true });
+    return typeof st.messages === "number" ? st.messages : null;
+  } catch {
+    return null;
+  }
 }
 
 async function imapBatch(
   ids: string[],
   deps: ImapDeps,
-  op: (client: ImapClientLike, uids: number[], path: string) => Promise<void>
+  op: (client: ImapClientLike, uids: number[], path: string) => Promise<void>,
+  opts: { reconcile?: boolean } = {}
 ): Promise<ImapBatchResult> {
   const groups = new Map<string, { account: string; path: string; uids: number[] }>();
   const errors: string[] = [];
@@ -1542,15 +1972,53 @@ async function imapBatch(
     groups.set(key, g);
   }
   let success = 0;
+  const countDelta: CountDelta[] = [];
   for (const g of groups.values()) {
     try {
       await useClient(depsForAccount(g.account, deps), async (client) => {
+        // STATUS is taken OUTSIDE the mailbox lock and before/after the op, so
+        // the reading is the server's own and not this connection's cached view.
+        const before = opts.reconcile ? await mailboxCount(client, g.path) : null;
         const lock = await client.getMailboxLock(g.path);
         try {
           await op(client, g.uids, g.path);
         } finally {
           lock.release();
         }
+        if (!opts.reconcile) return;
+        const after = await mailboxCount(client, g.path);
+        const readable = before !== null && after !== null;
+        const observed = readable ? before - after : null;
+        const { status, unknownReason } = classifyCountStatus(readable, g.uids.length, observed);
+        countDelta.push({
+          account: g.account,
+          mailbox: g.path,
+          before,
+          after,
+          expected: g.uids.length,
+          observed,
+          status,
+          ...(unknownReason ? { unknownReason } : {}),
+          ...(unknownReason === "count-unreadable"
+            ? { note: "The server did not answer STATUS for this mailbox" }
+            : {}),
+          ...(unknownReason === "count-did-not-move"
+            ? {
+                note:
+                  `The mailbox count did not move. On a label store (Gmail) a message can stay ` +
+                  `visible in an all-mail view after being moved out of a label, so this is not ` +
+                  `by itself evidence the operation failed — check the destination.`,
+              }
+            : {}),
+          ...(unknownReason === "count-partial"
+            ? {
+                note:
+                  `Fewer messages left than were operated on. \`observed\` is a LOWER BOUND on ` +
+                  `what left, not a count of what left — a concurrent delivery to this mailbox ` +
+                  `masks departures one-for-one.`,
+              }
+            : {}),
+        });
       });
       success += g.uids.length;
     } catch (e) {
@@ -1558,16 +2026,25 @@ async function imapBatch(
       errors.push(`${g.path}: ${errText(e)}`);
     }
   }
-  return { success, failed, errors };
+  return { success, failed, errors, ...(countDelta.length ? { countDelta } : {}) };
 }
 
+// Every op below routes its imapflow result through `assertMutated`: a throw is
+// what `imapBatch` converts into a per-group `failed` count plus an error string,
+// so a server rejection is reported instead of counted as a success. (#181)
 export const imapBatchMarkRead = (ids: string[], deps: ImapDeps = {}): Promise<ImapBatchResult> =>
   imapBatch(ids, deps, async (c, uids) => {
-    await c.messageFlagsAdd(uids, ["\\Seen"], { uid: true });
+    assertMutated(
+      await c.messageFlagsAdd(uids, ["\\Seen"], { uid: true }),
+      `IMAP mark-read of ${uids.length} message(s)`
+    );
   });
 export const imapBatchMarkUnread = (ids: string[], deps: ImapDeps = {}): Promise<ImapBatchResult> =>
   imapBatch(ids, deps, async (c, uids) => {
-    await c.messageFlagsRemove(uids, ["\\Seen"], { uid: true });
+    assertMutated(
+      await c.messageFlagsRemove(uids, ["\\Seen"], { uid: true }),
+      `IMAP mark-unread of ${uids.length} message(s)`
+    );
   });
 export const imapBatchFlag = (
   ids: string[],
@@ -1576,35 +2053,60 @@ export const imapBatchFlag = (
 ): Promise<ImapBatchResult> =>
   imapBatch(ids, deps, async (c, uids) => {
     if (colorIndex === undefined) {
-      await c.messageFlagsAdd(uids, ["\\Flagged"], { uid: true });
+      assertMutated(
+        await c.messageFlagsAdd(uids, ["\\Flagged"], { uid: true }),
+        `IMAP flag of ${uids.length} message(s)`
+      );
       return;
     }
     const { set, clear } = mailFlagBitsFor(colorIndex);
-    await c.messageFlagsAdd(uids, ["\\Flagged", ...set], { uid: true });
+    assertMutated(
+      await c.messageFlagsAdd(uids, ["\\Flagged", ...set], { uid: true }),
+      `IMAP flag of ${uids.length} message(s)`
+    );
     // Clear the unwanted bits so re-flagging with a new color replaces it.
+    // Deliberately NOT asserted, matching the single-message path: the flag and
+    // its color are already set, so a failure here can only leave a stale higher
+    // bit — cosmetic, and not worth failing an otherwise-applied batch.
     if (clear.length) await c.messageFlagsRemove(uids, clear, { uid: true });
   });
 export const imapBatchUnflag = (ids: string[], deps: ImapDeps = {}): Promise<ImapBatchResult> =>
   imapBatch(ids, deps, async (c, uids) => {
     // Clear the color bits too, or Mail.app keeps rendering the color.
-    await c.messageFlagsRemove(uids, ["\\Flagged", ...MAIL_FLAG_BITS], { uid: true });
+    assertMutated(
+      await c.messageFlagsRemove(uids, ["\\Flagged", ...MAIL_FLAG_BITS], { uid: true }),
+      `IMAP unflag of ${uids.length} message(s)`
+    );
   });
 export const imapBatchDelete = (ids: string[], deps: ImapDeps = {}): Promise<ImapBatchResult> =>
-  imapBatch(ids, deps, async (c, uids, path) => {
-    await trashUids(c, uids, path);
-  });
+  imapBatch(
+    ids,
+    deps,
+    async (c, uids, path) => {
+      await trashUids(c, uids, path);
+    },
+    { reconcile: true }
+  );
 export function imapBatchMove(
   ids: string[],
   destMailbox: string,
   deps: ImapDeps = {}
 ): Promise<ImapBatchResult> {
-  return imapBatch(ids, deps, async (c, uids) => {
-    // #137: throws on an ambiguous destination; imapBatch records it per group
-    // as a failure rather than moving the batch somewhere the caller didn't name.
-    const dest =
-      (await findMailboxPathOrThrow(c, destMailbox)) ?? resolveMailboxPath(destMailbox, "list");
-    await c.messageMove(uids, dest, { uid: true });
-  });
+  return imapBatch(
+    ids,
+    deps,
+    async (c, uids) => {
+      // #137: throws on an ambiguous destination; imapBatch records it per group
+      // as a failure rather than moving the batch somewhere the caller didn't name.
+      const dest =
+        (await findMailboxPathOrThrow(c, destMailbox)) ?? resolveMailboxPath(destMailbox, "list");
+      assertMutated(
+        await c.messageMove(uids, dest, { uid: true }),
+        `IMAP move of ${uids.length} message(s) to "${dest}"`
+      );
+    },
+    { reconcile: true }
+  );
 }
 
 // ===========================================================================
@@ -1682,7 +2184,10 @@ export async function imapThread(
         const msgs: ImapMessage[] = [];
         for await (const msg of client.fetch(
           uids.join(","),
-          { envelope: true, flags: true },
+          // Same reason as the list/search fetch: get-thread emits structured
+          // rows too, so it needs BODYSTRUCTURE or its hasAttachments would
+          // silently disagree with the same message seen via search.
+          { envelope: true, flags: true, bodyStructure: true },
           { uid: true }
         )) {
           msgs.push(msg);

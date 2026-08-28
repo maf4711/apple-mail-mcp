@@ -18,10 +18,9 @@
 
 import nodemailer from "nodemailer";
 import { execFileSync } from "child_process";
-import { isAbsolute } from "path";
-import { existsSync } from "fs";
 import type { AttachmentInput } from "@/types.js";
 import { decodeInlineAttachment } from "@/utils/attachmentLimits.js";
+import { resolveAttachmentReadPath } from "@/utils/attachmentReadPolicy.js";
 import { SETUP_HINT } from "@/utils/docsUrls.js";
 
 /** Options for an SMTP send, mirroring the AppleScript send-email surface. */
@@ -34,7 +33,7 @@ export interface SmtpSendOptions {
   bcc?: string[];
   /** Overrides the configured From address (must be allowed by the SMTP server). */
   from?: string;
-  /** Files to attach: absolute paths and/or inline base64 content (B4). */
+  /** Files to attach: allowlisted absolute paths and/or inline base64 content (B4). */
   attachments?: AttachmentInput[];
   /**
    * Optional HTML body. When provided, the message is sent as
@@ -61,6 +60,8 @@ export interface SmtpConfig {
   host: string;
   port: number;
   secure: boolean;
+  /** Deliberate insecure escape hatch; false/undefined requires STARTTLS. */
+  allowPlaintext?: boolean;
   user: string;
   pass: string;
   from: string;
@@ -82,6 +83,7 @@ export const SMTP_ENV = {
   host: "APPLE_MAIL_MCP_SMTP_HOST",
   port: "APPLE_MAIL_MCP_SMTP_PORT",
   secure: "APPLE_MAIL_MCP_SMTP_SECURE",
+  allowPlaintext: "APPLE_MAIL_MCP_SMTP_ALLOW_PLAINTEXT",
   user: "APPLE_MAIL_MCP_SMTP_USER",
   from: "APPLE_MAIL_MCP_SMTP_FROM",
   allowedFrom: "APPLE_MAIL_MCP_SMTP_ALLOWED_FROM",
@@ -208,20 +210,29 @@ export function resolveSmtpConfig(env: NodeJS.ProcessEnv = process.env): SmtpCon
     );
   }
 
-  return { host: host as string, port, secure, user: user as string, pass, from, allowedFrom };
+  const allowPlaintext = /^(1|true|yes|on)$/i.test(env[SMTP_ENV.allowPlaintext]?.trim() ?? "");
+  return {
+    host: host as string,
+    port,
+    secure,
+    allowPlaintext,
+    user: user as string,
+    pass,
+    from,
+    allowedFrom,
+  };
 }
 
 /**
- * Validates attachment paths the same way the AppleScript path does: absolute
- * and existing. Returns nodemailer attachment descriptors.
+ * Validates attachment paths the same way the AppleScript path does: absolute,
+ * existing, regular, and inside an allowed read root. Returns nodemailer
+ * attachment descriptors.
  */
 function buildAttachments(attachments?: AttachmentInput[]) {
   if (!attachments || attachments.length === 0) return undefined;
   return attachments.map((a) => {
     if (typeof a === "string") {
-      if (!isAbsolute(a)) throw new Error(`Attachment path must be absolute: "${a}"`);
-      if (!existsSync(a)) throw new Error(`Attachment file not found: "${a}"`);
-      return { path: a };
+      return { path: resolveAttachmentReadPath(a) };
     }
     if (!a.filename || !a.contentBase64) {
       throw new Error("Inline attachment requires both filename and contentBase64.");
@@ -267,10 +278,19 @@ export async function sendViaSmtp(
     return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 
+  const requireTLS = !cfg.secure && !cfg.allowPlaintext;
+  if (!cfg.secure && cfg.allowPlaintext) {
+    console.warn(
+      `SMTP plaintext explicitly enabled via ${SMTP_ENV.allowPlaintext}; credentials and message content may be exposed.`
+    );
+  }
   const transporter = createTransport({
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
+    // Port 587/143-style configurations must not silently downgrade to
+    // plaintext when the server advertises no usable TLS upgrade.
+    requireTLS,
     auth: { user: cfg.user, pass: cfg.pass },
   });
 
@@ -293,9 +313,13 @@ export async function sendViaSmtp(
     });
     return { success: true, messageId: info.messageId };
   } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    const tlsHint = requireTLS
+      ? ` STARTTLS is required for non-implicit TLS; to explicitly allow plaintext (not recommended), set ${SMTP_ENV.allowPlaintext}=1.`
+      : "";
     return {
       success: false,
-      error: `SMTP send failed: ${error instanceof Error ? error.message : String(error)}`,
+      error: `SMTP send failed: ${detail}.${tlsHint}`,
     };
   } finally {
     transporter.close();

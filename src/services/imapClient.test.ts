@@ -26,17 +26,22 @@ import {
   imapMailStats,
   imapListAttachments,
   imapFetchAttachment,
+  bodyStructureHasAttachments,
   imapBatchMarkRead,
   imapBatchMove,
+  imapBatchDelete,
+  imapBatchUnflag,
   imapThread,
   listImapAccountLabels,
   imapHealthCheck,
   __setPoolConnect,
   __resetPool,
   dropAllPools,
+  buildImapConnectionOptions,
   type ImapClientLike,
   type ImapConfig,
 } from "@/services/imapClient.js";
+import { MAX_IMAP_ATTACHMENT_BYTES } from "@/utils/attachmentLimits.js";
 
 const cfg: ImapConfig = {
   host: "imap.gmail.com",
@@ -79,7 +84,7 @@ function makeClient(uids: number[], rec: Rec): ImapClientLike {
       }
     },
     fetchOne: async () => false,
-    list: async () => [],
+    list: async () => [{ path: "[Gmail]/All Mail", name: "All Mail", specialUse: "\\All" }],
     status: async (path: string) => ({ path, messages: 0, unseen: 0, recent: 0 }),
     download: async () => ({
       meta: { filename: "file.bin" },
@@ -194,7 +199,24 @@ describe("resolveImapConfig", () => {
     expect(c.host).toBe("imap.gmail.com");
     expect(c.port).toBe(993);
     expect(c.secure).toBe(true);
+    expect(c.allowPlaintext).toBe(false);
     expect(c.pass).toBe("pw");
+  });
+  it("requires explicit opt-in before allowing plaintext IMAP", () => {
+    const c = resolveImapConfig({
+      [IMAP_ENV.user]: "rob@example.com",
+      [IMAP_ENV.password]: "pw",
+      [IMAP_ENV.port]: "143",
+      [IMAP_ENV.allowPlaintext]: "1",
+    });
+    expect(c.secure).toBe(false);
+    expect(c.allowPlaintext).toBe(true);
+    // Opportunistic (undefined), not `false`: the opt-out means "reach a server
+    // that cannot do TLS", not "never encrypt even when the server offers it".
+    expect(buildImapConnectionOptions(c)).toMatchObject({
+      secure: false,
+      doSTARTTLS: undefined,
+    });
   });
   it("throws an actionable error when no password is available", () => {
     expect(() => resolveImapConfig({ [IMAP_ENV.user]: "rob@example.com" })).toThrow(
@@ -366,8 +388,8 @@ describe("imapHealthCheck configured-gate (#138)", () => {
 });
 
 describe("resolveMailboxPath", () => {
-  it("defaults to All Mail for search, INBOX for list", () => {
-    expect(resolveMailboxPath(undefined, "search")).toBe("[Gmail]/All Mail");
+  it("uses the provider-neutral INBOX fallback when no path is pinned", () => {
+    expect(resolveMailboxPath(undefined, "search")).toBe("INBOX");
     expect(resolveMailboxPath(undefined, "list")).toBe("INBOX");
   });
   it("maps common Gmail folder names", () => {
@@ -417,6 +439,94 @@ describe("imapSearchMessages", () => {
     expect(res.text).toMatch(/No messages found via IMAP/);
     expect(res.count).toBe(0);
     expect(res.messages).toEqual([]);
+  });
+
+  it("searches every selectable mailbox when the server has no special-use All mailbox", async () => {
+    let selected = "";
+    const locked: string[] = [];
+    const matches: Record<string, number[]> = {
+      INBOX: [1],
+      Archive: [2, 3],
+      Projects: [],
+    };
+    const dates: Record<string, string> = {
+      "INBOX:1": "2026-06-03T00:00:00Z",
+      "Archive:2": "2026-06-01T00:00:00Z",
+      "Archive:3": "2026-06-02T00:00:00Z",
+    };
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [
+        { path: "INBOX", name: "INBOX" },
+        { path: "Archive", name: "Archive" },
+        { path: "Projects", name: "Projects" },
+        { path: "Folders", name: "Folders", flags: new Set(["\\Noselect"]) },
+      ],
+      getMailboxLock: async (path: string) => {
+        selected = path;
+        locked.push(path);
+        return { release: () => undefined };
+      },
+      search: async () => matches[selected] ?? [],
+      fetch: async function* (range: string) {
+        for (const uid of range.split(",").map(Number)) {
+          yield {
+            uid,
+            envelope: {
+              subject: `${selected} ${uid}`,
+              date: new Date(dates[`${selected}:${uid}`]),
+              from: [{ address: "sender@example.com" }],
+            },
+            flags: new Set<string>(),
+          };
+        }
+      },
+    };
+
+    const res = await imapSearchMessages(
+      { query: "needle", limit: 2 },
+      {
+        config: { ...cfg, host: "imap.mail.me.com", accountLabel: "iCloud" },
+        connect: async () => client,
+      }
+    );
+
+    expect(locked).toEqual(["INBOX", "Archive", "Projects"]);
+    expect(res.messages.map((m) => `${m.mailbox}:${decodeImapId(m.id as string)?.uid}`)).toEqual([
+      "INBOX:1",
+      "Archive:3",
+    ]);
+    expect(res.partial).toBe(false);
+  });
+
+  it("reports a partial all-mailbox search instead of hiding a failed mailbox", async () => {
+    let selected = "";
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [
+        { path: "INBOX", name: "INBOX" },
+        { path: "Archive", name: "Archive" },
+      ],
+      getMailboxLock: async (path: string) => {
+        selected = path;
+        if (path === "Archive") throw new Error("cannot select");
+        return { release: () => undefined };
+      },
+      search: async () => (selected === "INBOX" ? [7] : []),
+    };
+
+    const res = await imapSearchMessages(
+      { query: "needle" },
+      {
+        config: { ...cfg, host: "imap.mail.me.com", accountLabel: "iCloud" },
+        connect: async () => client,
+      }
+    );
+
+    expect(res.count).toBe(1);
+    expect(res.partial).toBe(true);
+    expect(res.failedMailboxes).toEqual(["Archive"]);
+    expect(res.text).toContain('Could not search mailbox(es): "Archive"');
   });
 });
 
@@ -726,15 +836,60 @@ describe("IMAP message mutations (#43 Phase 3)", () => {
 
   it("delete moves the uid to Trash (recoverable) rather than expunging", async () => {
     // Gmail expunge on [Gmail]/All Mail is a no-op, so delete must MOVE to Trash.
-    // With an empty LIST the mailbox resolves to the [Gmail]/Trash default.
     const rec: MsgRec = {};
-    const r = await imapDeleteMessageById(MID, {
-      config: cfg,
-      connect: async () => makeMsgClient(rec),
-    });
+    const client: ImapClientLike = {
+      ...makeMsgClient(rec),
+      list: async () => [
+        { path: "INBOX", name: "INBOX" },
+        { path: "[Gmail]/Trash", name: "Trash" },
+      ],
+    };
+    const r = await imapDeleteMessageById(MID, { config: cfg, connect: async () => client });
     expect(r.success).toBe(true);
     expect(rec.moved).toEqual([[1], "[Gmail]/Trash"]);
     expect(rec.deleted).toBeUndefined();
+  });
+
+  // #181 fallout: returning the [Gmail]/Trash default for an account that has no
+  // Trash at all is what made delete a silent no-op on non-Gmail servers — the
+  // MOVE drew NO [TRYCREATE] and the discarded result was reported as success.
+  it("delete creates a Trash mailbox when the account genuinely has none", async () => {
+    const rec: MsgRec = {};
+    const created: string[] = [];
+    const client: ImapClientLike = {
+      ...makeMsgClient(rec),
+      list: async () => [{ path: "INBOX", name: "INBOX" }],
+      mailboxCreate: async (path: string) => {
+        created.push(path);
+        return { path, created: true };
+      },
+    };
+    const r = await imapDeleteMessageById(MID, { config: cfg, connect: async () => client });
+    expect(r.success).toBe(true);
+    expect(created).toEqual(["Trash"]);
+    expect(rec.moved).toEqual([[1], "Trash"]);
+    // never the Gmail default, which does not exist on such a server
+    expect(rec.moved?.[1]).not.toBe("[Gmail]/Trash");
+  });
+
+  it("delete falls back to the Gmail default only when LIST itself fails", async () => {
+    const rec: MsgRec = {};
+    const created: string[] = [];
+    const client: ImapClientLike = {
+      ...makeMsgClient(rec),
+      list: async () => {
+        throw new Error("LIST unavailable");
+      },
+      mailboxCreate: async (path: string) => {
+        created.push(path);
+        return { path, created: true };
+      },
+    };
+    const r = await imapDeleteMessageById(MID, { config: cfg, connect: async () => client });
+    expect(r.success).toBe(true);
+    expect(rec.moved).toEqual([[1], "[Gmail]/Trash"]);
+    // must not invent a mailbox on a server we could not enumerate
+    expect(created).toEqual([]);
   });
 
   it("delete resolves the server's \\Trash special-use mailbox", async () => {
@@ -754,10 +909,14 @@ describe("IMAP message mutations (#43 Phase 3)", () => {
   it("delete from within Trash permanently expunges (empty-from-Trash)", async () => {
     const rec: MsgRec = {};
     const trashId = encodeImapId("iCloud", "[Gmail]/Trash", 1);
-    const r = await imapDeleteMessageById(trashId, {
-      config: cfg,
-      connect: async () => makeMsgClient(rec),
-    });
+    const client: ImapClientLike = {
+      ...makeMsgClient(rec),
+      list: async () => [
+        { path: "INBOX", name: "INBOX" },
+        { path: "[Gmail]/Trash", name: "Trash" },
+      ],
+    };
+    const r = await imapDeleteMessageById(trashId, { config: cfg, connect: async () => client });
     expect(r.success).toBe(true);
     expect(rec.deleted).toEqual([1]);
     expect(rec.moved).toBeUndefined();
@@ -999,6 +1158,160 @@ describe("attachments via BODYSTRUCTURE (I1)", () => {
     expect(r.attachments?.[0]).toMatchObject({ mimeType: "application/pdf", size: 2048 });
   });
 
+  // Apple Mail sends genuine file attachments as `Content-Disposition: inline`
+  // — it inlines them into the message flow rather than appending them. The
+  // structure below is copied from a real message (an invoice PDF this server's
+  // own author sent from Mail.app): inline, named, and with NO Content-ID.
+  //
+  // Excluding every inline part made all of them invisible AND unfetchable over
+  // IMAP, because fetch-attachment resolves by name against this same list.
+  function appleMailClient(): ImapClientLike {
+    return {
+      ...makeClient([], {}),
+      fetchOne: async () => ({
+        uid: 9,
+        bodyStructure: {
+          type: "multipart/alternative",
+          childNodes: [
+            { part: "1", type: "text/plain", size: 353 },
+            {
+              part: "2",
+              type: "multipart/mixed",
+              childNodes: [
+                { part: "2.1", type: "text/html", size: 443 },
+                {
+                  part: "2.2",
+                  type: "application/pdf",
+                  parameters: { name: "SEI Invoice.pdf" },
+                  disposition: "inline",
+                  dispositionParameters: { filename: "SEI Invoice.pdf" },
+                  size: 66714,
+                },
+                { part: "2.3", type: "text/html", size: 3715 },
+              ],
+            },
+          ],
+        },
+      }),
+      download: async (_range: string, part: string) => ({
+        meta: {},
+        content: (async function* () {
+          yield Buffer.from(`bytes-of-${part}`);
+        })(),
+      }),
+    };
+  }
+
+  it("lists an inline-disposition file attachment (Apple Mail's shape)", async () => {
+    const r = await imapListAttachments(MID, {
+      config: cfg,
+      connect: async () => appleMailClient(),
+    });
+    expect(r.success).toBe(true);
+    expect(r.attachments?.map((a) => a.name)).toEqual(["SEI Invoice.pdf"]);
+    expect(r.attachments?.[0]).toMatchObject({ mimeType: "application/pdf", size: 66714 });
+  });
+
+  it("can fetch that inline attachment by name", async () => {
+    // Listing it is only half the fix: fetch/save resolve by name against the
+    // same walk, so an unlisted part is also an unfetchable one.
+    const r = await imapFetchAttachment(MID, "SEI Invoice.pdf", {
+      config: cfg,
+      connect: async () => appleMailClient(),
+    });
+    expect(r.success).toBe(true);
+    expect(r.mimeType).toBe("application/pdf");
+  });
+
+  it("still excludes an embedded image referenced by Content-ID", async () => {
+    // The other half: a signature logo is inline, named AND carries a
+    // Content-ID because the HTML references it as cid:. That one is genuinely
+    // not an attachment, and widening the rule must not start listing it.
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      fetchOne: async () => ({
+        uid: 9,
+        bodyStructure: {
+          type: "multipart/related",
+          childNodes: [
+            { part: "1", type: "text/html", size: 900 },
+            {
+              part: "2",
+              type: "image/png",
+              id: "<image001.png@01DC.4F2>",
+              parameters: { name: "image001.png" },
+              disposition: "inline",
+              dispositionParameters: { filename: "image001.png" },
+              size: 4096,
+            },
+          ],
+        },
+      }),
+    };
+    const r = await imapListAttachments(MID, { config: cfg, connect: async () => client });
+    expect(r.success).toBe(true);
+    expect(r.attachments).toEqual([]);
+  });
+
+  it("reports hasAttachments from BODYSTRUCTURE rather than assuming false", async () => {
+    // Hardcoded `false` from 2.2.0: indistinguishable from "no attachments", so
+    // every IMAP-sourced message claimed to have none and a caller deciding
+    // whether to call list-attachments would always skip.
+    const withAtt = bodyStructureHasAttachments({
+      type: "multipart/mixed",
+      childNodes: [
+        { part: "1", type: "text/plain", size: 10 },
+        {
+          part: "2",
+          type: "application/pdf",
+          disposition: "inline",
+          dispositionParameters: { filename: "Invoice.pdf" },
+          size: 99,
+        },
+      ],
+    });
+    expect(withAtt).toBe(true);
+
+    const bodyOnly = bodyStructureHasAttachments({
+      type: "multipart/alternative",
+      childNodes: [
+        { part: "1", type: "text/plain", size: 10 },
+        { part: "2", type: "text/html", size: 20 },
+      ],
+    });
+    expect(bodyOnly).toBe(false);
+
+    // Absent BODYSTRUCTURE must not claim attachments exist.
+    expect(bodyStructureHasAttachments(undefined)).toBe(false);
+  });
+
+  it("lists an explicit attachment even when it carries a Content-ID", async () => {
+    // Observed in real mail: disposition "attachment" WITH a Content-ID. The
+    // explicit disposition has to win, or Content-ID becomes an over-broad veto.
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      fetchOne: async () => ({
+        uid: 9,
+        bodyStructure: {
+          type: "multipart/mixed",
+          childNodes: [
+            { part: "1", type: "text/plain", size: 10 },
+            {
+              part: "2",
+              type: "application/pdf",
+              id: "<newsletter@example>",
+              disposition: "attachment",
+              dispositionParameters: { filename: "Newsletter.pdf" },
+              size: 1234,
+            },
+          ],
+        },
+      }),
+    };
+    const r = await imapListAttachments(MID, { config: cfg, connect: async () => client });
+    expect(r.attachments?.map((a) => a.name)).toEqual(["Newsletter.pdf"]);
+  });
+
   it("fetches an attachment's bytes by filename", async () => {
     const r = await imapFetchAttachment(MID, "report.pdf", {
       config: cfg,
@@ -1007,6 +1320,61 @@ describe("attachments via BODYSTRUCTURE (I1)", () => {
     expect(r.success).toBe(true);
     expect(Buffer.from(r.base64 as string, "base64").toString()).toBe("bytes-of-2");
     expect(r.mimeType).toBe("application/pdf");
+  });
+
+  it("rejects a BODYSTRUCTURE attachment above the fetch limit before downloading", async () => {
+    let downloaded = false;
+    const base = attClient();
+    const client: ImapClientLike = {
+      ...base,
+      fetchOne: async () => ({
+        uid: 9,
+        bodyStructure: {
+          type: "multipart/mixed",
+          childNodes: [
+            {
+              part: "2",
+              type: "application/pdf",
+              disposition: "attachment",
+              dispositionParameters: { filename: "report.pdf" },
+              size: MAX_IMAP_ATTACHMENT_BYTES + 1,
+            },
+          ],
+        },
+      }),
+      download: async () => {
+        downloaded = true;
+        return { content: (async function* () {})() };
+      },
+    };
+
+    const r = await imapFetchAttachment(MID, "report.pdf", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(false);
+    expect(r.error).toMatch(/25 MiB/i);
+    expect(downloaded).toBe(false);
+  });
+
+  it("stops a streamed attachment when it crosses the fetch limit", async () => {
+    const base = attClient();
+    const client: ImapClientLike = {
+      ...base,
+      download: async () => ({
+        content: (async function* () {
+          yield Buffer.alloc(MAX_IMAP_ATTACHMENT_BYTES);
+          yield Buffer.from([0]);
+        })(),
+      }),
+    };
+
+    const r = await imapFetchAttachment(MID, "report.pdf", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(false);
+    expect(r.error).toMatch(/25 MiB/i);
   });
 
   it("errors clearly when the attachment name isn't found", async () => {
@@ -1283,5 +1651,403 @@ describe("connection pooling (#50 / A3)", () => {
       { config: cfg, connect: async () => make() }
     );
     expect(logouts).toBe(2); // injected path logs out each call (no pooling)
+  });
+});
+
+describe("mail transport TLS policy", () => {
+  it("requires STARTTLS for non-implicit IMAP connections", () => {
+    expect(buildImapConnectionOptions({ ...cfg, secure: false })).toMatchObject({
+      secure: false,
+      doSTARTTLS: true,
+    });
+    expect(buildImapConnectionOptions(cfg)).toMatchObject({
+      secure: true,
+      doSTARTTLS: undefined,
+    });
+    expect(
+      buildImapConnectionOptions({ ...cfg, secure: false, allowPlaintext: true })
+    ).toMatchObject({
+      secure: false,
+      doSTARTTLS: undefined,
+    });
+  });
+});
+
+describe("plaintext escape hatch does not disable an offered STARTTLS upgrade", () => {
+  const base = { host: "mail.example.com", port: 143, user: "u", pass: "p" };
+
+  it("requires STARTTLS when the escape hatch is off", () => {
+    expect(
+      buildImapConnectionOptions({ ...base, secure: false, allowPlaintext: false }).doSTARTTLS
+    ).toBe(true);
+  });
+
+  it("falls back to opportunistic (undefined), never false, when the escape hatch is on", () => {
+    const opts = buildImapConnectionOptions({ ...base, secure: false, allowPlaintext: true });
+    // `false` means "never STARTTLS even if advertised" — strictly weaker than the
+    // pre-2.10.28 behaviour, where the option was absent and ImapFlow upgraded
+    // opportunistically. The opt-out must not downgrade a server that still offers TLS.
+    expect(opts.doSTARTTLS).not.toBe(false);
+    expect(opts.doSTARTTLS).toBeUndefined();
+  });
+
+  it("never asks for STARTTLS on an implicit-TLS connection", () => {
+    expect(
+      buildImapConnectionOptions({ ...base, port: 993, secure: true, allowPlaintext: false })
+        .doSTARTTLS
+    ).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// #181: imapflow reports a server NO/BAD by RESOLVING to `false`, not by
+// throwing (move.js:55, copy.js:42, store.js:96, expunge.js:55 all
+// catch -> log.warn -> return false). Every one of these cases reported
+// {success: true} before 2.12.0 because the result was discarded and the
+// try/catch could never see the rejection.
+// ---------------------------------------------------------------------------
+describe("#181 IMAP mutations report a rejected command as a failure", () => {
+  const ID = encodeImapId("acct", "INBOX", 5);
+
+  it("move: a rejected MOVE fails loudly instead of reporting success", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      messageMove: async () => false,
+    };
+    const r = await imapMoveMessageById(ID, "Archive", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(false);
+    expect(r.error).toMatch(/rejected the command/i);
+  });
+
+  it("delete: a rejected MOVE-to-Trash fails loudly", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Trash", name: "Trash", specialUse: "\\Trash" }],
+      messageMove: async () => false,
+    };
+    const r = await imapDeleteMessageById(ID, { config: cfg, connect: async () => client });
+    expect(r.success).toBe(false);
+    expect(r.error).toMatch(/rejected the command/i);
+  });
+
+  it("delete-from-Trash: a rejected EXPUNGE fails loudly", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Trash", name: "Trash", specialUse: "\\Trash" }],
+      messageDelete: async () => false,
+    };
+    const r = await imapDeleteMessageById(encodeImapId("acct", "Trash", 5), {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(false);
+    expect(r.error).toMatch(/rejected the command/i);
+  });
+
+  it("batch move: a rejected MOVE counts the whole group as failed, not succeeded", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Archive", name: "Archive" }],
+      messageMove: async () => false,
+    };
+    const ids = [encodeImapId("acct", "INBOX", 5), encodeImapId("acct", "INBOX", 6)];
+    const r = await imapBatchMove(ids, "Archive", { config: cfg, connect: async () => client });
+    expect(r.success).toBe(0);
+    expect(r.failed).toBe(2);
+    expect(r.errors.join(" ")).toMatch(/rejected the command/i);
+  });
+
+  it("batch mark-read: a rejected STORE counts the group as failed", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      messageFlagsAdd: async () => false,
+    };
+    const r = await imapBatchMarkRead([ID], { config: cfg, connect: async () => client });
+    expect(r.success).toBe(0);
+    expect(r.failed).toBe(1);
+    expect(r.errors.join(" ")).toMatch(/rejected the command/i);
+  });
+
+  it("batch unflag: a rejected STORE counts the group as failed", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      messageFlagsRemove: async () => false,
+    };
+    const r = await imapBatchUnflag([ID], { config: cfg, connect: async () => client });
+    expect(r.success).toBe(0);
+    expect(r.failed).toBe(1);
+  });
+
+  it("batch delete: a rejected MOVE-to-Trash counts the group as failed", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Trash", name: "Trash", specialUse: "\\Trash" }],
+      messageMove: async () => false,
+    };
+    const r = await imapBatchDelete([ID], { config: cfg, connect: async () => client });
+    expect(r.success).toBe(0);
+    expect(r.failed).toBe(1);
+  });
+
+  // Guard against the design killed in review: uidMap/uidValidity are UIDPLUS-only,
+  // so treating their ABSENCE as failure hard-fails every working move on a server
+  // that does not advertise the extension. Only the falsy channel means failure.
+  it("a UIDPLUS-less success (no uidMap) is still a success", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Archive", name: "Archive" }],
+      messageMove: async () => ({ path: "INBOX", destination: "Archive" }),
+    };
+    const r = await imapMoveMessageById(ID, "Archive", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// #181 part 2: an ACCEPTED mutation now reports whether its effect was
+// observed. Before 2.13.0 every one of these returned a bare {success:true},
+// so "confirmed" and "nobody looked" were indistinguishable — the asymmetry
+// with the AppleScript path (countDelta / collateral snapshot) that #181 is
+// about. `unverified` is NOT a failure and must never be rendered as one.
+// ---------------------------------------------------------------------------
+describe("#181 three-valued verification of accepted IMAP mutations", () => {
+  const ID = encodeImapId("acct", "INBOX", 5);
+
+  // The reported case: a Gmail draft whose move returned ok:true while the
+  // message demonstrably stayed in [Gmail]/Drafts and the destination stayed
+  // empty. This is the guard the issue asks for.
+  it("move: accepted but the message is still in the source reads as UNVERIFIED, not success", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Archive", name: "Archive" }],
+      // no uidMap => server does not advertise UIDPLUS
+      messageMove: async () => ({ path: "INBOX", destination: "Archive" }),
+      // the message never left
+      fetchOne: async () => ({ uid: 5 }),
+    };
+    const r = await imapMoveMessageById(ID, "Archive", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(true); // the server did accept it
+    expect(r.verification?.verdict).toBe("unverified");
+    expect(r.info).toMatch(/UNVERIFIED/);
+    // and it must not be dressed up as a confirmed move
+    expect(r.info).not.toMatch(/\(verified:/);
+  });
+
+  it("move: COPYUID from a UIDPLUS server verifies arrival directly", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Archive", name: "Archive" }],
+      messageMove: async () => ({
+        path: "INBOX",
+        destination: "Archive",
+        uidMap: new Map([[5, 91]]),
+      }),
+      // still present in source; COPYUID must win over the fallback probe
+      fetchOne: async () => ({ uid: 5 }),
+    };
+    const r = await imapMoveMessageById(ID, "Archive", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.verification).toEqual({
+      verdict: "verified",
+      how: 'COPYUID: UID 5 arrived in "Archive" as UID 91',
+    });
+    expect(r.info).toMatch(/verified/);
+  });
+
+  it("move: without UIDPLUS, the uid leaving the source verifies the move", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Archive", name: "Archive" }],
+      messageMove: async () => ({ path: "INBOX", destination: "Archive" }),
+      fetchOne: async () => false, // gone from the source
+    };
+    const r = await imapMoveMessageById(ID, "Archive", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.verification?.verdict).toBe("verified");
+    expect(r.verification).toMatchObject({ how: expect.stringMatching(/no longer present/) });
+  });
+
+  it("move: a probe that throws is unverified, never a failure", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Archive", name: "Archive" }],
+      messageMove: async () => ({ path: "INBOX", destination: "Archive" }),
+      fetchOne: async () => {
+        throw new Error("connection reset");
+      },
+    };
+    const r = await imapMoveMessageById(ID, "Archive", {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(true);
+    expect(r.verification?.verdict).toBe("unverified");
+    expect(r.verification).toMatchObject({ why: expect.stringMatching(/connection reset/) });
+  });
+
+  it("delete: the move to Trash is verified the same way", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [
+        { path: "INBOX", name: "INBOX" },
+        { path: "Trash", name: "Trash", specialUse: "\\Trash" },
+      ],
+      messageMove: async () => ({
+        path: "INBOX",
+        destination: "Trash",
+        uidMap: new Map([[5, 12]]),
+      }),
+    };
+    const r = await imapDeleteMessageById(ID, { config: cfg, connect: async () => client });
+    expect(r.success).toBe(true);
+    expect(r.verification?.verdict).toBe("verified");
+  });
+
+  it("delete-from-Trash: an accepted EXPUNGE that left the uid in place is unverified", async () => {
+    const client: ImapClientLike = {
+      ...makeClient([], {}),
+      list: async () => [{ path: "Trash", name: "Trash", specialUse: "\\Trash" }],
+      messageDelete: async () => true,
+      fetchOne: async () => ({ uid: 5 }), // still there
+    };
+    const r = await imapDeleteMessageById(encodeImapId("acct", "Trash", 5), {
+      config: cfg,
+      connect: async () => client,
+    });
+    expect(r.success).toBe(true);
+    expect(r.verification?.verdict).toBe("unverified");
+    expect(r.verification).toMatchObject({ why: expect.stringMatching(/still present/) });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// #181: the IMAP path reports what it did to each source mailbox, in the SAME
+// countDelta shape as the AppleScript path. Before this it reported nothing,
+// and its absence read as "no information" rather than "unverified" — the
+// asymmetry the issue was filed for. The numbers come from the server's own
+// STATUS, so unlike Mail's count they are not subject to the #155 lag.
+// ---------------------------------------------------------------------------
+describe("#181 IMAP batch operations reconcile the source mailbox count", () => {
+  const IDS = [encodeImapId("acct", "INBOX", 5), encodeImapId("acct", "INBOX", 6)];
+
+  /** A client whose STATUS drops by `drop` after the mutation runs. */
+  function countingClient(drop: number, extra: Partial<ImapClientLike> = {}): ImapClientLike {
+    let mutated = false;
+    return {
+      ...makeClient([], {}),
+      list: async () => [
+        { path: "Archive", name: "Archive" },
+        { path: "Trash", name: "Trash", specialUse: "\\Trash" },
+      ],
+      status: async (path: string) => ({ path, messages: mutated ? 10 - drop : 10 }),
+      messageMove: async () => {
+        mutated = true;
+        return { path: "INBOX", destination: "Archive" };
+      },
+      ...extra,
+    };
+  }
+
+  it("reports a clean move as `match`", async () => {
+    const r = await imapBatchMove(IDS, "Archive", {
+      config: cfg,
+      connect: async () => countingClient(2),
+    });
+    expect(r.countDelta).toEqual([
+      {
+        account: "acct",
+        mailbox: "INBOX",
+        before: 10,
+        after: 8,
+        expected: 2,
+        observed: 2,
+        status: "match",
+      },
+    ]);
+  });
+
+  it("reports MORE leaving than were asked for as `over` — the one real alarm", async () => {
+    const r = await imapBatchMove(IDS, "Archive", {
+      config: cfg,
+      connect: async () => countingClient(5),
+    });
+    expect(r.countDelta?.[0]).toMatchObject({ expected: 2, observed: 5, status: "over" });
+  });
+
+  it("a count that did not move is `unknown`, and does NOT claim failure", async () => {
+    const r = await imapBatchMove(IDS, "Archive", {
+      config: cfg,
+      connect: async () => countingClient(0),
+    });
+    expect(r.countDelta?.[0]).toMatchObject({
+      status: "unknown",
+      unknownReason: "count-did-not-move",
+    });
+    // A Gmail label store legitimately produces this, so it must not send the
+    // reader hunting a failure — but it must mention checking the destination.
+    expect(r.countDelta?.[0].note).toMatch(/all-mail view/i);
+  });
+
+  it("a short-but-nonzero drop is `count-partial`, distinct from did-not-move", async () => {
+    const r = await imapBatchMove(IDS, "Archive", {
+      config: cfg,
+      connect: async () => countingClient(1),
+    });
+    expect(r.countDelta?.[0]).toMatchObject({
+      expected: 2,
+      observed: 1,
+      status: "unknown",
+      unknownReason: "count-partial",
+    });
+    expect(r.countDelta?.[0].note).toMatch(/LOWER BOUND/);
+  });
+
+  it("an unreadable STATUS is `count-unreadable`, never a silent zero", async () => {
+    const client = countingClient(2, {
+      status: async () => {
+        throw new Error("STATUS refused");
+      },
+    });
+    const r = await imapBatchMove(IDS, "Archive", { config: cfg, connect: async () => client });
+    expect(r.countDelta?.[0]).toMatchObject({
+      before: null,
+      after: null,
+      observed: null,
+      status: "unknown",
+      unknownReason: "count-unreadable",
+    });
+  });
+
+  it("batch delete reconciles too", async () => {
+    const r = await imapBatchDelete(IDS, { config: cfg, connect: async () => countingClient(2) });
+    expect(r.countDelta?.[0]).toMatchObject({ expected: 2, observed: 2, status: "match" });
+  });
+
+  // The guard against manufacturing an alarm: these change no count, so a
+  // countDelta of expected:2 / observed:0 would read as a failed operation.
+  it("mark-read and flag report NO countDelta — they change no count", async () => {
+    const read = await imapBatchMarkRead(IDS, {
+      config: cfg,
+      connect: async () => countingClient(0),
+    });
+    expect(read.countDelta).toBeUndefined();
+    const unflag = await imapBatchUnflag(IDS, {
+      config: cfg,
+      connect: async () => countingClient(0),
+    });
+    expect(unflag.countDelta).toBeUndefined();
   });
 });

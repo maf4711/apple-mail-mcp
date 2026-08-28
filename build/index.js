@@ -2991,7 +2991,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve2.call(this, root, ref);
+      let _sch = resolve3.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a = root.localRefs) === null || _a === void 0 ? void 0 : _a[ref];
         const { schemaId } = this.opts;
@@ -3018,7 +3018,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve2(root, ref) {
+    function resolve3(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -3649,7 +3649,7 @@ var require_fast_uri = __commonJS({
       }
       return uri;
     }
-    function resolve2(baseURI, relativeURI, options) {
+    function resolve3(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const { parsed: baseParsed, malformedAuthorityOrPort: baseMalformed } = parseWithStatus(baseURI, schemelessOptions);
       const { parsed: relativeParsed, malformedAuthorityOrPort: relativeMalformed } = parseWithStatus(relativeURI, schemelessOptions);
@@ -3933,7 +3933,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize,
-      resolve: resolve2,
+      resolve: resolve3,
       resolveComponent,
       equal,
       serialize,
@@ -6922,9 +6922,9 @@ var require_dist = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/punycode/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/punycode/index.js
 var require_punycode = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/punycode/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/punycode/index.js"(exports, module) {
     "use strict";
     var maxInt = 2147483647;
     var base = 36;
@@ -6934,7 +6934,7 @@ var require_punycode = __commonJS({
     var damp = 700;
     var initialBias = 72;
     var initialN = 128;
-    var delimiter = "-";
+    var delimiter2 = "-";
     var regexPunycode = /^xn--/;
     var regexNonASCII = /[^\0-\x7F]/;
     var regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g;
@@ -7025,7 +7025,7 @@ var require_punycode = __commonJS({
       let i = 0;
       let n = initialN;
       let bias = initialBias;
-      let basic = input.lastIndexOf(delimiter);
+      let basic = input.lastIndexOf(delimiter2);
       if (basic < 0) {
         basic = 0;
       }
@@ -7085,7 +7085,7 @@ var require_punycode = __commonJS({
       const basicLength = output.length;
       let handledCPCount = basicLength;
       if (basicLength) {
-        output.push(delimiter);
+        output.push(delimiter2);
       }
       while (handledCPCount < inputLength) {
         let m = maxInt;
@@ -7164,9 +7164,9 @@ var require_punycode = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/shared/url.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/shared/url.js
 var require_url = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/shared/url.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/shared/url.js"(exports, module) {
     "use strict";
     var urllib = __require("url");
     var punycode = require_punycode();
@@ -7253,9 +7253,9 @@ var require_url = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/fetch/cookies.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/fetch/cookies.js
 var require_cookies = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/fetch/cookies.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/fetch/cookies.js"(exports, module) {
     "use strict";
     var urllib = require_url();
     var SESSION_TIMEOUT = 1800;
@@ -7461,12 +7461,12 @@ var require_cookies = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/package.json
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/package.json
 var require_package = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/package.json"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/package.json"(exports, module) {
     module.exports = {
       name: "nodemailer",
-      version: "9.0.4",
+      version: "9.0.5",
       description: "Easy as cake e-mail sending from your Node.js applications",
       main: "lib/nodemailer.js",
       scripts: {
@@ -7493,12 +7493,12 @@ var require_package = __commonJS({
       },
       homepage: "https://nodemailer.com/",
       devDependencies: {
-        "@aws-sdk/client-sesv2": "3.1096.0",
+        "@aws-sdk/client-sesv2": "3.1104.0",
         bunyan: "1.8.15",
         c8: "12.0.0",
         eslint: "10.8.0",
         "eslint-config-prettier": "10.1.8",
-        globals: "17.8.0",
+        globals: "17.9.0",
         libbase64: "1.3.0",
         libmime: "5.4.1",
         libqp: "2.1.1",
@@ -7514,9 +7514,9 @@ var require_package = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/errors.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/errors.js
 var require_errors2 = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/errors.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/errors.js"(exports, module) {
     "use strict";
     var ERROR_CODES = {
       // Connection errors
@@ -7555,9 +7555,9 @@ var require_errors2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/fetch/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/fetch/index.js
 var require_fetch = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/fetch/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/fetch/index.js"(exports, module) {
     "use strict";
     var http = __require("http");
     var https = __require("https");
@@ -7807,9 +7807,9 @@ var require_fetch = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/shared/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/shared/index.js
 var require_shared = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/shared/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/shared/index.js"(exports, module) {
     "use strict";
     var urllib = require_url();
     var util2 = __require("util");
@@ -7840,7 +7840,7 @@ var require_shared = __commonJS({
       }
       return Object.keys(ifaces).map((key) => ifaces[key]).reduce((acc, val) => acc.concat(val), []).filter((i) => !i.internal || allowInternal).some((i) => i.family === "IPv" + family || i.family === family);
     };
-    var resolve2 = (family, hostname2, options, callback) => {
+    var resolve3 = (family, hostname2, options, callback) => {
       options = options || {};
       if (!isFamilySupported(family, options.allowInternalNetworkInterfaces)) {
         return callback(null, []);
@@ -7927,13 +7927,13 @@ var require_shared = __commonJS({
       let ipv6Addresses = [];
       let ipv4Error = null;
       let ipv6Error = null;
-      resolve2(4, options.host, options, (err, addresses) => {
+      resolve3(4, options.host, options, (err, addresses) => {
         if (err) {
           ipv4Error = err;
         } else {
           ipv4Addresses = addresses || [];
         }
-        resolve2(6, options.host, options, (err2, addresses2) => {
+        resolve3(6, options.host, options, (err2, addresses2) => {
           if (err2) {
             ipv6Error = err2;
           } else {
@@ -8122,13 +8122,13 @@ var require_shared = __commonJS({
       });
       return response;
     };
-    module.exports.callbackPromise = (resolve3, reject) => function() {
+    module.exports.callbackPromise = (resolve4, reject) => function() {
       const args = Array.from(arguments);
       const err = args.shift();
       if (err) {
         reject(err);
       } else {
-        resolve3(...args);
+        resolve4(...args);
       }
     };
     module.exports.parseDataURI = (uri) => {
@@ -8195,8 +8195,8 @@ var require_shared = __commonJS({
       options = options || {};
       let promise;
       if (!callback) {
-        promise = new Promise((resolve3, reject) => {
-          callback = module.exports.callbackPromise(resolve3, reject);
+        promise = new Promise((resolve4, reject) => {
+          callback = module.exports.callbackPromise(resolve4, reject);
         });
       }
       resolveContentValue(data, key, options, callback);
@@ -8350,9 +8350,9 @@ var require_shared = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-funcs/mime-types.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-funcs/mime-types.js
 var require_mime_types = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-funcs/mime-types.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-funcs/mime-types.js"(exports, module) {
     "use strict";
     var path = __require("path");
     var defaultMimeType = "application/octet-stream";
@@ -10454,9 +10454,9 @@ var require_mime_types = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/base64/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/base64/index.js
 var require_base64 = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/base64/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/base64/index.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     function encode(buffer) {
@@ -10553,9 +10553,9 @@ var require_base64 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/qp/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/qp/index.js
 var require_qp = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/qp/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/qp/index.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var QP_RANGES = [
@@ -10717,9 +10717,9 @@ var require_qp = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-funcs/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-funcs/index.js
 var require_mime_funcs = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-funcs/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-funcs/index.js"(exports, module) {
     "use strict";
     var base642 = require_base64();
     var qp = require_qp();
@@ -10731,7 +10731,8 @@ var require_mime_funcs = __commonJS({
        * When isParam is set the value is destined for a header parameter, so HT, CR and LF
        * are not plaintext either: a header parameter has no way to carry them. HT is a valid
        * fold point, so folding and unfolding a header would rewrite it as a space, and CR/LF
-       * cannot appear in a header value at all. Such values have to go through the rfc2231
+       * cannot appear in a header value at all. DEL is neither a token character nor qtext,
+       * so it can not be carried bare or quoted. Such values have to go through the rfc2231
        * parameter continuation encoding instead, the same way a quote already does.
        *
        * @param {String} value String to be tested
@@ -10739,8 +10740,18 @@ var require_mime_funcs = __commonJS({
        * @returns {Boolean} true if it is a plaintext string
        */
       isPlainText(value, isParam) {
-        const re = isParam ? /[\x00-\x1f"\u0080-\uFFFF]/ : /[\x00-\x08\x0b\x0c\x0e-\x1f\u0080-\uFFFF]/;
+        const re = isParam ? /[\x00-\x1f\x7f"\u0080-\uFFFF]/ : /[\x00-\x08\x0b\x0c\x0e-\x1f\u0080-\uFFFF]/;
         return typeof value === "string" && !re.test(value);
+      },
+      /**
+       * Wraps a value into a quoted-string. Inside one a quote would end the string early
+       * and a backslash would escape whatever follows it, so both go out as quoted-pairs.
+       *
+       * @param {String} value String to be quoted
+       * @returns {String} The value as a quoted-string, quotes included
+       */
+      quoteString(value) {
+        return '"' + (value || "").toString().replace(/["\\]/g, "\\$&") + '"';
       },
       /**
        * Checks if a multi line string containes lines longer than the selected value.
@@ -10856,23 +10867,25 @@ var require_mime_funcs = __commonJS({
        */
       buildHeaderValue(structured) {
         const paramsArray = [];
-        Object.keys(structured.params || {}).forEach((param) => {
-          const value = structured.params[param];
-          if (!this.isPlainText(value, true) || value.length >= 75) {
-            this.buildHeaderParam(param, value, 50).forEach((encodedParam) => {
+        Object.keys(structured.params || {}).forEach((key) => {
+          const value2 = structured.params[key];
+          const param = key.replace(/[\x00-\x1f\x7f]/g, "");
+          if (!this.isPlainText(value2, true) || value2.length >= 75) {
+            this.buildHeaderParam(param, value2, 50).forEach((encodedParam) => {
               if (!/[\s"\\;:/=(),<>@[\]?]|^[-']|'$/.test(encodedParam.value) || encodedParam.key.substr(-1) === "*") {
                 paramsArray.push(encodedParam.key + "=" + encodedParam.value);
               } else {
                 paramsArray.push(encodedParam.key + "=" + JSON.stringify(encodedParam.value));
               }
             });
-          } else if (/[\s'"\\;:/=(),<>@[\]?]|^-/.test(value)) {
-            paramsArray.push(param + "=" + JSON.stringify(value));
+          } else if (/[\s'"\\;:/=(),<>@[\]?]|^-/.test(value2)) {
+            paramsArray.push(param + "=" + JSON.stringify(value2));
           } else {
-            paramsArray.push(param + "=" + value);
+            paramsArray.push(param + "=" + value2);
           }
         });
-        return structured.value + (paramsArray.length ? "; " + paramsArray.join("; ") : "");
+        const value = typeof structured.value === "string" ? structured.value.replace(/[\x00-\x1f\x7f]/g, "") : structured.value;
+        return value + (paramsArray.length ? "; " + paramsArray.join("; ") : "");
       },
       /**
        * Encodes a string or an Buffer to an UTF-8 Parameter Value Continuation encoding (rfc2231)
@@ -10948,7 +10961,7 @@ var require_mime_funcs = __commonJS({
                     encoded
                   });
                   line = "";
-                  startPos = i - 1;
+                  encoded = true;
                 } else {
                   encoded = true;
                   i = startPos;
@@ -11214,10 +11227,21 @@ var require_mime_funcs = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/addressparser/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/addressparser/index.js
 var require_addressparser = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/addressparser/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/addressparser/index.js"(exports, module) {
     "use strict";
+    function _quoteLocalPart(address) {
+      const lastAt = address.lastIndexOf("@");
+      if (lastAt < 0) {
+        return address;
+      }
+      const user = address.substr(0, lastAt);
+      if (/^[^\s"(),:;<>@[\\\]]+$/.test(user) || /^"(?:[^"\\]|\\[\s\S])*"$/.test(user)) {
+        return address;
+      }
+      return '"' + user.replace(/["\\]/g, "\\$&") + '"@' + address.substr(lastAt + 1);
+    }
     function _handleAddress(tokens, depth) {
       let isGroup = false;
       let state = "text";
@@ -11330,6 +11354,7 @@ var require_addressparser = __commonJS({
         if (data.address.length > 1) {
           data.text = data.text.concat(data.address.splice(1));
         }
+        const addressFromQuotedText = !data.address.length && data.textWasQuoted.some((wasQuoted) => wasQuoted);
         data.text = data.text.join(" ");
         data.address = data.address.join(" ");
         const address = {
@@ -11342,6 +11367,9 @@ var require_addressparser = __commonJS({
           } else {
             address.address = "";
           }
+        }
+        if (addressFromQuotedText && address.address) {
+          address.address = _quoteLocalPart(address.address);
         }
         addresses.push(address);
       }
@@ -11506,9 +11534,9 @@ var require_addressparser = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/last-newline.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/last-newline.js
 var require_last_newline = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/last-newline.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/last-newline.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var LastNewline = class extends Transform {
@@ -11539,9 +11567,9 @@ var require_last_newline = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/le-windows.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/le-windows.js
 var require_le_windows = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/le-windows.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/le-windows.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var LeWindows = class extends Transform {
@@ -11581,9 +11609,9 @@ var require_le_windows = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/le-unix.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/le-unix.js
 var require_le_unix = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/le-unix.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/le-unix.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var LeUnix = class extends Transform {
@@ -11616,9 +11644,9 @@ var require_le_unix = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/index.js
 var require_mime_node = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mime-node/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mime-node/index.js"(exports, module) {
     "use strict";
     var crypto = __require("crypto");
     var fs = __require("fs");
@@ -11635,6 +11663,10 @@ var require_mime_node = __commonJS({
     var LeWindows = require_le_windows();
     var LeUnix = require_le_unix();
     var FORMATTED_HEADERS = ["From", "Sender", "To", "Cc", "Bcc", "Reply-To", "Date", "References"];
+    var ATEXT = "[A-Za-z0-9!#$%&'*+\\-/=?^_`{|}~\\x80-\\uFFFF]";
+    var DOT_ATOM = new RegExp("^" + ATEXT + "+(?:\\." + ATEXT + "+)*$");
+    var QUOTED_STRING = /^"(?:[^"\\]|\\[\s\S])*"$/;
+    var PLAIN_ADDRESS = /^[^\s"(),:;<>@[\\\]]+@[^\s"(),:;<>@[\\\]]+$/;
     var MimeNode = class _MimeNode {
       constructor(contentType, options) {
         this.nodeCounter = 0;
@@ -11867,8 +11899,8 @@ var require_mime_node = __commonJS({
       build(callback) {
         let promise;
         if (!callback) {
-          promise = new Promise((resolve2, reject) => {
-            callback = shared.callbackPromise(resolve2, reject);
+          promise = new Promise((resolve3, reject) => {
+            callback = shared.callbackPromise(resolve3, reject);
           });
         }
         const stream = this.createReadStream();
@@ -11989,13 +12021,14 @@ var require_mime_node = __commonJS({
               break;
             case "Content-Type":
               structured = mimeFuncs.parseHeaderValue(value);
+              structured.value = (structured.value || "").toString().replace(/[\x00-\x1f\x7f]/g, "");
               this._handleContentType(structured);
               if (structured.value.match(/^text\/plain\b/) && typeof this.content === "string" && /[\u0080-\uFFFF]/.test(this.content)) {
                 structured.params.charset = "utf-8";
               }
               value = mimeFuncs.buildHeaderValue(structured);
               if (this.filename) {
-                param = /[\x00-\x1f]/.test(this.filename) ? mimeFuncs.encodeWord(this.filename, this._getTextEncoding(this.filename), 52) : this._encodeWords(this.filename);
+                param = /[\x00-\x1f\x7f]/.test(this.filename) ? mimeFuncs.encodeWord(this.filename, this._getTextEncoding(this.filename), 52) : this._encodeWords(this.filename);
                 if (param !== this.filename || /[\s'"\\;:/=(),<>@[\]?]|^-/.test(param)) {
                   param = JSON.stringify(param);
                 }
@@ -12014,8 +12047,9 @@ var require_mime_node = __commonJS({
           }
           if (typeof this.normalizeHeaderKey === "function") {
             const normalized = this.normalizeHeaderKey(key, value);
-            if (normalized && typeof normalized === "string" && normalized.length) {
-              key = normalized;
+            const cleaned = typeof normalized === "string" ? normalized.replace(/[\x00-\x1f\x7f]/g, "") : "";
+            if (cleaned) {
+              key = cleaned;
             }
           }
           headers.push(mimeFuncs.foldLines(key + ": " + value, 76));
@@ -12216,7 +12250,7 @@ var require_mime_node = __commonJS({
         };
         if (envelope.from) {
           list = [];
-          this._convertAddresses(this._parseAddresses(envelope.from), list);
+          this._convertAddresses(this._parseEnvelopeAddresses(envelope.from), list);
           list = list.filter((address) => address && address.address);
           if (list.length && list[0]) {
             this._envelope.from = list[0].address;
@@ -12224,7 +12258,7 @@ var require_mime_node = __commonJS({
         }
         ["to", "cc", "bcc"].forEach((key) => {
           if (envelope[key]) {
-            this._convertAddresses(this._parseAddresses(envelope[key]), this._envelope.to);
+            this._convertAddresses(this._parseEnvelopeAddresses(envelope[key]), this._envelope.to);
           }
         });
         this._envelope.to = this._envelope.to.map((to) => to.address).filter((address) => address);
@@ -12379,13 +12413,57 @@ var require_mime_node = __commonJS({
           [],
           [].concat(addresses).map((address) => {
             if (address && address.address) {
-              address.address = this._normalizeAddress(address.address);
-              address.name = address.name || "";
-              return [address];
+              const normalized = this._normalizeAddress(address.address);
+              if (normalized === address.address && typeof address.name === "string") {
+                return [address];
+              }
+              const copy = Object.assign({}, address);
+              copy.address = normalized;
+              copy.name = address.name || "";
+              return [copy];
             }
-            return addressparser(address);
+            return this._normalizeParsedAddresses(addressparser(address));
           })
         );
+      }
+      /**
+       * Normalizes the addresses of a freshly parsed address list, groups included.
+       *
+       * Everything this method returns carries a normalized address, whether it arrived as an
+       * object or was parsed out of a header value. Without this the two shapes disagree, and
+       * a consumer reading the parsed form back is handed the ambiguous
+       * 'user@evil.com@good.com' that the header and the envelope no longer carry.
+       *
+       * @param {Array} parsed An array of address objects, as returned by addressparser
+       * @return {Array} The same array, with every address normalized
+       */
+      _normalizeParsedAddresses(parsed) {
+        parsed.forEach((entry) => {
+          if (entry.address) {
+            entry.address = this._normalizeAddress(entry.address);
+          } else if (entry.group) {
+            this._normalizeParsedAddresses(entry.group);
+          }
+        });
+        return parsed;
+      }
+      /**
+       * Parses the addresses of an explicitly set envelope.
+       *
+       * An envelope value is an addr-spec and never a display name, so a bare local username
+       * such as 'root' is the address here. Header parsing has to read the same value as a
+       * display name, as a value with no '@' in it can not be an addr-spec in a header.
+       *
+       * @param {Mixed} addresses Addresses to be parsed
+       * @return {Array} An array of address objects
+       */
+      _parseEnvelopeAddresses(addresses) {
+        return this._parseAddresses(addresses).map((entry) => {
+          if (entry.address || entry.group || !entry.name || /[\s@]/.test(entry.name)) {
+            return entry;
+          }
+          return { address: this._normalizeAddress(entry.name), name: "" };
+        });
       }
       /**
        * Normalizes a header key, uses Camel-Case form, except for uppercase MIME-
@@ -12394,7 +12472,7 @@ var require_mime_node = __commonJS({
        * @return {String} key in Camel-Case form
        */
       _normalizeHeaderKey(key) {
-        key = (key || "").toString().replace(/\r?\n|\r/g, " ").trim().toLowerCase().replace(/^X-SMTPAPI$|^(MIME|DKIM|ARC|BIMI)\b|^[a-z]|-(SPF|FBL|ID|MD5)$|-[a-z]/gi, (c) => c.toUpperCase()).replace(/^Content-Features$/i, "Content-features");
+        key = (key || "").toString().replace(/\r?\n|\r/g, " ").replace(/[\x00-\x1f\x7f]/g, "").trim().toLowerCase().replace(/^X-SMTPAPI$|^(MIME|DKIM|ARC|BIMI)\b|^[a-z]|-(SPF|FBL|ID|MD5)$|-[a-z]/gi, (c) => c.toUpperCase()).replace(/^Content-Features$/i, "Content-features");
         return key;
       }
       /**
@@ -12441,7 +12519,7 @@ var require_mime_node = __commonJS({
           case "Message-ID":
           case "In-Reply-To":
           case "Content-Id":
-            value = (value || "").toString().replace(/\r?\n|\r/g, " ");
+            value = (value || "").toString().replace(/\r?\n|\r/g, " ").replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "");
             if (value.charAt(0) !== "<") {
               value = "<" + value;
             }
@@ -12454,7 +12532,7 @@ var require_mime_node = __commonJS({
             value = [].concat.apply(
               [],
               [].concat(value || "").map((elm) => {
-                elm = (elm || "").toString().replace(/\r?\n|\r/g, " ").trim();
+                elm = (elm || "").toString().replace(/\r?\n|\r/g, " ").replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "").trim();
                 return elm.replace(/<[^>]*>/g, (str2) => str2.replace(/\s/g, "")).split(/\s+/);
               })
             ).map((elm) => {
@@ -12472,13 +12550,13 @@ var require_mime_node = __commonJS({
               return value.toUTCString().replace(/GMT/, "+0000");
             }
             value = (value || "").toString().replace(/\r?\n|\r/g, " ");
-            return this._encodeWords(value);
+            return this._encodeHeaderText(value);
           case "Content-Type":
           case "Content-Disposition":
             return (value || "").toString().replace(/\r?\n|\r/g, " ");
           default:
             value = (value || "").toString().replace(/\r?\n|\r/g, " ");
-            return this._encodeWords(value);
+            return this._encodeHeaderText(value);
         }
       }
       /**
@@ -12495,7 +12573,7 @@ var require_mime_node = __commonJS({
           if (address.address) {
             address.address = this._normalizeAddress(address.address);
             if (!address.name) {
-              values.push(address.address.indexOf(" ") >= 0 ? `<${address.address}>` : `${address.address}`);
+              values.push(PLAIN_ADDRESS.test(address.address) ? address.address : `<${address.address}>`);
             } else {
               values.push(`${this._encodeAddressName(address.name)} <${address.address}>`);
             }
@@ -12516,12 +12594,15 @@ var require_mime_node = __commonJS({
        * @return {String} address string
        */
       _normalizeAddress(address) {
-        address = (address || "").toString().replace(/[\x00-\x1F<>]+/g, " ").trim();
-        const lastAt = address.lastIndexOf("@");
-        if (lastAt < 0) {
+        address = (address || "").toString().replace(/[\x00-\x1F\x7F<>]+/g, " ").trim();
+        if (!address) {
           return address;
         }
-        let user = address.substr(0, lastAt);
+        const lastAt = address.lastIndexOf("@");
+        if (lastAt < 0) {
+          return this._normalizeLocalPart(address);
+        }
+        const user = address.substr(0, lastAt);
         const domain = address.substr(lastAt + 1);
         let encodedDomain = domain;
         try {
@@ -12532,15 +12613,25 @@ var require_mime_node = __commonJS({
           }
         } catch (_err) {
         }
-        if (user.indexOf(" ") >= 0) {
-          if (user.charAt(0) !== '"') {
-            user = '"' + user;
-          }
-          if (user.substr(-1) !== '"') {
-            user = user + '"';
-          }
+        return `${this._normalizeLocalPart(user)}@${encodedDomain}`;
+      }
+      /**
+       * Normalizes the local part of an address into a form that can be emitted as is.
+       *
+       * A local part is either a dot-atom or a quoted-string, anything else is not a valid
+       * addr-spec. The quotes of a quoted local part get lost along the way, and a bare
+       * 'user@evil.com@good.com' leaves it to the receiver which '@' splits the domain off,
+       * while the split here is always at the last one. So whatever is not already one of
+       * the two valid forms goes back out as a quoted-string.
+       *
+       * @param {String} user Local part of an address
+       * @return {String} Local part as a dot-atom or as a quoted-string
+       */
+      _normalizeLocalPart(user) {
+        if (DOT_ATOM.test(user) || QUOTED_STRING.test(user)) {
+          return user;
         }
-        return `${user}@${encodedDomain}`;
+        return mimeFuncs.quoteString(user);
       }
       /**
        * If needed, mime encodes the name part
@@ -12551,12 +12642,26 @@ var require_mime_node = __commonJS({
       _encodeAddressName(name) {
         if (!/^[\w ]*$/.test(name)) {
           if (/^[\x20-\x7e]*$/.test(name)) {
-            return '"' + name.replace(/([\\"])/g, "\\$1") + '"';
+            return mimeFuncs.quoteString(name);
           } else {
             return mimeFuncs.encodeWord(name, this._getTextEncoding(name), 52);
           }
         }
         return name;
+      }
+      /**
+       * Encodes an unstructured header value. Such a value can only carry VCHAR and WSP, so a
+       * control char or DEL has to be forced into the mime encoded word that a non-ascii value
+       * would get anyway. HT stays as it is, it is valid folding whitespace here.
+       *
+       * @param {String} value Header value to encode
+       * @returns {String} Mime word encoded string if needed
+       */
+      _encodeHeaderText(value) {
+        return /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value) ? mimeFuncs.encodeWord(value, this._getTextEncoding(value), 52) : (
+          // encodeWords only encodes if needed, otherwise the original string is returned
+          this._encodeWords(value)
+        );
       }
       /**
        * If needed, mime encodes the name part
@@ -12608,9 +12713,9 @@ var require_mime_node = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mail-composer/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mail-composer/index.js
 var require_mail_composer = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mail-composer/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mail-composer/index.js"(exports, module) {
     "use strict";
     var MimeNode = require_mime_node();
     var mimeFuncs = require_mime_funcs();
@@ -13095,9 +13200,9 @@ var require_mail_composer = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/message-parser.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/message-parser.js
 var require_message_parser = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/message-parser.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/message-parser.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var MessageParser = class extends Transform {
@@ -13224,9 +13329,9 @@ var require_message_parser = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/relaxed-body.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/relaxed-body.js
 var require_relaxed_body = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/relaxed-body.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/relaxed-body.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var crypto = __require("crypto");
@@ -13333,9 +13438,9 @@ var require_relaxed_body = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/sign.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/sign.js
 var require_sign = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/sign.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/sign.js"(exports, module) {
     "use strict";
     var punycode = require_punycode();
     var mimeFuncs = require_mime_funcs();
@@ -13359,15 +13464,16 @@ var require_sign = __commonJS({
     };
     module.exports.relaxedHeaders = relaxedHeaders;
     function generateDKIMHeader(domainName, keySelector, fieldNames, hashAlgo, bodyHash) {
+      const cleanTagValue = (value) => (value || "").toString().replace(/[\x00-\x1f\x7f;=]/g, "");
       const dkim = [
         "v=1",
         "a=rsa-" + hashAlgo,
         "c=relaxed/relaxed",
-        "d=" + punycode.toASCII(domainName),
+        "d=" + punycode.toASCII(cleanTagValue(domainName)),
         "q=dns/txt",
-        "s=" + keySelector,
+        "s=" + cleanTagValue(keySelector),
         "bh=" + bodyHash,
-        "h=" + fieldNames
+        "h=" + cleanTagValue(fieldNames)
       ].join("; ");
       return mimeFuncs.foldLines("DKIM-Signature: " + dkim, 76) + ";\r\n b=";
     }
@@ -13406,9 +13512,9 @@ var require_sign = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/index.js
 var require_dkim = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/dkim/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/dkim/index.js"(exports, module) {
     "use strict";
     var MessageParser = require_message_parser();
     var RelaxedBody = require_relaxed_body();
@@ -13601,9 +13707,9 @@ var require_dkim = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-connection/http-proxy-client.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-connection/http-proxy-client.js
 var require_http_proxy_client = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-connection/http-proxy-client.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-connection/http-proxy-client.js"(exports, module) {
     "use strict";
     var net = __require("net");
     var tls = __require("tls");
@@ -13717,9 +13823,9 @@ var require_http_proxy_client = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mailer/mail-message.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mailer/mail-message.js
 var require_mail_message = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mailer/mail-message.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mailer/mail-message.js"(exports, module) {
     "use strict";
     var shared = require_shared();
     var MimeNode = require_mime_node();
@@ -13836,7 +13942,7 @@ var require_mail_message = __commonJS({
         setImmediate(() => resolveNext());
       }
       normalize(callback) {
-        const envelope = this.data.envelope || this.message.getEnvelope();
+        const envelope = this.message.getEnvelope();
         const messageId = this.message.messageId();
         this.resolveAll((err, data) => {
           if (err) {
@@ -13946,19 +14052,13 @@ var require_mail_message = __commonJS({
                 };
               }
               if (value2 && value2.url) {
-                if (key.toLowerCase().trim() === "id") {
-                  let comment2 = (value2.comment || "").toString().replace(/\r?\n|\r/g, " ");
-                  if (mimeFuncs.isPlainText(comment2)) {
-                    comment2 = '"' + comment2 + '"';
-                  } else {
-                    comment2 = mimeFuncs.encodeWord(comment2);
-                  }
-                  return (value2.comment ? comment2 + " " : "") + this._formatListUrl(value2.url).replace(/^<[^:]+:\/{0,2}/, "<");
-                }
                 let comment = (value2.comment || "").toString().replace(/\r?\n|\r/g, " ");
-                if (!mimeFuncs.isPlainText(comment)) {
-                  comment = mimeFuncs.encodeWord(comment);
+                const needsEncoding = !mimeFuncs.isPlainText(comment) || /\x7f/.test(comment);
+                if (key.toLowerCase().trim() === "id") {
+                  comment = needsEncoding ? mimeFuncs.encodeWord(comment) : mimeFuncs.quoteString(comment);
+                  return (value2.comment ? comment + " " : "") + this._formatListUrl(value2.url).replace(/^<[^:]+:\/{0,2}/, "<");
                 }
+                comment = needsEncoding ? mimeFuncs.encodeWord(comment) : comment.replace(/[()\\]/g, "\\$&");
                 return this._formatListUrl(value2.url) + (value2.comment ? " (" + comment + ")" : "");
               }
               return "";
@@ -13967,7 +14067,7 @@ var require_mail_message = __commonJS({
         }));
       }
       _formatListUrl(url) {
-        url = url.replace(/[\s<]+|[\s>]+/g, "");
+        url = url.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "").replace(/[\s<]+|[\s>]+/g, "");
         if (/^(https?|mailto|ftp):/.test(url)) {
           return "<" + url + ">";
         }
@@ -13981,9 +14081,9 @@ var require_mail_message = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mailer/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mailer/index.js
 var require_mailer = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/mailer/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/mailer/index.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events");
     var shared = require_shared();
@@ -14097,8 +14197,8 @@ var require_mailer = __commonJS({
       sendMail(data, callback = null) {
         let promise;
         if (!callback) {
-          promise = new Promise((resolve2, reject) => {
-            callback = shared.callbackPromise(resolve2, reject);
+          promise = new Promise((resolve3, reject) => {
+            callback = shared.callbackPromise(resolve3, reject);
           });
         }
         if (typeof this.getSocket === "function") {
@@ -14372,9 +14472,9 @@ var require_mailer = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-connection/data-stream.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-connection/data-stream.js
 var require_data_stream = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-connection/data-stream.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-connection/data-stream.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var DataStream = class extends Transform {
@@ -14459,9 +14559,9 @@ var require_data_stream = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-connection/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-connection/index.js
 var require_smtp_connection = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-connection/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-connection/index.js"(exports, module) {
     "use strict";
     var packageInfo = require_package();
     var { EventEmitter } = __require("events");
@@ -14806,7 +14906,7 @@ var require_smtp_connection = __commonJS({
           const handler = this.customAuth.get(this._authMethod);
           let lastResponse;
           let returned = false;
-          const resolve2 = () => {
+          const resolve3 = () => {
             if (returned) {
               return;
             }
@@ -14840,8 +14940,8 @@ var require_smtp_connection = __commonJS({
             sendCommand: (cmd, done) => {
               let promise;
               if (!done) {
-                promise = new Promise((resolve3, reject2) => {
-                  done = shared.callbackPromise(resolve3, reject2);
+                promise = new Promise((resolve4, reject2) => {
+                  done = shared.callbackPromise(resolve4, reject2);
                 });
               }
               this._responseActions.push((str2) => {
@@ -14866,11 +14966,11 @@ var require_smtp_connection = __commonJS({
               setImmediate(() => this._sendCommand(cmd));
               return promise;
             },
-            resolve: resolve2,
+            resolve: resolve3,
             reject
           });
           if (handlerResponse && typeof handlerResponse.catch === "function") {
-            handlerResponse.then(resolve2).catch(reject);
+            handlerResponse.then(resolve3).catch(reject);
           }
           return;
         }
@@ -15960,9 +16060,9 @@ var require_smtp_connection = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/xoauth2/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/xoauth2/index.js
 var require_xoauth2 = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/xoauth2/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/xoauth2/index.js"(exports, module) {
     "use strict";
     var { Stream } = __require("stream");
     var nmfetch = require_fetch();
@@ -16320,9 +16420,9 @@ var require_xoauth2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-pool/pool-resource.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-pool/pool-resource.js
 var require_pool_resource = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-pool/pool-resource.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-pool/pool-resource.js"(exports, module) {
     "use strict";
     var SMTPConnection = require_smtp_connection();
     var assign = require_shared().assign;
@@ -16541,9 +16641,9 @@ var require_pool_resource = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/well-known/services.json
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/well-known/services.json
 var require_services = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/well-known/services.json"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/well-known/services.json"(exports, module) {
     module.exports = {
       "1und1": {
         description: "1&1 Mail (German hosting provider)",
@@ -17093,9 +17193,9 @@ var require_services = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/well-known/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/well-known/index.js
 var require_well_known = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/well-known/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/well-known/index.js"(exports, module) {
     "use strict";
     var services = require_services();
     var normalized = {};
@@ -17129,9 +17229,9 @@ var require_well_known = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-pool/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-pool/index.js
 var require_smtp_pool = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-pool/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-pool/index.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events");
     var PoolResource = require_pool_resource();
@@ -17581,8 +17681,8 @@ var require_smtp_pool = __commonJS({
       verify(callback) {
         let promise;
         if (!callback) {
-          promise = new Promise((resolve2, reject) => {
-            callback = shared.callbackPromise(resolve2, reject);
+          promise = new Promise((resolve3, reject) => {
+            callback = shared.callbackPromise(resolve3, reject);
           });
         }
         const auth = new PoolResource(this).auth;
@@ -17668,9 +17768,9 @@ var require_smtp_pool = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-transport/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-transport/index.js
 var require_smtp_transport = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/smtp-transport/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/smtp-transport/index.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events");
     var SMTPConnection = require_smtp_connection();
@@ -17929,8 +18029,8 @@ var require_smtp_transport = __commonJS({
       verify(callback) {
         let promise;
         if (!callback) {
-          promise = new Promise((resolve2, reject) => {
-            callback = shared.callbackPromise(resolve2, reject);
+          promise = new Promise((resolve3, reject) => {
+            callback = shared.callbackPromise(resolve3, reject);
           });
         }
         this.getSocket(this.options, (err, socketOptions) => {
@@ -18037,9 +18137,9 @@ var require_smtp_transport = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/sendmail-transport/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/sendmail-transport/index.js
 var require_sendmail_transport = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/sendmail-transport/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/sendmail-transport/index.js"(exports, module) {
     "use strict";
     var { spawn } = __require("child_process");
     var packageData = require_package();
@@ -18079,10 +18179,10 @@ var require_sendmail_transport = __commonJS({
        */
       send(mail, done) {
         mail.message.keepBcc = true;
-        const envelope = mail.data.envelope || mail.message.getEnvelope();
+        const envelope = mail.message.getEnvelope();
         const messageId = mail.message.messageId();
         let returned;
-        const hasInvalidAddresses = [].concat(envelope.from || []).concat(envelope.to || []).some((addr) => /^-/.test(addr));
+        const hasInvalidAddresses = [].concat(envelope.from || []).concat(envelope.to || []).some((addr) => /^"?-/.test(addr));
         if (hasInvalidAddresses) {
           const err = new Error("Can not send mail. Invalid envelope addresses.");
           err.code = errors.ESENDMAIL;
@@ -18213,9 +18313,9 @@ var require_sendmail_transport = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/stream-transport/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/stream-transport/index.js
 var require_stream_transport = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/stream-transport/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/stream-transport/index.js"(exports, module) {
     "use strict";
     var packageData = require_package();
     var shared = require_shared();
@@ -18240,7 +18340,7 @@ var require_stream_transport = __commonJS({
        */
       send(mail, done) {
         mail.message.keepBcc = true;
-        const envelope = mail.data.envelope || mail.message.getEnvelope();
+        const envelope = mail.message.getEnvelope();
         const messageId = mail.message.messageId();
         const recipients = [].concat(envelope.to || []);
         if (recipients.length > 3) {
@@ -18334,9 +18434,9 @@ var require_stream_transport = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/json-transport/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/json-transport/index.js
 var require_json_transport = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/json-transport/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/json-transport/index.js"(exports, module) {
     "use strict";
     var packageData = require_package();
     var shared = require_shared();
@@ -18358,7 +18458,7 @@ var require_json_transport = __commonJS({
        */
       send(mail, done) {
         mail.message.keepBcc = true;
-        const envelope = mail.data.envelope || mail.message.getEnvelope();
+        const envelope = mail.message.getEnvelope();
         const messageId = mail.message.messageId();
         const recipients = [].concat(envelope.to || []);
         if (recipients.length > 3) {
@@ -18403,9 +18503,9 @@ var require_json_transport = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/ses-transport/index.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/ses-transport/index.js
 var require_ses_transport = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/ses-transport/index.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/ses-transport/index.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events");
     var packageData = require_package();
@@ -18452,7 +18552,7 @@ var require_ses_transport = __commonJS({
           const mimeNode = new MimeNode("text/plain");
           fromHeader = mimeNode._convertAddresses(mimeNode._parseAddresses(fromHeader.value));
         }
-        const envelope = mail.data.envelope || mail.message.getEnvelope();
+        const envelope = mail.message.getEnvelope();
         const messageId = mail.message.messageId();
         const recipients = [].concat(envelope.to || []);
         if (recipients.length > 3) {
@@ -18583,8 +18683,8 @@ var require_ses_transport = __commonJS({
       verify(callback) {
         let promise;
         if (!callback) {
-          promise = new Promise((resolve2, reject) => {
-            callback = shared.callbackPromise(resolve2, reject);
+          promise = new Promise((resolve3, reject) => {
+            callback = shared.callbackPromise(resolve3, reject);
           });
         }
         const cb = (err) => {
@@ -18622,9 +18722,9 @@ var require_ses_transport = __commonJS({
   }
 });
 
-// node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/nodemailer.js
+// node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/nodemailer.js
 var require_nodemailer = __commonJS({
-  "node_modules/.pnpm/nodemailer@9.0.4/node_modules/nodemailer/lib/nodemailer.js"(exports, module) {
+  "node_modules/.pnpm/nodemailer@9.0.5/node_modules/nodemailer/lib/nodemailer.js"(exports, module) {
     "use strict";
     var Mailer = require_mailer();
     var shared = require_shared();
@@ -18685,8 +18785,8 @@ var require_nodemailer = __commonJS({
         apiUrl = false;
       }
       if (!callback) {
-        promise = new Promise((resolve2, reject) => {
-          callback = shared.callbackPromise(resolve2, reject);
+        promise = new Promise((resolve3, reject) => {
+          callback = shared.callbackPromise(resolve3, reject);
         });
       }
       if (ETHEREAL_CACHE && testAccount) {
@@ -20751,7 +20851,7 @@ var require_thread_stream = __commonJS({
     var { version: version3 } = require_package2();
     var { EventEmitter } = __require("events");
     var { Worker } = __require("worker_threads");
-    var { join: join6 } = __require("path");
+    var { join: join10 } = __require("path");
     var { pathToFileURL } = __require("url");
     var { wait } = require_wait();
     var {
@@ -20802,7 +20902,7 @@ var require_thread_stream = __commonJS({
     function createWorker(stream, opts) {
       const { filename, workerData } = opts;
       const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
-      const toExecute = bundlerOverrides["thread-stream-worker"] || join6(__dirname, "lib", "worker.js");
+      const toExecute = bundlerOverrides["thread-stream-worker"] || join10(__dirname, "lib", "worker.js");
       const worker = new Worker(toExecute, {
         ...opts.workerOpts,
         name: opts.workerOpts?.name || "thread-stream",
@@ -21268,10 +21368,10 @@ var require_transport = __commonJS({
   "node_modules/.pnpm/pino@10.3.1/node_modules/pino/lib/transport.js"(exports, module) {
     "use strict";
     var { createRequire: createRequire2 } = __require("module");
-    var { existsSync: existsSync6 } = __require("node:fs");
+    var { existsSync: existsSync8 } = __require("node:fs");
     var getCallers = require_caller();
-    var { join: join6, isAbsolute: isAbsolute3, sep: sep2 } = __require("node:path");
-    var { fileURLToPath } = __require("node:url");
+    var { join: join10, isAbsolute: isAbsolute2, sep: sep3 } = __require("node:path");
+    var { fileURLToPath: fileURLToPath2 } = __require("node:url");
     var sleep2 = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
@@ -21337,12 +21437,12 @@ var require_transport = __commonJS({
       let path = unquoted;
       if (path.startsWith("file://")) {
         try {
-          path = fileURLToPath(path);
+          path = fileURLToPath2(path);
         } catch {
           return false;
         }
       }
-      return isAbsolute3(path) && !existsSync6(path);
+      return isAbsolute2(path) && !existsSync8(path);
     }
     function stripQuotes(value) {
       const first = value[0];
@@ -21423,7 +21523,7 @@ var require_transport = __commonJS({
         throw new Error("only one of target or targets can be specified");
       }
       if (targets) {
-        target = bundlerOverrides["pino-worker"] || join6(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join10(__dirname, "worker.js");
         options.targets = targets.filter((dest) => dest.target).map((dest) => {
           return {
             ...dest,
@@ -21441,7 +21541,7 @@ var require_transport = __commonJS({
           });
         });
       } else if (pipeline) {
-        target = bundlerOverrides["pino-worker"] || join6(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join10(__dirname, "worker.js");
         options.pipelines = [pipeline.map((dest) => {
           return {
             ...dest,
@@ -21460,16 +21560,16 @@ var require_transport = __commonJS({
       return buildStream(fixTarget(target), options, worker, sync, name);
       function fixTarget(origin) {
         origin = bundlerOverrides[origin] || origin;
-        if (isAbsolute3(origin) || origin.indexOf("file://") === 0) {
+        if (isAbsolute2(origin) || origin.indexOf("file://") === 0) {
           return origin;
         }
         if (origin === "pino/file") {
-          return join6(__dirname, "..", "file.js");
+          return join10(__dirname, "..", "file.js");
         }
         let fixTarget2;
         for (const filePath of callers) {
           try {
-            const context = filePath === "node:repl" ? process.cwd() + sep2 : filePath;
+            const context = filePath === "node:repl" ? process.cwd() + sep3 : filePath;
             fixTarget2 = createRequire2(context).resolve(origin);
             break;
           } catch (err) {
@@ -22444,7 +22544,7 @@ var require_safe_stable_stringify = __commonJS({
               return circularValue;
             }
             let res = "";
-            let join6 = ",";
+            let join10 = ",";
             const originalIndentation = indentation;
             if (Array.isArray(value)) {
               if (value.length === 0) {
@@ -22458,7 +22558,7 @@ var require_safe_stable_stringify = __commonJS({
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join6 = `,
+                join10 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -22466,13 +22566,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join6;
+                res += join10;
               }
               const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join10}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -22493,7 +22593,7 @@ ${originalIndentation}`;
             let separator = "";
             if (spacer !== "") {
               indentation += spacer;
-              join6 = `,
+              join10 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -22507,13 +22607,13 @@ ${indentation}`;
               const tmp = stringifyFnReplacer(key2, value, stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join6;
+                separator = join10;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...":${whitespace}"${getItemCount(removedKeys)} not stringified"`;
-              separator = join6;
+              separator = join10;
             }
             if (spacer !== "" && separator.length > 1) {
               res = `
@@ -22554,7 +22654,7 @@ ${originalIndentation}`;
             }
             const originalIndentation = indentation;
             let res = "";
-            let join6 = ",";
+            let join10 = ",";
             if (Array.isArray(value)) {
               if (value.length === 0) {
                 return "[]";
@@ -22567,7 +22667,7 @@ ${originalIndentation}`;
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join6 = `,
+                join10 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -22575,13 +22675,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join6;
+                res += join10;
               }
               const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join10}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -22594,7 +22694,7 @@ ${originalIndentation}`;
             let whitespace = "";
             if (spacer !== "") {
               indentation += spacer;
-              join6 = `,
+              join10 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -22603,7 +22703,7 @@ ${indentation}`;
               const tmp = stringifyArrayReplacer(key2, value[key2], stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join6;
+                separator = join10;
               }
             }
             if (spacer !== "" && separator.length > 1) {
@@ -22661,20 +22761,20 @@ ${originalIndentation}`;
               indentation += spacer;
               let res2 = `
 ${indentation}`;
-              const join7 = `,
+              const join11 = `,
 ${indentation}`;
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
               let i = 0;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
                 res2 += tmp2 !== void 0 ? tmp2 : "null";
-                res2 += join7;
+                res2 += join11;
               }
               const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
               res2 += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res2 += `${join7}"... ${getItemCount(removedKeys)} not stringified"`;
+                res2 += `${join11}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               res2 += `
 ${originalIndentation}`;
@@ -22690,16 +22790,16 @@ ${originalIndentation}`;
               return '"[Object]"';
             }
             indentation += spacer;
-            const join6 = `,
+            const join10 = `,
 ${indentation}`;
             let res = "";
             let separator = "";
             let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
             if (isTypedArrayWithEntries(value)) {
-              res += stringifyTypedArray(value, join6, maximumBreadth);
+              res += stringifyTypedArray(value, join10, maximumBreadth);
               keys = keys.slice(value.length);
               maximumPropertiesToStringify -= value.length;
-              separator = join6;
+              separator = join10;
             }
             if (deterministic) {
               keys = sort(keys, comparator);
@@ -22710,13 +22810,13 @@ ${indentation}`;
               const tmp = stringifyIndent(key2, value[key2], stack, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}: ${tmp}`;
-                separator = join6;
+                separator = join10;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...": "${getItemCount(removedKeys)} not stringified"`;
-              separator = join6;
+              separator = join10;
             }
             if (separator !== "") {
               res = `
@@ -23242,9 +23342,9 @@ var require_pino = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/logger.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/logger.js
 var require_logger = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/logger.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/logger.js"(exports, module) {
     "use strict";
     var logger = require_pino()();
     logger.level = "trace";
@@ -43476,9 +43576,9 @@ var require_src = __commonJS({
   }
 });
 
-// node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/charsets.js
+// node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/charsets.js
 var require_charsets = __commonJS({
-  "node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/charsets.js"(exports, module) {
+  "node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/charsets.js"(exports, module) {
     "use strict";
     module.exports = {
       "866": "IBM866",
@@ -43691,9 +43791,9 @@ var require_charsets = __commonJS({
   }
 });
 
-// node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/charset.js
+// node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/charset.js
 var require_charset = __commonJS({
-  "node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/charset.js"(exports, module) {
+  "node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/charset.js"(exports, module) {
     "use strict";
     var { Buffer: Buffer2 } = __require("node:buffer");
     var iconv = require_lib();
@@ -44170,9 +44270,9 @@ var require_libqp = __commonJS({
   }
 });
 
-// node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/mimetypes.js
+// node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/mimetypes.js
 var require_mimetypes = __commonJS({
-  "node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/mimetypes.js"(exports, module) {
+  "node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/mimetypes.js"(exports, module) {
     "use strict";
     module.exports = {
       list: {
@@ -46221,9 +46321,9 @@ var require_mimetypes = __commonJS({
   }
 });
 
-// node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/libmime.js
+// node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/libmime.js
 var require_libmime = __commonJS({
-  "node_modules/.pnpm/libmime@5.4.1/node_modules/libmime/lib/libmime.js"(exports, module) {
+  "node_modules/.pnpm/libmime@5.4.2/node_modules/libmime/lib/libmime.js"(exports, module) {
     "use strict";
     var { Buffer: Buffer2 } = __require("node:buffer");
     var libcharset = require_charset();
@@ -46232,6 +46332,20 @@ var require_libmime = __commonJS({
     var mimetypes = require_mimetypes();
     var STAGE_KEY = 4097;
     var STAGE_VALUE = 4098;
+    var setOwnProperty = (obj, key, value) => {
+      if (key === "__proto__") {
+        Object.defineProperty(obj, key, {
+          value,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
+      } else {
+        obj[key] = value;
+      }
+    };
+    var hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+    var isWSP = (chr) => chr === " " || chr === "	" || chr === "\r" || chr === "\n" || chr === "\f" || chr === "\v";
     var Libmime = class {
       constructor(config2) {
         this.config = config2 || {};
@@ -46512,20 +46626,26 @@ var require_libmime = __commonJS({
        * header might have its own rules (eg. formatted email addresses and such)
        *
        * @param {String} headers Headers string
-       * @return {Object} An object of headers, where header keys are object keys. NB! Several values with the same key make up an Array
+       * @return {Object} An object of headers, where header keys are object keys and every value is an Array of the values for that key
        */
       decodeHeaders(headers) {
         let lines = headers.split(/\r?\n|\r/), headersObj = {}, header, i, len;
-        for (i = lines.length - 1; i >= 0; i--) {
-          if (i && lines[i].match(/^\s/)) {
+        let headersPos = 0;
+        while (headersPos < lines.length && lines[headersPos] === "") {
+          headersPos++;
+        }
+        let bodyPos = lines.indexOf("", headersPos);
+        lines = lines.slice(headersPos, bodyPos >= 0 ? bodyPos : lines.length);
+        for (i = lines.length - 1; i > 0; i--) {
+          if (/^[ \t]/.test(lines[i])) {
             lines[i - 1] += "\r\n" + lines[i];
             lines.splice(i, 1);
           }
         }
         for (i = 0, len = lines.length; i < len; i++) {
           header = this.decodeHeader(lines[i]);
-          if (!headersObj[header.key]) {
-            headersObj[header.key] = [header.value];
+          if (!hasOwn(headersObj, header.key)) {
+            setOwnProperty(headersObj, header.key, [header.value]);
           } else {
             headersObj[header.key].push(header.value);
           }
@@ -46563,7 +46683,7 @@ var require_libmime = __commonJS({
        * Parses a header value with key=value arguments into a structured
        * object.
        *
-       *   parseHeaderValue('content-type: text/plain; CHARSET='UTF-8'') ->
+       *   parseHeaderValue('text/plain; CHARSET=UTF-8') ->
        *   {
        *     'value': 'text/plain',
        *     'params': {
@@ -46581,101 +46701,109 @@ var require_libmime = __commonJS({
         };
         let key = false;
         let value = "";
+        let valueEnd = 0;
         let stage = STAGE_VALUE;
         let quote = false;
         let escaped = false;
         let chr;
+        let commit = () => {
+          let collected = value.substring(0, valueEnd);
+          value = "";
+          valueEnd = 0;
+          if (stage === STAGE_KEY) {
+            if (collected) {
+              setOwnProperty(response.params, collected.toLowerCase(), "");
+            }
+          } else if (key === false) {
+            response.value = collected;
+          } else {
+            setOwnProperty(response.params, key, collected);
+          }
+        };
         for (let i = 0, len = str2.length; i < len; i++) {
           chr = str2.charAt(i);
           switch (stage) {
             case STAGE_KEY:
               if (chr === "=") {
-                key = value.trim().toLowerCase();
-                stage = STAGE_VALUE;
+                key = value.substring(0, valueEnd).toLowerCase();
                 value = "";
-                break;
+                valueEnd = 0;
+                stage = STAGE_VALUE;
+              } else if (chr === ";") {
+                commit();
+              } else if (isWSP(chr)) {
+                if (value.length) {
+                  value += chr;
+                }
+              } else {
+                value += chr;
+                valueEnd = value.length;
               }
-              value += chr;
               break;
             case STAGE_VALUE:
               if (escaped) {
                 value += chr;
+                valueEnd = value.length;
               } else if (chr === "\\") {
                 escaped = true;
                 continue;
-              } else if (quote && chr === quote) {
-                quote = false;
-              } else if (!quote && chr === '"') {
-                quote = chr;
+              } else if (chr === '"') {
+                quote = !quote;
               } else if (!quote && chr === ";") {
-                if (key === false) {
-                  response.value = value.trim();
-                } else {
-                  response.params[key] = value.trim();
-                }
+                commit();
                 stage = STAGE_KEY;
-                value = "";
+              } else if (!quote && isWSP(chr)) {
+                if (value.length) {
+                  value += chr;
+                }
               } else {
                 value += chr;
+                valueEnd = value.length;
               }
               escaped = false;
               break;
           }
         }
-        value = value.trim();
-        if (stage === STAGE_VALUE) {
-          if (key === false) {
-            response.value = value;
-          } else {
-            response.params[key] = value;
-          }
-        } else if (value) {
-          response.params[value.toLowerCase()] = "";
-        }
-        Object.keys(response.params).forEach((key2) => {
-          let actualKey;
-          let nr;
-          let value2;
+        commit();
+        let continuations = /* @__PURE__ */ new Map();
+        for (let key2 of Object.keys(response.params)) {
           let match = key2.match(/\*((\d+)\*?)?$/);
           if (!match) {
-            return;
+            continue;
           }
-          actualKey = key2.substr(0, match.index).toLowerCase();
-          nr = Number(match[2]) || 0;
-          if (!response.params[actualKey] || typeof response.params[actualKey] !== "object") {
-            response.params[actualKey] = {
+          let actualKey = key2.substr(0, match.index).toLowerCase();
+          let nr = Number(match[2]) || 0;
+          let value2 = response.params[key2];
+          delete response.params[key2];
+          let continuation = continuations.get(actualKey);
+          if (!continuation) {
+            continuation = {
               charset: false,
               values: []
             };
+            continuations.set(actualKey, continuation);
           }
-          value2 = response.params[key2];
           if (nr === 0 && match[0].charAt(match[0].length - 1) === "*" && (match = value2.match(/^([^']*)'[^']*'(.*)$/))) {
-            response.params[actualKey].charset = match[1] || "utf-8";
+            continuation.charset = match[1] || "utf-8";
             value2 = match[2];
           }
-          response.params[actualKey].values.push({ nr, value: value2 });
-          delete response.params[key2];
-        });
-        Object.keys(response.params).forEach((key2) => {
-          let value2;
-          if (response.params[key2] && Array.isArray(response.params[key2].values)) {
-            value2 = response.params[key2].values.sort((a, b) => a.nr - b.nr).map((val) => val && val.value || "").join("");
-            if (response.params[key2].charset) {
-              response.params[key2] = this.decodeWords(
-                "=?" + response.params[key2].charset + "?Q?" + value2.replace(/[=?_\s]/g, (s) => {
-                  let c = s.charCodeAt(0).toString(16);
-                  if (s === " ") {
-                    return "_";
-                  } else {
-                    return "%" + (c.length < 2 ? "0" : "") + c;
-                  }
-                }).replace(/%/g, "=") + "?="
-              );
-            } else {
-              response.params[key2] = this.decodeWords(value2);
-            }
+          continuation.values.push({ nr, value: value2 });
+        }
+        for (let [key2, continuation] of continuations) {
+          let value2 = continuation.values.sort((a, b) => a.nr - b.nr).map((val) => val.value).join("");
+          if (!continuation.charset) {
+            setOwnProperty(response.params, key2, this.decodeWords(value2));
+            continue;
           }
-        });
+          let qpValue = value2.replace(/[=_\s]/g, (s) => {
+            if (s === " ") {
+              return "_";
+            }
+            let c = s.charCodeAt(0).toString(16);
+            return "%" + (c.length < 2 ? "0" : "") + c;
+          }).replace(/%/g, "=");
+          setOwnProperty(response.params, key2, this.decodeWord(continuation.charset, "Q", qpValue));
+        }
         return response;
       }
       /**
@@ -46696,7 +46824,10 @@ var require_libmime = __commonJS({
        */
       buildHeaderParam(key, data, maxLength, fromCharset) {
         let list = [];
-        let encodedStr = typeof data === "string" ? data : this.decode(data, fromCharset);
+        if (typeof data !== "string" && !Buffer2.isBuffer(data)) {
+          data = data === null || data === void 0 ? "" : data.toString();
+        }
+        let encodedStr = typeof data === "string" ? data : libcharset.decode(data, fromCharset);
         let encodedStrArr;
         let chr, ord;
         let line;
@@ -46805,7 +46936,7 @@ var require_libmime = __commonJS({
        */
       detectExtension(mimeType) {
         mimeType = (mimeType || "").toString().toLowerCase().replace(/\s/g, "");
-        if (!(mimeType in mimetypes.list)) {
+        if (!hasOwn(mimetypes.list, mimeType)) {
           return "bin";
         }
         if (typeof mimetypes.list[mimeType] === "string") {
@@ -46828,7 +46959,7 @@ var require_libmime = __commonJS({
        */
       detectMimeType(extension) {
         extension = (extension || "").toString().toLowerCase().replace(/\s/g, "").replace(/^\./g, "").split(".").pop();
-        if (!(extension in mimetypes.extensions)) {
+        if (!hasOwn(mimetypes.extensions, extension)) {
           return "application/octet-stream";
         }
         if (typeof mimetypes.extensions[extension] === "string") {
@@ -46915,16 +47046,10 @@ var require_libmime = __commonJS({
       }
       encodeURICharComponent(chr) {
         let res = "";
-        let ord = chr.charCodeAt(0).toString(16).toUpperCase();
-        if (ord.length % 2) {
-          ord = "0" + ord;
-        }
-        if (ord.length > 2) {
-          for (let i = 0, len = ord.length / 2; i < len; i++) {
-            res += "%" + ord.substr(i, 2);
-          }
-        } else {
-          res += "%" + ord;
+        let buf = Buffer2.from(chr, "utf-8");
+        for (let i = 0, len = buf.length; i < len; i++) {
+          let ord = buf[i].toString(16).toUpperCase();
+          res += "%" + (ord.length < 2 ? "0" : "") + ord;
         }
         return res;
       }
@@ -46943,9 +47068,9 @@ var require_libmime = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/headers.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/headers.js
 var require_headers = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/headers.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/headers.js"(exports, module) {
     "use strict";
     var libmime = require_libmime();
     var Libmime = (
@@ -47048,7 +47173,7 @@ var require_headers = __commonJS({
           value = Buffer.from(value);
         }
         value = value.toString("binary");
-        this.addFormatted(key, this.libmime.foldLines(key + ": " + value.replace(/\r?\n/g, ""), 76, false), index);
+        this.addFormatted(key, this.libmime.foldLines(key + ": " + value.replace(/[\r\n]/g, ""), 76, false), index);
       }
       /**
        * @param {string} key
@@ -47068,6 +47193,10 @@ var require_headers = __commonJS({
         }
         if (typeof line !== "string") {
           line = line.toString("binary");
+        }
+        line = this._normalizeInsertedLine(line);
+        if (!line) {
+          return;
         }
         let header = {
           key: this._normalizeHeader(key),
@@ -47135,7 +47264,10 @@ var require_headers = __commonJS({
         this.add(keyName, value, index);
       }
       /**
-       * @param {string | false} [lineEnd]
+       * Serializes the headers. Unmodified headers are returned byte for byte as they
+       * were received, otherwise every line is rebuilt with `lineEnd` line endings.
+       *
+       * @param {string | false} [lineEnd] Line ending to use, defaults to CRLF.
        * @returns {Buffer}
        */
       build(lineEnd) {
@@ -47146,11 +47278,11 @@ var require_headers = __commonJS({
           this._parseHeaders();
         }
         let lines = this._getLines();
-        lineEnd = lineEnd || "\r\n";
-        let headers = lines.map((line) => this._buildHeaderLine(line.line.replace(/\r?\n/g, lineEnd))).reduce(
+        const ending = lineEnd || "\r\n";
+        let headers = lines.map((line) => this._normalizeLineBreaks(line.line, ending)).filter((line) => line !== "").map((line) => this._buildHeaderLine(line)).reduce(
           (joined, line, idx) => {
             if (idx) {
-              joined.push(Buffer.from(lineEnd, "binary"));
+              joined.push(Buffer.from(ending, "binary"));
             }
             joined.push(line);
             return joined;
@@ -47158,12 +47290,12 @@ var require_headers = __commonJS({
           /** @type {Buffer[]} */
           []
         );
-        headers.push(Buffer.from(lineEnd + lineEnd, "binary"));
+        headers.push(Buffer.from(ending + ending, "binary"));
         if (this.mbox) {
-          headers.unshift(Buffer.from(this.mbox + lineEnd, "binary"));
+          headers.unshift(Buffer.from(this.mbox + ending, "binary"));
         }
         if (this.http) {
-          headers.unshift(Buffer.from(this.http + lineEnd, "binary"));
+          headers.unshift(Buffer.from(this.http + ending, "binary"));
         }
         return Buffer.concat(headers);
       }
@@ -47173,6 +47305,53 @@ var require_headers = __commonJS({
        */
       _normalizeHeader(key) {
         return (key || "").toLowerCase().trim();
+      }
+      /**
+       * Rewrites the line breaks of a header line so that the line can only ever parse
+       * back as the single header it was reported as. A line break followed by whitespace
+       * is folding and becomes `lineEnd`, every other line break would start a new header
+       * line and is dropped.
+       *
+       * A bare <CR> is never a line break for _parseHeaders, so promoting one here would
+       * emit a header line that was never reported as parsed.
+       *
+       * @param {string} line Header line to normalize.
+       * @param {string} lineEnd Line ending to fold with.
+       * @returns {string} Line with only folding line breaks left.
+       */
+      _normalizeLineBreaks(line, lineEnd) {
+        return line.replace(/^[\r\n]+/, "").replace(/\r\n|\r|\n/g, (match, offset, source) => match !== "\r" && this._isFoldingChar(source.charAt(offset + match.length)) ? lineEnd : "");
+      }
+      /**
+       * Prepares a caller supplied line for insertion. On top of the line break rules an
+       * inserted line has to stand on its own: a leading fold or indent would attach it to
+       * whichever header happens to precede it, and a leading line break would close the
+       * header block outright.
+       *
+       * Lines that were parsed out of a message keep their leading whitespace instead, so
+       * that rebuilding can never turn an indented continuation into a header of its own.
+       *
+       * An inserted line is normalized twice, here with CRLF and again in build() with the
+       * line ending the caller asked for. That is only sound because _normalizeLineBreaks is
+       * idempotent over its own output: the folds this pass emits are still recognized as
+       * folds by the next one. Any change to how a fold is represented has to keep that true.
+       *
+       * @param {string} line Formatted header line supplied by the caller.
+       * @returns {string} Line that inserts as exactly one header, or an empty string.
+       */
+      _normalizeInsertedLine(line) {
+        return this._normalizeLineBreaks(line.replace(/^[\r\n \t]+/, ""), "\r\n");
+      }
+      /**
+       * Tells whether a character continues the previous header line rather than
+       * starting a new one. Used by both the parser and the builder so that the two
+       * can not disagree on what folding is.
+       *
+       * @param {string} chr Character that follows a line break.
+       * @returns {boolean} True if the line break is folding.
+       */
+      _isFoldingChar(chr) {
+        return chr === " " || chr === "	";
       }
       /**
        * @returns {HeaderLine[]}
@@ -47198,8 +47377,7 @@ var require_headers = __commonJS({
             /** @type {string} */
             lines[i]
           );
-          let chr = currentLine.charAt(0);
-          if (i && (chr === " " || chr === "	")) {
+          if (i && this._isFoldingChar(currentLine.charAt(0))) {
             lines[i - 1] = /** @type {string} */
             lines[i - 1] + "\r\n" + currentLine;
             lines.splice(i, 1);
@@ -47249,9 +47427,9 @@ var require_headers = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/mime-node.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/mime-node.js
 var require_mime_node2 = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/mime-node.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/mime-node.js"(exports, module) {
     "use strict";
     var Headers = require_headers();
     var libmime = require_libmime();
@@ -47273,6 +47451,7 @@ var require_mime_node2 = __commonJS({
         this.root = !parentNode;
         this.parentNode = parentNode;
         this._parentBoundary = this.parentNode && this.parentNode._boundary;
+        this._parentBoundaryOwner = this.parentNode || false;
         this._headersLines = [];
         this._headerlen = 0;
         this._parsedContentType = false;
@@ -47547,16 +47726,40 @@ var require_mime_node2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/message-splitter.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/message-splitter.js
 var require_message_splitter = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/message-splitter.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/message-splitter.js"(exports, module) {
     "use strict";
     var Transform = __require("stream").Transform;
     var MimeNode = require_mime_node2();
     var MAX_HEAD_SIZE = 1 * 1024 * 1024;
     var MAX_CHILD_NODES = 1e3;
+    var MAX_PENDING_LINE_SIZE = 64 * 1024;
+    var MAX_PENDING_LINE_CHUNKS = 1024;
+    var BOUNDARY_LINE_SUFFIX = 2 + 2 + 2;
+    var BOUNDARY_LINE_OVERHEAD = BOUNDARY_LINE_SUFFIX + 2;
     var HEAD = 1;
     var BODY = 2;
+    function maxLenError(message) {
+      let err = (
+        /** @type {Error & {code: string}} */
+        new Error(message)
+      );
+      err.code = "EMAXLEN";
+      return err;
+    }
+    function trimBodyLineEnd(group, chunk, start, end) {
+      if (group.type !== "body" || !group.node || !group.node.parentNode) {
+        return end;
+      }
+      if (end > start && chunk[end - 1] === 10) {
+        end--;
+        if (end > start && chunk[end - 1] === 13) {
+          end--;
+        }
+      }
+      return end;
+    }
     var MessageSplitter = class extends Transform {
       /**
        * @param {SplitterOptions} [config]
@@ -47570,15 +47773,46 @@ var require_message_splitter = __commonJS({
         this.config = config2 || {};
         this.maxHeadSize = this.config.maxHeadSize || MAX_HEAD_SIZE;
         this.maxChildNodes = this.config.maxChildNodes || MAX_CHILD_NODES;
-        this.tree = [];
         this.nodeCounter = 0;
         this.node = /** @type {MimeNodeType} */
         /** @type {unknown} */
         null;
+        this.inEpilogue = false;
         this.newNode();
-        this.tree.push(this.node);
-        this.line = false;
+        this.lineChunks = [];
+        this.lineLength = 0;
         this.hasFailed = false;
+        this.pendingLineTruncated = false;
+      }
+      /**
+       * Appends unterminated trailing data to the pending line.
+       *
+       * @param {Buffer} chunk Data that follows the last line break of a write.
+       * @returns {void}
+       */
+      appendPendingLine(chunk) {
+        if (!chunk.length) {
+          return;
+        }
+        this.lineChunks.push(chunk);
+        this.lineLength += chunk.length;
+        if (this.lineChunks.length >= MAX_PENDING_LINE_CHUNKS) {
+          this.lineChunks = [Buffer.concat(this.lineChunks, this.lineLength)];
+        }
+      }
+      /**
+       * Returns the pending line as a single buffer and clears the pending state.
+       *
+       * @returns {Buffer | false} Pending line contents or false if there was none.
+       */
+      takePendingLine() {
+        if (!this.lineLength) {
+          return false;
+        }
+        let line = this.lineChunks.length === 1 ? this.lineChunks[0] : Buffer.concat(this.lineChunks, this.lineLength);
+        this.lineChunks = [];
+        this.lineLength = 0;
+        return line;
       }
       /**
        * @param {Buffer} chunk
@@ -47592,7 +47826,7 @@ var require_message_splitter = __commonJS({
         let group = {
           type: "none"
         };
-        let groupstart = this.line ? -this.line.length : 0;
+        let groupstart = this.lineLength ? -this.lineLength : 0;
         let groupend = 0;
         let checkTrailingLinebreak = (data) => {
           if (data.type === "body" && data.node.parentNode && data.value && data.value.length) {
@@ -47604,9 +47838,8 @@ var require_message_splitter = __commonJS({
                 groupstart--;
                 groupend--;
                 pos--;
-                if (groupstart < 0 && !this.line) {
-                  this.line = Buffer.allocUnsafe(1);
-                  this.line[0] = 13;
+                if (groupstart < 0 && !this.lineLength) {
+                  this.appendPendingLine(Buffer.from([13]));
                 }
                 data.value = data.value.slice(0, data.value.length - 2);
               } else {
@@ -47635,15 +47868,8 @@ var require_message_splitter = __commonJS({
                 }
                 if (flush) {
                   if (group && group.type !== "none") {
-                    if (group.type === "body" && groupend >= groupstart && group.node && group.node.parentNode) {
-                      if (chunk[groupend - 1] === 10) {
-                        groupend--;
-                        if (groupend >= groupstart && chunk[groupend - 1] === 13) {
-                          groupend--;
-                        }
-                      }
-                    }
-                    if (groupstart !== groupend) {
+                    groupend = trimBodyLineEnd(group, chunk, groupstart, groupend);
+                    if (groupstart < groupend) {
                       group.value = chunk.slice(groupstart, groupend);
                       if (groupend < i && "value" in data) {
                         data.value = chunk.slice(groupend, i);
@@ -47662,14 +47888,7 @@ var require_message_splitter = __commonJS({
                 if (data.type === group.type) {
                   groupend = i;
                 } else {
-                  if (group.type === "body" && groupend >= groupstart && group.node && group.node.parentNode) {
-                    if (chunk[groupend - 1] === 10) {
-                      groupend--;
-                      if (groupend >= groupstart && chunk[groupend - 1] === 13) {
-                        groupend--;
-                      }
-                    }
-                  }
+                  groupend = trimBodyLineEnd(group, chunk, groupstart, groupend);
                   if (group.type !== "none" && group.type !== "node") {
                     if (groupstart !== groupend) {
                       group.value = chunk.slice(groupstart, groupend);
@@ -47702,14 +47921,7 @@ var require_message_splitter = __commonJS({
               });
             }
           }
-          if (pos >= groupstart + 1 && group.type === "body" && group.node && group.node.parentNode) {
-            if (chunk[pos - 1] === 10) {
-              pos--;
-              if (pos >= groupstart && chunk[pos - 1] === 13) {
-                pos--;
-              }
-            }
-          }
+          pos = trimBodyLineEnd(group, chunk, groupstart, pos);
           if (group.type !== "none" && group.type !== "node" && pos > groupstart) {
             group.value = chunk.slice(groupstart, pos);
             if (group.value && group.value.length) {
@@ -47720,11 +47932,12 @@ var require_message_splitter = __commonJS({
             }
           }
           if (pos < chunk.length) {
-            if (this.line) {
-              this.line = Buffer.concat([this.line, chunk.slice(pos)]);
-            } else {
-              this.line = chunk.slice(pos);
-            }
+            this.appendPendingLine(chunk.slice(Math.max(pos, 0)));
+          }
+          let pendingLineError = this.enforcePendingLineLimit();
+          if (pendingLineError) {
+            this.hasFailed = true;
+            return callback(pendingLineError);
           }
           callback();
         };
@@ -47755,7 +47968,7 @@ var require_message_splitter = __commonJS({
        * @returns {1 | 2 | false}
        */
       compareBoundary(line, startpos, boundary) {
-        if (line.length < boundary.length + 3 + startpos || line.length > boundary.length + 6 + startpos) {
+        if (line.length < boundary.length + 3 + startpos || line.length > boundary.length + BOUNDARY_LINE_SUFFIX + startpos) {
           return false;
         }
         for (let i = 0; i < boundary.length; i++) {
@@ -47793,7 +48006,7 @@ var require_message_splitter = __commonJS({
         let startpos = 0;
         if (line.length >= 1 && (line[0] === 13 || line[0] === 10)) {
           startpos++;
-          if (line.length >= 2 && (line[0] === 13 || line[1] === 10)) {
+          if (line.length >= 2 && line[0] === 13 && line[1] === 10) {
             startpos++;
           }
         }
@@ -47801,7 +48014,7 @@ var require_message_splitter = __commonJS({
           return false;
         }
         let boundary;
-        if (this.node._boundary && (boundary = this.compareBoundary(line, startpos, this.node._boundary))) {
+        if (!this.inEpilogue && this.node._boundary && (boundary = this.compareBoundary(line, startpos, this.node._boundary))) {
           return boundary;
         }
         if (this.node._parentBoundary && (boundary = this.compareBoundary(line, startpos, this.node._parentBoundary))) {
@@ -47813,6 +48026,60 @@ var require_message_splitter = __commonJS({
         return false;
       }
       /**
+       * Checks the header bytes collected for the current node against maxHeadSize.
+       *
+       * @param {number} [extra] Bytes that belong to the header block but are not stored yet.
+       * @returns {(Error & {code?: string}) | null} Error object if the limit was exceeded.
+       */
+      checkHeadSize(extra) {
+        if (this.node._headerlen + (extra || 0) > this.maxHeadSize) {
+          return maxLenError("Max header size for a MIME node exceeded");
+        }
+        return null;
+      }
+      /**
+       * Enforces the limits on the pending line so that it can not grow without bound.
+       * A line that is still short enough to become a boundary delimiter is always kept.
+       * Past that length it is a header line and counts against maxHeadSize, or it is
+       * body content, in which case it is pushed out rather than held in memory. Flushing
+       * marks the pending line truncated, so the tail of it is not tested as a delimiter.
+       *
+       * @returns {(Error & {code?: string}) | null} Error object if a limit was exceeded.
+       */
+      enforcePendingLineLimit() {
+        if (!this.lineLength) {
+          return null;
+        }
+        let maxBoundaryLength = Math.max(
+          this.node._boundary ? this.node._boundary.length : 0,
+          this.node._parentBoundary ? this.node._parentBoundary.length : 0
+        );
+        if (this.lineLength <= maxBoundaryLength + BOUNDARY_LINE_OVERHEAD) {
+          return null;
+        }
+        if (this.state === HEAD) {
+          return this.checkHeadSize(this.lineLength);
+        }
+        if (this.lineLength < MAX_PENDING_LINE_SIZE) {
+          return null;
+        }
+        let value = (
+          /** @type {Buffer} */
+          this.takePendingLine()
+        );
+        if (value[value.length - 1] === 13) {
+          this.appendPendingLine(Buffer.from([13]));
+          value = value.slice(0, value.length - 1);
+        }
+        this.push({
+          node: this.node,
+          type: this.node.multipart ? "data" : "body",
+          value
+        });
+        this.pendingLineTruncated = true;
+        return null;
+      }
+      /**
        * @param {Buffer | false} line
        * @param {boolean} final
        * @param {ProcessLineCallback} next
@@ -47820,25 +48087,19 @@ var require_message_splitter = __commonJS({
        */
       processLine(line, final, next) {
         let flush = false;
-        if (this.line && line) {
-          line = Buffer.concat([this.line, line]);
-          this.line = false;
-        } else if (this.line && !line) {
-          line = this.line;
-          this.line = false;
+        let truncatedLine = this.pendingLineTruncated;
+        this.pendingLineTruncated = false;
+        let pending = this.takePendingLine();
+        if (pending) {
+          line = line ? Buffer.concat([pending, line]) : pending;
         }
         if (!line) {
           line = Buffer.alloc(0);
         }
         if (this.nodeCounter > this.maxChildNodes) {
-          let err = (
-            /** @type {Error & {code?: string}} */
-            new Error("Max allowed child nodes exceeded")
-          );
-          err.code = "EMAXLEN";
-          return next(err);
+          return next(maxLenError("Max allowed child nodes exceeded"));
         }
-        let boundary = this.checkBoundary(line);
+        let boundary = truncatedLine ? false : this.checkBoundary(line);
         if (boundary) {
           switch (boundary) {
             case 1:
@@ -47848,25 +48109,23 @@ var require_message_splitter = __commonJS({
             case 2:
               break;
             case 3: {
-              let parentNode = this.node.parentNode;
-              if (parentNode && parentNode.contentType === "message/rfc822") {
-                parentNode = parentNode.parentNode;
-              }
-              this.newNode(parentNode);
+              this.newNode(this.parentMultipartNode());
               flush = true;
               break;
             }
-            case 4:
+            case 4: {
               if (this.node && this.node._headerlen && !this.node.headers) {
                 this.node.parseHeaders();
                 this.push(this.node);
               }
-              if (this.tree.length) {
-                this.node = /** @type {MimeNodeType} */
-                this.tree.pop();
+              let parentNode = this.parentMultipartNode();
+              if (parentNode) {
+                this.node = parentNode;
+                this.inEpilogue = true;
               }
               this.state = BODY;
               break;
+            }
           }
           return next(
             null,
@@ -47881,13 +48140,9 @@ var require_message_splitter = __commonJS({
         switch (this.state) {
           case HEAD: {
             this.node.addHeaderChunk(line);
-            if (this.node._headerlen > this.maxHeadSize) {
-              let err = (
-                /** @type {Error & {code?: string}} */
-                new Error("Max header size for a MIME node exceeded")
-              );
-              err.code = "EMAXLEN";
-              return next(err);
+            let headSizeError = this.checkHeadSize();
+            if (headSizeError) {
+              return next(headSizeError);
             }
             if (final || line.length === 1 && line[0] === 10 || line.length === 2 && line[0] === 13 && line[1] === 10) {
               let currentNode = this.node;
@@ -47897,15 +48152,13 @@ var require_message_splitter = __commonJS({
                 this.newNode(currentNode);
                 if (currentNode.parentNode) {
                   this.node._parentBoundary = currentNode.parentNode._boundary;
+                  this.node._parentBoundaryOwner = currentNode.parentNode;
                 }
               } else {
                 if (currentNode.contentType === "message/rfc822") {
                   currentNode.messageNode = false;
                 }
                 this.state = BODY;
-                if (currentNode.multipart && currentNode._boundary) {
-                  this.tree.push(currentNode);
-                }
               }
               return next(null, currentNode, flush);
             }
@@ -47926,6 +48179,15 @@ var require_message_splitter = __commonJS({
         next(null, false);
       }
       /**
+       * Resolves the multipart node that owns the boundary of the current node, ie. the
+       * node a sibling delimiter or a closing delimiter of _parentBoundary refers to.
+       *
+       * @returns {MimeNodeType | false} Owner of _parentBoundary or false for the root node.
+       */
+      parentMultipartNode() {
+        return this.node._parentBoundaryOwner || false;
+      }
+      /**
        * @param {MimeNodeType | false} [parent]
        * @returns {void}
        */
@@ -47934,15 +48196,16 @@ var require_message_splitter = __commonJS({
         new MimeNode(parent || false, this.config);
         this.state = HEAD;
         this.nodeCounter++;
+        this.inEpilogue = false;
       }
     };
     module.exports = MessageSplitter;
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/message-joiner.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/message-joiner.js
 var require_message_joiner = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/message-joiner.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/message-joiner.js"(exports, module) {
     "use strict";
     var Transform = __require("stream").Transform;
     var MessageJoiner = class extends Transform {
@@ -47984,9 +48247,9 @@ var require_message_joiner = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/flowed-decoder.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/flowed-decoder.js
 var require_flowed_decoder = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/flowed-decoder.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/flowed-decoder.js"(exports, module) {
     "use strict";
     var Transform = __require("stream").Transform;
     var libmime = require_libmime();
@@ -48042,9 +48305,9 @@ var require_flowed_decoder = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/node-rewriter.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/node-rewriter.js
 var require_node_rewriter = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/node-rewriter.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/node-rewriter.js"(exports, module) {
     "use strict";
     var Transform = __require("stream").Transform;
     var FlowedDecoder = require_flowed_decoder();
@@ -48230,9 +48493,9 @@ var require_node_rewriter = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/node-streamer.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/node-streamer.js
 var require_node_streamer = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/node-streamer.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/node-streamer.js"(exports, module) {
     "use strict";
     var Transform = __require("stream").Transform;
     var FlowedDecoder = require_flowed_decoder();
@@ -48366,9 +48629,9 @@ var require_node_streamer = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/chunked-passthrough.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/chunked-passthrough.js
 var require_chunked_passthrough = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/lib/chunked-passthrough.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/lib/chunked-passthrough.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var ChunkedPassthrough = class extends Transform {
@@ -48414,9 +48677,9 @@ var require_chunked_passthrough = __commonJS({
   }
 });
 
-// node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/index.js
+// node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/index.js
 var require_mailsplit = __commonJS({
-  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.14/node_modules/@zone-eu/mailsplit/index.js"(exports, module) {
+  "node_modules/.pnpm/@zone-eu+mailsplit@5.4.15/node_modules/@zone-eu/mailsplit/index.js"(exports, module) {
     "use strict";
     var MessageSplitter = require_message_splitter();
     var MessageJoiner = require_message_joiner();
@@ -48437,16 +48700,20 @@ var require_mailsplit = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/limited-passthrough.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/limited-passthrough.js
 var require_limited_passthrough = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/limited-passthrough.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/limited-passthrough.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
+    var normalizeByteLimit = (value) => {
+      let bytes = Number(value);
+      return Number.isFinite(bytes) && bytes > 0 ? Math.max(Math.floor(bytes), 1) : Infinity;
+    };
     var LimitedPassthrough = class extends Transform {
       constructor(options) {
         super();
         this.options = options || {};
-        this.maxBytes = this.options.maxBytes || Infinity;
+        this.maxBytes = normalizeByteLimit(this.options.maxBytes);
         this.processed = 0;
         this.limited = false;
       }
@@ -48470,16 +48737,18 @@ var require_limited_passthrough = __commonJS({
       }
     };
     module.exports.LimitedPassthrough = LimitedPassthrough;
+    module.exports.normalizeByteLimit = normalizeByteLimit;
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/limits.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/limits.js
 var require_limits = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/limits.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/limits.js"(exports, module) {
     "use strict";
     var MAX_LITERAL_SIZE = 1024 * 1024 * 1024;
     var MAX_LINE_SIZE = MAX_LITERAL_SIZE;
-    var normalizeLimit = (value, defaultValue) => Number.isInteger(value) && value >= 0 ? value : defaultValue;
+    var MAX_RESPONSE_SIZE = 2 * MAX_LITERAL_SIZE;
+    var normalizeLimit = (value, defaultValue) => (Number.isInteger(value) || value === Infinity) && value >= 0 ? value : defaultValue;
     var createLiteralTooLargeError = (literalSize, maxSize, reason) => {
       const err = new Error(`Literal size ${literalSize} exceeds ${reason || `maximum allowed size of ${maxSize} bytes`}`);
       err.code = "LiteralTooLarge";
@@ -48487,17 +48756,17 @@ var require_limits = __commonJS({
       err.maxSize = maxSize;
       return err;
     };
-    module.exports = { MAX_LITERAL_SIZE, MAX_LINE_SIZE, normalizeLimit, createLiteralTooLargeError };
+    module.exports = { MAX_LITERAL_SIZE, MAX_LINE_SIZE, MAX_RESPONSE_SIZE, normalizeLimit, createLiteralTooLargeError };
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-stream.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-stream.js
 var require_imap_stream = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-stream.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-stream.js"(exports, module) {
     "use strict";
     var Transform = __require("stream").Transform;
     var logger = require_logger();
-    var { MAX_LITERAL_SIZE, MAX_LINE_SIZE, normalizeLimit, createLiteralTooLargeError } = require_limits();
+    var { MAX_LITERAL_SIZE, MAX_LINE_SIZE, MAX_RESPONSE_SIZE, normalizeLimit, createLiteralTooLargeError } = require_limits();
     var LINE = 1;
     var LITERAL = 2;
     var LF = 10;
@@ -48527,6 +48796,16 @@ var require_imap_stream = __commonJS({
        *   exactly at the limit is accepted. Exceeding it is terminal: the stream is destroyed with a
        *   `LiteralTooLarge` error, the marker line is not emitted, and no byte of the rejected
        *   literal body is parsed as protocol.
+       * @param {number} [options.maxResponseSize] - Maximum allowed total size (in bytes) of a
+       *   single assembled response: every line segment and literal of one response combined.
+       *   Defaults to MAX_RESPONSE_SIZE (2GB), which leaves room above the literal cap for a
+       *   maximum-size literal plus its marker line. The per-line and per-literal caps alone
+       *   cannot stop a server that spreads attacker-controlled bytes across an unbounded
+       *   number of tokens of a single response. Declared literal sizes count when their
+       *   marker is parsed, so an oversized total is rejected before the literal bytes arrive,
+       *   and a line still being assembled counts against whatever budget is left.
+       *   Exceeding the limit is terminal: the stream is destroyed with a `ResponseTooLarge`
+       *   error and no further input is parsed.
        */
       constructor(options) {
         super({
@@ -48543,6 +48822,7 @@ var require_imap_stream = __commonJS({
         this.readBytesCounter = 0;
         this.maxLineLength = normalizeLimit(this.options.maxLineLength, MAX_LINE_SIZE);
         this.maxLiteralSize = normalizeLimit(this.options.maxLiteralSize, MAX_LITERAL_SIZE);
+        this.maxResponseSize = normalizeLimit(this.options.maxResponseSize, MAX_RESPONSE_SIZE);
         this.state = LINE;
         this.literalWaiting = 0;
         this.inputBuffer = [];
@@ -48550,6 +48830,7 @@ var require_imap_stream = __commonJS({
         this.lineBytes = 0;
         this.literalBuffer = [];
         this.literals = [];
+        this.responseBytes = 0;
         this.compress = false;
         this.secureConnection = this.options.secureConnection;
         this.processingInput = false;
@@ -48666,6 +48947,32 @@ var require_imap_stream = __commonJS({
         return this.failStream(err);
       }
       /**
+       * Enforces the configured per-response size cap: the cumulative bytes of every line
+       * segment and declared literal of the response currently being assembled. Counting
+       * declared literal sizes at marker time means an oversized total is rejected before
+       * the literal bytes even arrive. The counter is reset when a response is emitted.
+       *
+       * @param {number} additionalBytes - Bytes the next token would add to the response.
+       * @param {boolean} [peek] - Measure only, without committing the bytes to the counter.
+       *   Used for a line that is still being assembled: its bytes are committed once, when the
+       *   line completes.
+       * @returns {boolean} True if within the limit, false if the stream was failed.
+       */
+      checkResponseSize(additionalBytes, peek) {
+        let total = this.responseBytes + additionalBytes;
+        if (total <= this.maxResponseSize) {
+          if (!peek) {
+            this.responseBytes = total;
+          }
+          return true;
+        }
+        const err = new Error(`Response size ${total} exceeds maximum allowed size of ${this.maxResponseSize} bytes`);
+        err.code = "ResponseTooLarge";
+        err.responseSize = total;
+        err.maxSize = this.maxResponseSize;
+        return this.failStream(err);
+      }
+      /**
        * Processes a single input chunk of raw data. In LINE state, scans for LF-terminated
        * lines and checks for literal markers. In LITERAL state, collects the expected number
        * of literal bytes. When a complete command (with all its literals) is assembled, it is
@@ -48698,6 +49005,9 @@ var require_imap_stream = __commonJS({
                 if (this.destroyed) {
                   return;
                 }
+                if (!this.checkResponseSize(line.length + (isLiteralMarker ? this.literalWaiting : 0))) {
+                  return;
+                }
                 this.inputBuffer.push(line);
                 if (isLiteralMarker) {
                   return await this.processInputChunk(chunk, lineStart);
@@ -48706,6 +49016,7 @@ var require_imap_stream = __commonJS({
                 let literals = this.literals;
                 this.inputBuffer = [];
                 this.literals = [];
+                this.responseBytes = 0;
                 if (payload.length) {
                   if (payload[payload.length - 1] === LF) {
                     let end = payload.length - 1;
@@ -48716,9 +49027,9 @@ var require_imap_stream = __commonJS({
                   }
                   if (payload.length) {
                     let trailingAfterLine = lineStart < chunk.length || this.inputQueue.length > 0;
-                    await new Promise((resolve2) => {
-                      this.pendingPush = resolve2;
-                      this.push({ payload, literals, next: resolve2, trailingAfterLine });
+                    await new Promise((resolve3) => {
+                      this.pendingPush = resolve3;
+                      this.push({ payload, literals, next: resolve3, trailingAfterLine });
                     });
                     this.pendingPush = null;
                     if (this.destroyed) {
@@ -48730,7 +49041,7 @@ var require_imap_stream = __commonJS({
             }
             if (lineStart < chunk.length) {
               let tail = chunk.slice(lineStart);
-              if (!this.checkLineLength(this.lineBytes + tail.length)) {
+              if (!this.checkLineLength(this.lineBytes + tail.length) || !this.checkResponseSize(this.lineBytes + tail.length, true)) {
                 return;
               }
               this.lineBytes += tail.length;
@@ -48773,7 +49084,7 @@ var require_imap_stream = __commonJS({
           this.releaseInput(data);
           processedCount++;
           if (processedCount % 10 === 0) {
-            await new Promise((resolve2) => setImmediate(resolve2));
+            await new Promise((resolve3) => setImmediate(resolve3));
           }
         }
       }
@@ -48834,10 +49145,11 @@ var require_imap_stream = __commonJS({
         this.lineBytes = 0;
         this.literalBuffer = [];
         this.literals = [];
+        this.responseBytes = 0;
         if (typeof this.pendingPush === "function") {
-          const resolve2 = this.pendingPush;
+          const resolve3 = this.pendingPush;
           this.pendingPush = null;
-          resolve2();
+          resolve3();
         }
         this.releaseInput(this.activeInput);
         this.activeInput = null;
@@ -48851,9 +49163,9 @@ var require_imap_stream = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-formal-syntax.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-formal-syntax.js
 var require_imap_formal_syntax = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-formal-syntax.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-formal-syntax.js"(exports, module) {
     "use strict";
     function expandRange(start, end) {
       let chars = [];
@@ -48997,9 +49309,9 @@ var require_imap_formal_syntax = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/token-parser.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/token-parser.js
 var require_token_parser = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/token-parser.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/token-parser.js"(exports, module) {
     "use strict";
     var imapFormalSyntax = require_imap_formal_syntax();
     var { MAX_LITERAL_SIZE, normalizeLimit, createLiteralTooLargeError } = require_limits();
@@ -49566,9 +49878,9 @@ var require_token_parser = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/parser-instance.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/parser-instance.js
 var require_parser_instance = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/parser-instance.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/parser-instance.js"(exports, module) {
     "use strict";
     var imapFormalSyntax = require_imap_formal_syntax();
     var { TokenParser } = require_token_parser();
@@ -49762,9 +50074,9 @@ var require_parser_instance = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-parser.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-parser.js
 var require_imap_parser = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-parser.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-parser.js"(exports, module) {
     "use strict";
     var imapFormalSyntax = require_imap_formal_syntax();
     var { ParserInstance } = require_parser_instance();
@@ -49822,9 +50134,9 @@ var require_imap_parser = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-compiler.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-compiler.js
 var require_imap_compiler = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-compiler.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-compiler.js"(exports, module) {
     "use strict";
     var imapFormalSyntax = require_imap_formal_syntax();
     var SEQ_RANGE = /^(\d+|\*)(:(\d+|\*))?$/;
@@ -50012,9 +50324,9 @@ var require_imap_compiler = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-handler.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-handler.js
 var require_imap_handler = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/handler/imap-handler.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/handler/imap-handler.js"(exports, module) {
     "use strict";
     var parser = require_imap_parser();
     var compiler = require_imap_compiler();
@@ -50025,12 +50337,12 @@ var require_imap_handler = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/package.json
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/package.json
 var require_package4 = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/package.json"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/package.json"(exports, module) {
     module.exports = {
       name: "imapflow",
-      version: "1.6.5",
+      version: "1.7.0",
       description: "IMAP Client for Node",
       main: "lib/imap-flow.js",
       types: "lib/imap-flow.d.ts",
@@ -50065,7 +50377,7 @@ var require_package4 = __commonJS({
         eslint: "10.8.0",
         "eslint-config-nodemailer": "1.2.0",
         "eslint-config-prettier": "10.1.8",
-        grunt: "1.6.2",
+        grunt: "1.6.3",
         "grunt-cli": "1.5.0",
         "grunt-contrib-nodeunit": "5.0.0",
         "grunt-eslint": "26.0.0",
@@ -50074,11 +50386,11 @@ var require_package4 = __commonJS({
         typescript: "7.0.2"
       },
       dependencies: {
-        "@zone-eu/mailsplit": "5.4.14",
+        "@zone-eu/mailsplit": "5.4.15",
         "encoding-japanese": "2.2.0",
         "iconv-lite": "0.7.3",
         libbase64: "1.3.0",
-        libmime: "5.4.1",
+        libmime: "5.4.2",
         libqp: "2.1.1",
         pino: "10.3.1",
         socks: "2.8.9"
@@ -53678,11 +53990,11 @@ var require_socksclient = __commonJS({
     "use strict";
     var __awaiter = exports && exports.__awaiter || function(thisArg, _arguments, P, generator) {
       function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve2) {
-          resolve2(value);
+        return value instanceof P ? value : new P(function(resolve3) {
+          resolve3(value);
         });
       }
-      return new (P || (P = Promise))(function(resolve2, reject) {
+      return new (P || (P = Promise))(function(resolve3, reject) {
         function fulfilled(value) {
           try {
             step(generator.next(value));
@@ -53698,7 +54010,7 @@ var require_socksclient = __commonJS({
           }
         }
         function step(result) {
-          result.done ? resolve2(result.value) : adopt(result.value).then(fulfilled, rejected);
+          result.done ? resolve3(result.value) : adopt(result.value).then(fulfilled, rejected);
         }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
@@ -53732,13 +54044,13 @@ var require_socksclient = __commonJS({
        * @returns { Promise }
        */
       static createConnection(options, callback) {
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           try {
             (0, helpers_1.validateSocksClientOptions)(options, ["connect"]);
           } catch (err) {
             if (typeof callback === "function") {
               callback(err);
-              return resolve2(err);
+              return resolve3(err);
             } else {
               return reject(err);
             }
@@ -53749,16 +54061,16 @@ var require_socksclient = __commonJS({
             client.removeAllListeners();
             if (typeof callback === "function") {
               callback(null, info);
-              resolve2(info);
+              resolve3(info);
             } else {
-              resolve2(info);
+              resolve3(info);
             }
           });
           client.once("error", (err) => {
             client.removeAllListeners();
             if (typeof callback === "function") {
               callback(err);
-              resolve2(err);
+              resolve3(err);
             } else {
               reject(err);
             }
@@ -53775,13 +54087,13 @@ var require_socksclient = __commonJS({
        * @returns { Promise }
        */
       static createConnectionChain(options, callback) {
-        return new Promise((resolve2, reject) => __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve3, reject) => __awaiter(this, void 0, void 0, function* () {
           try {
             (0, helpers_1.validateSocksClientChainOptions)(options);
           } catch (err) {
             if (typeof callback === "function") {
               callback(err);
-              return resolve2(err);
+              return resolve3(err);
             } else {
               return reject(err);
             }
@@ -53807,14 +54119,14 @@ var require_socksclient = __commonJS({
             }
             if (typeof callback === "function") {
               callback(null, { socket: sock });
-              resolve2({ socket: sock });
+              resolve3({ socket: sock });
             } else {
-              resolve2({ socket: sock });
+              resolve3({ socket: sock });
             }
           } catch (err) {
             if (typeof callback === "function") {
               callback(err);
-              resolve2(err);
+              resolve3(err);
             } else {
               reject(err);
             }
@@ -54376,9 +54688,9 @@ var require_build = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/connection-deadline.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/connection-deadline.js
 var require_connection_deadline = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/connection-deadline.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/connection-deadline.js"(exports, module) {
     "use strict";
     var CONNECT_TIMEOUT = 90 * 1e3;
     var ConnectionDeadline = class {
@@ -54446,7 +54758,7 @@ var require_connection_deadline = __commonJS({
         try {
           return await Promise.race([
             promise,
-            new Promise((resolve2, reject) => {
+            new Promise((resolve3, reject) => {
               timer = setTimeout(() => reject(this.error()), this.remaining());
             })
           ]);
@@ -54459,9 +54771,9 @@ var require_connection_deadline = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/proxy-connection.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/proxy-connection.js
 var require_proxy_connection = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/proxy-connection.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/proxy-connection.js"(exports, module) {
     "use strict";
     var { SocksClient } = require_build();
     var dns = __require("dns").promises;
@@ -54526,7 +54838,7 @@ var require_proxy_connection = __commonJS({
         throw deadline.error();
       }
       let socket = null;
-      return await new Promise((resolve2, reject) => {
+      return await new Promise((resolve3, reject) => {
         let settled = false;
         let timer = null;
         let headers = "";
@@ -54578,7 +54890,7 @@ var require_proxy_connection = __commonJS({
         function succeed() {
           settled = true;
           cleanup();
-          resolve2(socket);
+          resolve3(socket);
         }
         function onEarlyClose() {
           fail(proxyError("Proxy closed the connection before the tunnel was established", "EPROXY"));
@@ -54738,9 +55050,9 @@ var require_proxy_connection = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/charsets.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/charsets.js
 var require_charsets2 = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/charsets.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/charsets.js"(exports, module) {
     "use strict";
     var CHARACTER_SETS = [
       "US-ASCII",
@@ -55017,27 +55329,38 @@ var require_charsets2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/jp-decoder.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/jp-decoder.js
 var require_jp_decoder = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/jp-decoder.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/jp-decoder.js"(exports, module) {
     "use strict";
     var { Transform } = __require("stream");
     var encodingJapanese = require_src();
+    var { normalizeByteLimit } = require_limited_passthrough();
     var JPDecoder = class extends Transform {
-      constructor(charset) {
+      constructor(charset, maxBytes) {
         super();
         this.charset = charset;
         this.chunks = [];
         this.chunklen = 0;
+        this.maxBytes = normalizeByteLimit(maxBytes);
+        this.limited = false;
       }
-      // Buffer all incoming chunks; no decoding happens here because Japanese charsets
-      // require the complete input for accurate conversion.
+      // Buffer all incoming chunks (up to maxBytes); no decoding happens here because
+      // Japanese charsets require the complete input for accurate conversion.
       _transform(chunk, encoding, done) {
         if (typeof chunk === "string") {
           chunk = Buffer.from(chunk, encoding);
         }
-        this.chunks.push(chunk);
-        this.chunklen += chunk.length;
+        if (this.chunklen + chunk.length > this.maxBytes) {
+          chunk = chunk.slice(0, Math.max(0, this.maxBytes - this.chunklen));
+        }
+        if (chunk.length) {
+          this.chunks.push(chunk);
+          this.chunklen += chunk.length;
+        }
+        if (this.chunklen >= this.maxBytes) {
+          this.limited = true;
+        }
         done();
       }
       // Perform the actual charset conversion once all input has been received.
@@ -55072,9 +55395,9 @@ var require_jp_decoder = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/tools.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/tools.js
 var require_tools2 = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/tools.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/tools.js"(exports, module) {
     "use strict";
     var libmime = require_libmime();
     var { resolveCharset } = require_charsets2();
@@ -55084,6 +55407,9 @@ var require_tools2 = __commonJS({
     var iconv = require_lib();
     var FLAG_COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "grey"];
     var EXPANDED_RANGE_LIMIT = 16777216;
+    var MAX_UINT32_DIGITS = 10;
+    var MAX_NUMBER64_DIGITS = 19;
+    var UNSAFE_OBJECT_KEYS = /* @__PURE__ */ new Set(["__proto__", "constructor", "prototype"]);
     var IMAP4REV2_FOLDED_CAPABILITIES = /* @__PURE__ */ new Set([
       "ENABLE",
       "ESEARCH",
@@ -55272,7 +55598,7 @@ var require_tools2 = __commonJS({
         let map = /* @__PURE__ */ new Map();
         if (list && Array.isArray(list)) {
           list.forEach((val) => {
-            if (typeof val.value !== "string") {
+            if (!val || typeof val.value !== "string") {
               return;
             }
             let capability = val.value.toUpperCase().trim();
@@ -55286,8 +55612,7 @@ var require_tools2 = __commonJS({
             }
             if (capability.startsWith("APPENDLIMIT=")) {
               let splitPos = capability.indexOf("=");
-              let appendLimit = Number(capability.substr(splitPos + 1)) || 0;
-              map.set("APPENDLIMIT", appendLimit);
+              map.set("APPENDLIMIT", tools.parseUintValue(capability.substr(splitPos + 1)) || 0);
               return;
             }
             map.set(capability, true);
@@ -55457,7 +55782,7 @@ var require_tools2 = __commonJS({
        */
       async formatMessageResponse(untagged, mailbox) {
         let map = {};
-        map.seq = Number(untagged.command);
+        map.seq = tools.parseUintValue(untagged.command, MAX_UINT32_DIGITS) || void 0;
         let key;
         let attributes = untagged.attributes && untagged.attributes[1] || [];
         for (let i = 0, len = attributes.length; i < len; i++) {
@@ -55490,29 +55815,30 @@ var require_tools2 = __commonJS({
               return attribute2.value;
             }
           };
-          let getArray = (attribute2) => {
-            if (Array.isArray(attribute2)) {
-              return attribute2.map((entry) => entry && typeof entry.value === "string" ? entry.value : false).filter((entry) => entry);
-            }
-            return [];
-          };
+          let getArray = (attribute2) => tools.getStringList(attribute2);
+          let getUint = (attribute2, maxDigits) => tools.parseUintValue(getString(attribute2), maxDigits);
           switch (key) {
             case "body[]":
             case "binary[]":
               map.source = getBuffer(attribute);
               break;
             case "uid":
-              map.uid = Number(getString(attribute));
+              map.uid = getUint(attribute, MAX_UINT32_DIGITS) || void 0;
               if (map.uid && (!mailbox.uidNext || mailbox.uidNext <= map.uid)) {
                 mailbox.uidNext = map.uid + 1;
               }
               break;
-            case "modseq":
-              map.modseq = BigInt(getArray(attribute)[0]);
+            case "modseq": {
+              let modseq = tools.parseBigIntValue(getArray(attribute)[0]);
+              if (modseq === false) {
+                break;
+              }
+              map.modseq = modseq;
               if (map.modseq && (!mailbox.highestModseq || mailbox.highestModseq < map.modseq)) {
                 mailbox.highestModseq = map.modseq;
               }
               break;
+            }
             case "emailid":
               map.emailId = getArray(attribute)[0];
               break;
@@ -55529,7 +55855,7 @@ var require_tools2 = __commonJS({
               map.labels = new Set(getArray(attribute));
               break;
             case "rfc822.size":
-              map.size = Number(getString(attribute)) || 0;
+              map.size = getUint(attribute) || 0;
               break;
             case "flags":
               map.flags = new Set(getArray(attribute));
@@ -55628,6 +55954,9 @@ var require_tools2 = __commonJS({
         };
         let processAddresses = function(list) {
           return [].concat(list || []).map((addr) => {
+            if (!addr) {
+              return false;
+            }
             let address = (getStrValue(addr[2]) || "") + "@" + (getStrValue(addr[3]) || "");
             if (address === "@") {
               address = "";
@@ -55636,7 +55965,7 @@ var require_tools2 = __commonJS({
               name: tools.processName(libmime.decodeWords(getStrValue(addr[0]))),
               address
             };
-          }).filter((addr) => addr.name || addr.address);
+          }).filter((addr) => addr && (addr.name || addr.address));
         }, envelope = {};
         if (entry[0] && entry[0].value) {
           let date3 = new Date(getStrValue(entry[0]));
@@ -55687,7 +56016,9 @@ var require_tools2 = __commonJS({
         let params = {};
         [].concat(arr || []).forEach((val, j) => {
           if (j % 2) {
-            params[key] = libmime.decodeWords((val && val.value || "").toString());
+            if (!tools.isUnsafeKey(key)) {
+              params[key] = libmime.decodeWords((val && val.value || "").toString());
+            }
           } else {
             key = (val && val.value || "").toString().toLowerCase();
           }
@@ -55708,6 +56039,10 @@ var require_tools2 = __commonJS({
           }
           actualKey = key2.substr(0, match.index).toLowerCase();
           nr = Number(match[2]) || 0;
+          if (tools.isUnsafeKey(actualKey)) {
+            delete params[key2];
+            return;
+          }
           if (!params[actualKey] || typeof params[actualKey] !== "object") {
             params[actualKey] = {
               charset: false,
@@ -55952,60 +56287,148 @@ var require_tools2 = __commonJS({
         return Number.isSafeInteger(value) && value > 0 && value <= 4294967295;
       },
       /**
+       * Checks that an untrusted response value is a pure decimal digit run no longer than
+       * the given bound.
+       *
+       * `!isNaN(value)` is not usable for this: it also passes '1e5', ' 12 ', '0x10' and
+       * 'Infinity'. BigInt() throws on all of them and Number() silently returns a value the
+       * grammar never allowed, so both are wrong in a response handler that is only trying to
+       * read one field. The length bound is checked before the pattern so an arbitrarily long
+       * digit run is rejected without any conversion work.
+       *
+       * @param {*} value - Raw value from the response.
+       * @param {Number} maxDigits - Maximum number of digits accepted.
+       * @returns {Boolean} True if the value is a decimal string within the bound.
+       */
+      isDecimalString(value, maxDigits) {
+        return typeof value === "string" && value.length > 0 && value.length <= maxDigits && /^[0-9]+$/.test(value);
+      },
+      /**
+       * Checks whether a server-supplied string is unsafe to use as a key on a plain object.
+       * Assigning "__proto__" writes through the prototype setter instead of creating an own
+       * property, and reading "constructor" or "prototype" resolves to an inherited member.
+       *
+       * @param {*} key - Candidate key from a server response.
+       * @returns {Boolean} True if the key must not be used.
+       */
+      isUnsafeKey(key) {
+        return UNSAFE_OBJECT_KEYS.has(key);
+      },
+      /**
+       * Reads a parsed attribute list of atoms or strings (a flag list, a capability list) into
+       * an array of strings. Any element can be a parsed NIL, and the list itself can be NIL,
+       * so both levels are guarded here rather than at each call site.
+       *
+       * @param {*} list - Parsed attribute list from a response.
+       * @returns {String[]} The string values, in order, with unusable entries dropped.
+       */
+      getStringList(list) {
+        if (!Array.isArray(list)) {
+          return [];
+        }
+        return list.map((entry) => entry && typeof entry.value === "string" ? entry.value : false).filter((entry) => entry);
+      },
+      /**
+       * Parses an untrusted decimal value from a server response into a BigInt.
+       *
+       * @param {*} value - Raw value from the response.
+       * @param {Number} [maxDigits=MAX_NUMBER64_DIGITS] - Maximum number of digits accepted.
+       * @returns {BigInt|false} The parsed value, or false when it is not usable.
+       */
+      parseBigIntValue(value, maxDigits) {
+        if (!tools.isDecimalString(value, maxDigits || MAX_NUMBER64_DIGITS)) {
+          return false;
+        }
+        return BigInt(value);
+      },
+      /**
+       * Parses an untrusted decimal value from a server response into a Number. Values beyond
+       * the safe integer range are rejected rather than rounded: a silently rounded count or
+       * UID corrupts every range computation derived from it.
+       *
+       * @param {*} value - Raw value from the response.
+       * @param {Number} [maxDigits=MAX_NUMBER64_DIGITS] - Maximum number of digits accepted.
+       * @returns {Number|false} The parsed value, or false when it is not usable.
+       */
+      parseUintValue(value, maxDigits) {
+        if (!tools.isDecimalString(value, maxDigits || MAX_NUMBER64_DIGITS)) {
+          return false;
+        }
+        let num = Number(value);
+        return Number.isSafeInteger(num) ? num : false;
+      },
+      /**
        * Expands an IMAP sequence range string (e.g. "1:3,5,7:9") into an array of numbers.
        *
        * Entries with endpoints that are not valid nz-numbers are skipped - the input
        * may come from an untrusted server, and 'Infinity' or similar garbage would
-       * otherwise loop without bound. A single range is expanded to at most
-       * EXPANDED_RANGE_LIMIT entries: legitimate responses never reach the limit
-       * (the mailbox would need that many messages), while a hostile range like
-       * 1:4294967295 is cut off instead of exhausting memory.
+       * otherwise loop without bound. The whole set is expanded to at most
+       * EXPANDED_RANGE_LIMIT entries in total: legitimate responses never reach the limit
+       * (the mailbox would need that many messages), while hostile input is cut off
+       * instead of exhausting memory. The total is capped, not just each range -
+       * otherwise "1:16777216,1:16777216,..." would multiply the per-range bound by an
+       * unbounded number of ranges.
        *
        * @param {String} range - IMAP sequence range string
        * @returns {Number[]} Array of expanded sequence numbers
        */
       expandRange(range) {
-        return range.split(",").flatMap((entry) => {
+        let result = [];
+        if (typeof range !== "string") {
+          return result;
+        }
+        for (let entry of range.split(",")) {
+          if (result.length >= EXPANDED_RANGE_LIMIT) {
+            break;
+          }
           entry = entry.trim();
           let colon = entry.indexOf(":");
           if (colon < 0) {
             let value = Number(entry);
-            return tools.isValidSequenceValue(value) ? value : [];
+            if (tools.isValidSequenceValue(value)) {
+              result.push(value);
+            }
+            continue;
           }
           let first = Number(entry.substr(0, colon));
           let second = Number(entry.substr(colon + 1));
           if (!tools.isValidSequenceValue(first) || !tools.isValidSequenceValue(second)) {
-            return [];
+            continue;
           }
           if (first === second) {
-            return first;
+            result.push(first);
+            continue;
           }
-          let list = [];
+          let remaining = EXPANDED_RANGE_LIMIT - result.length;
           if (first < second) {
-            let last = Math.min(second, first + EXPANDED_RANGE_LIMIT - 1);
+            let last = Math.min(second, first + remaining - 1);
             for (let i = first; i <= last; i++) {
-              list.push(i);
+              result.push(i);
             }
           } else {
-            let last = Math.max(second, first - EXPANDED_RANGE_LIMIT + 1);
+            let last = Math.max(second, first - remaining + 1);
             for (let i = first; i >= last; i--) {
-              list.push(i);
+              result.push(i);
             }
           }
-          return list;
-        });
+        }
+        return result;
       },
       /**
        * Returns a stream decoder for the given charset. Uses a special Japanese
        * charset decoder for JIS/ISO-2022-JP, otherwise delegates to iconv-lite.
        *
        * @param {String} [charset='ascii'] - Character set name
+       * @param {Number} [maxBytes] - Bound for the bytes the decoder may buffer. Only
+       *   relevant for the Japanese decoder, which must buffer its whole input before
+       *   it can decode: without the bound a server could defeat a caller's maxBytes
+       *   download limit simply by labelling the part with a Japanese charset.
        * @returns {Object} A stream decoder (Transform stream) for the charset
        */
-      getDecoder(charset) {
+      getDecoder(charset, maxBytes) {
         charset = (charset || "ascii").toString().trim().toLowerCase();
         if (/^jis|^iso-?2022-?jp|^euc-?jp/.test(charset)) {
-          return new JPDecoder(charset);
+          return new JPDecoder(charset, maxBytes);
         }
         return iconv.decodeStream(charset);
       },
@@ -56043,12 +56466,14 @@ var require_tools2 = __commonJS({
       }
     };
     module.exports = tools;
+    module.exports.EXPANDED_RANGE_LIMIT = EXPANDED_RANGE_LIMIT;
+    module.exports.MAX_UINT32_DIGITS = MAX_UINT32_DIGITS;
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/id.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/id.js
 var require_id2 = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/id.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/id.js"(exports, module) {
     "use strict";
     var { formatDateTime } = require_tools2();
     module.exports = async (connection, clientInfo) => {
@@ -56098,9 +56523,9 @@ var require_id2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/capability.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/capability.js
 var require_capability = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/capability.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/capability.js"(exports, module) {
     "use strict";
     module.exports = async (connection) => {
       if (connection.capabilities.size && !connection.expectCapabilityUpdate) {
@@ -56119,22 +56544,22 @@ var require_capability = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/namespace.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/namespace.js
 var require_namespace = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/namespace.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/namespace.js"(exports, module) {
     "use strict";
-    var { hasCapability } = require_tools2();
+    var { hasCapability, getStringList } = require_tools2();
     module.exports = async (connection) => {
       if (![connection.states.AUTHENTICATED, connection.states.SELECTED].includes(connection.state)) {
         return;
       }
       if (!hasCapability(connection, "NAMESPACE")) {
-        let { prefix, delimiter } = await getListPrefix(connection);
-        if (delimiter && prefix && prefix.charAt(prefix.length - 1) !== delimiter) {
-          prefix += delimiter;
+        let { prefix, delimiter: delimiter2 } = await getListPrefix(connection);
+        if (delimiter2 && prefix && prefix.charAt(prefix.length - 1) !== delimiter2) {
+          prefix += delimiter2;
         }
         let map = {
-          personal: [{ prefix: prefix || "", delimiter }],
+          personal: [{ prefix: prefix || "", delimiter: delimiter2 }],
           other: false,
           shared: false
         };
@@ -56189,7 +56614,7 @@ var require_namespace = __commonJS({
               if (!untagged.attributes || !untagged.attributes.length) {
                 return;
               }
-              map.flags = new Set(untagged.attributes[0].map((entry) => entry.value));
+              map.flags = new Set(getStringList(untagged.attributes[0]));
               map.delimiter = untagged.attributes[1] && untagged.attributes[1].value;
               map.prefix = untagged.attributes[2] && untagged.attributes[2].value || "";
               if (map.delimiter && map.prefix.charAt(0) === map.delimiter) {
@@ -56217,19 +56642,19 @@ var require_namespace = __commonJS({
         )
       ).map((entry) => {
         let prefix = entry[0].value;
-        let delimiter = entry[1] === null ? null : entry[1].value;
-        if (delimiter && prefix && prefix.charAt(prefix.length - 1) !== delimiter) {
-          prefix += delimiter;
+        let delimiter2 = entry[1] === null ? null : entry[1].value;
+        if (delimiter2 && prefix && prefix.charAt(prefix.length - 1) !== delimiter2) {
+          prefix += delimiter2;
         }
-        return { prefix, delimiter };
+        return { prefix, delimiter: delimiter2 };
       });
     }
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/login.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/login.js
 var require_login = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/login.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/login.js"(exports, module) {
     "use strict";
     var { getStatusCode, getErrorText } = require_tools2();
     module.exports = async (connection, username, password) => {
@@ -56258,9 +56683,9 @@ var require_login = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/logout.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/logout.js
 var require_logout = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/logout.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/logout.js"(exports, module) {
     "use strict";
     module.exports = async (connection) => {
       if (connection.state === connection.states.LOGOUT) {
@@ -56292,9 +56717,9 @@ var require_logout = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/starttls.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/starttls.js
 var require_starttls = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/starttls.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/starttls.js"(exports, module) {
     "use strict";
     module.exports = async (connection) => {
       if (!connection.capabilities.has("STARTTLS") || connection.secureConnection) {
@@ -56314,9 +56739,54 @@ var require_starttls = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/special-use.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/status-fields.js
+var require_status_fields = __commonJS({
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/status-fields.js"(exports, module) {
+    "use strict";
+    var { parseBigIntValue, parseUintValue, MAX_UINT32_DIGITS } = require_tools2();
+    var uint32 = (value) => parseUintValue(value, MAX_UINT32_DIGITS);
+    var STATUS_FIELDS = {
+      MESSAGES: { key: "messages", parser: uint32 },
+      RECENT: { key: "recent", parser: uint32 },
+      UIDNEXT: { key: "uidNext", parser: uint32 },
+      // Nominally 32-bit, but stored as a BigInt precisely so a server that exceeds that still
+      // round-trips, so the wider bound applies
+      UIDVALIDITY: { key: "uidValidity", parser: (value) => parseBigIntValue(value) },
+      UNSEEN: { key: "unseen", parser: uint32 },
+      HIGHESTMODSEQ: { key: "highestModseq", parser: (value) => parseBigIntValue(value) },
+      // IMAP4rev2 additions (RFC 9051): total mailbox size in octets (number64, exact as a JS
+      // number up to 2^53-1) and count of messages carrying the \Deleted flag
+      SIZE: { key: "size", parser: (value) => parseUintValue(value) },
+      DELETED: { key: "deleted", parser: uint32 }
+    };
+    var parseStatusList = (list, onField) => {
+      let name;
+      list.forEach((entry, i) => {
+        if (i % 2 === 0) {
+          name = entry && typeof entry.value === "string" ? entry.value : false;
+          return;
+        }
+        if (!name || !entry) {
+          return;
+        }
+        const field = STATUS_FIELDS[name.toUpperCase()];
+        if (!field) {
+          return;
+        }
+        const value = field.parser(entry.value);
+        if (value === false) {
+          return;
+        }
+        onField(field.key, value);
+      });
+    };
+    module.exports = { parseStatusList };
+  }
+});
+
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/special-use.js
 var require_special_use = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/special-use.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/special-use.js"(exports, module) {
     "use strict";
     var GENERIC_TOKENS = new Set(
       [
@@ -57193,11 +57663,21 @@ var require_special_use = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/list.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/list.js
 var require_list = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/list.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/list.js"(exports, module) {
     "use strict";
-    var { decodePath, encodePath, normalizePath, enhanceCommandError, hasCapability, isRev2Active, buildStatusQueryAttributes } = require_tools2();
+    var {
+      decodePath,
+      encodePath,
+      normalizePath,
+      enhanceCommandError,
+      hasCapability,
+      isRev2Active,
+      buildStatusQueryAttributes,
+      getStringList
+    } = require_tools2();
+    var { parseStatusList } = require_status_fields();
     var { specialUse } = require_special_use();
     module.exports = async (connection, reference, mailbox, options) => {
       options = options || {};
@@ -57249,7 +57729,7 @@ var require_list = __commonJS({
             entry.subscribed = true;
           }
         };
-        let specialUseHints = {};
+        let specialUseHints = /* @__PURE__ */ Object.create(null);
         if (options.specialUseHints && typeof options.specialUseHints === "object") {
           for (let type of Object.keys(options.specialUseHints)) {
             if (["sent", "junk", "trash", "drafts", "archive"].includes(type) && options.specialUseHints[type] && typeof options.specialUseHints[type] === "string") {
@@ -57274,7 +57754,7 @@ var require_list = __commonJS({
                   // Decode from modified UTF-7 wire format and normalize the path
                   path: normalizePath(connection, decodePath(connection, untagged.attributes[2] && untagged.attributes[2].value || "")),
                   pathAsListed: untagged.attributes[2] && untagged.attributes[2].value || "",
-                  flags: new Set(untagged.attributes[0].map((entry2) => entry2.value)),
+                  flags: new Set(getStringList(untagged.attributes[0])),
                   delimiter: untagged.attributes[1] && untagged.attributes[1].value,
                   listed: true
                 };
@@ -57314,36 +57794,9 @@ var require_list = __commonJS({
                 if (!statusList || !statusPath) {
                   return;
                 }
-                const STATUS_FIELD_MAP = {
-                  MESSAGES: { key: "messages", parser: Number },
-                  RECENT: { key: "recent", parser: Number },
-                  UIDNEXT: { key: "uidNext", parser: Number },
-                  UIDVALIDITY: { key: "uidValidity", parser: BigInt },
-                  UNSEEN: { key: "unseen", parser: Number },
-                  HIGHESTMODSEQ: { key: "highestModseq", parser: BigInt },
-                  // IMAP4rev2 additions (RFC 9051): mailbox size and \Deleted count
-                  SIZE: { key: "size", parser: Number },
-                  DELETED: { key: "deleted", parser: Number }
-                };
-                let key;
                 let map = { path: statusPath };
-                statusList.forEach((entry, i) => {
-                  if (i % 2 === 0) {
-                    key = entry && typeof entry.value === "string" ? entry.value : false;
-                    return;
-                  }
-                  if (!key || !entry || typeof entry.value !== "string") {
-                    return;
-                  }
-                  const fieldConfig = STATUS_FIELD_MAP[key.toUpperCase()];
-                  if (!fieldConfig) {
-                    return;
-                  }
-                  const value = !isNaN(entry.value) ? fieldConfig.parser(entry.value) : false;
-                  if (value === false) {
-                    return;
-                  }
-                  map[fieldConfig.key] = value;
+                parseStatusList(statusList, (key, value) => {
+                  map[key] = value;
                 });
                 statusMap.set(statusPath, map);
               }
@@ -57460,7 +57913,7 @@ var require_list = __commonJS({
                 let entry = {
                   path: normalizePath(connection, decodePath(connection, untagged.attributes[2] && untagged.attributes[2].value || "")),
                   pathAsListed: untagged.attributes[2] && untagged.attributes[2].value || "",
-                  flags: new Set(untagged.attributes[0].map((entry2) => entry2.value)),
+                  flags: new Set(getStringList(untagged.attributes[0])),
                   delimiter: untagged.attributes[1] && untagged.attributes[1].value,
                   subscribed: true
                 };
@@ -57557,9 +58010,9 @@ var require_list = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/enable.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/enable.js
 var require_enable = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/enable.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/enable.js"(exports, module) {
     "use strict";
     var { hasCapability } = require_tools2();
     module.exports = async (connection, extensionList) => {
@@ -57606,11 +58059,46 @@ var require_enable = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/select.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/select.js
 var require_select = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/select.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/select.js"(exports, module) {
     "use strict";
-    var { encodePath, normalizePath, enhanceCommandError } = require_tools2();
+    var { encodePath, normalizePath, enhanceCommandError, parseBigIntValue, parseUintValue, getStringList, MAX_UINT32_DIGITS } = require_tools2();
+    var VALUED_RESPONSE_CODES = Object.assign(/* @__PURE__ */ Object.create(null), {
+      // CONDSTORE (RFC 7162): highest mod-sequence value for the mailbox, used for incremental
+      // sync. Stored as a BigInt since modseq values can exceed Number.MAX_SAFE_INTEGER.
+      //
+      // A value that is not a bounded digit run is dropped rather than stored raw: every consumer
+      // compares highestModseq relationally, and a relational compare against a non-numeric string
+      // is false in both directions, so the value could never advance and delta sync would stop.
+      highestmodseq: { key: "highestModseq", parse: (value) => parseBigIntValue(value) },
+      // Unique identifier validity. If this changes between sessions, all previously cached UIDs
+      // are invalid and the client must re-sync from scratch. Nominally 32-bit, but stored as a
+      // BigInt precisely so a server that exceeds that still round-trips, hence the wider bound.
+      uidvalidity: { key: "uidValidity", parse: (value) => parseBigIntValue(value) },
+      // The next UID to be assigned in this mailbox, useful for detecting new arrivals. A huge
+      // digit run would coerce to Infinity and corrupt every later UID range computation.
+      uidnext: { key: "uidNext", parse: (value) => parseUintValue(value, MAX_UINT32_DIGITS) },
+      // Sequence number of the first unseen message (RFC 3501 section 7.1). Not a count of unseen
+      // messages - use mailboxStatus() with {unseen: true} for that.
+      unseen: { key: "unseen", parse: (value) => parseUintValue(value, MAX_UINT32_DIGITS) },
+      // APPENDLIMIT (RFC 7889): largest message size in octets the server accepts for APPEND into
+      // this mailbox. Spelled all lowercase, unlike the camelCase fields around it, because that is
+      // the name this object has always exposed.
+      appendlimit: { key: "appendlimit", parse: (value) => parseUintValue(value) },
+      // OBJECTID (RFC 8474): server-assigned mailbox identifier that survives renames. Sent as a
+      // parenthesized list, but servers in the wild send it bare too.
+      mailboxid: {
+        key: "mailboxId",
+        parse: (value) => Array.isArray(value) ? value.length > 0 && value[0] : typeof value === "string" && value
+      },
+      // Flags the client may change permanently on messages in this mailbox, including \* if the
+      // server allows custom flags. Only the parenthesized form carries flags, and a malformed
+      // value must leave permanentFlags unset rather than set an empty Set: canUseFlag() reads
+      // unset as permissive and empty as deny-all, so an empty Set would turn every later flag
+      // update into a silent no-op for the rest of the session.
+      permanentflags: { key: "permanentFlags", parse: (value) => Array.isArray(value) && new Set(value) }
+    });
     module.exports = async (connection, path, options) => {
       if (![connection.states.AUTHENTICATED, connection.states.SELECTED].includes(connection.state)) {
         return;
@@ -57667,68 +58155,24 @@ var require_select = __commonJS({
                 return;
               }
               let section2 = !untagged.attributes[0].value && untagged.attributes[0].section;
-              if (section2 && section2.length > 1 && section2[0].type === "ATOM" && typeof section2[0].value === "string") {
+              if (section2 && section2.length > 1 && section2[0] && section2[0].type === "ATOM" && typeof section2[0].value === "string") {
                 let key = section2[0].value.toLowerCase();
                 let value;
-                if (typeof section2[1].value === "string") {
+                if (section2[1] && typeof section2[1].value === "string") {
                   value = section2[1].value;
                 } else if (Array.isArray(section2[1])) {
-                  value = section2[1].map((entry) => typeof entry.value === "string" ? entry.value : false).filter((entry) => entry);
+                  value = getStringList(section2[1]);
                 }
-                switch (key) {
-                  // CONDSTORE (RFC 7162): highest mod-sequence value for the mailbox.
-                  // Used for incremental sync -- clients compare against their cached
-                  // value to detect changes. Stored as BigInt since modseq values
-                  // can exceed Number.MAX_SAFE_INTEGER.
-                  case "highestmodseq":
-                    key = "highestModseq";
-                    if (/^[0-9]+$/.test(value)) {
-                      value = BigInt(value);
-                    }
-                    break;
-                  // OBJECTID (RFC 8474): server-assigned unique mailbox identifier.
-                  // Unlike path, this ID survives renames. Value comes as a
-                  // parenthesized list, so extract the first (only) element.
-                  case "mailboxid":
-                    key = "mailboxId";
-                    if (Array.isArray(value) && value.length) {
-                      value = value[0];
-                    }
-                    break;
-                  // Flags that the client can change permanently on messages in
-                  // this mailbox. Includes \* if the server allows custom flags.
-                  case "permanentflags":
-                    key = "permanentFlags";
-                    value = new Set(value);
-                    break;
-                  // The next UID that will be assigned to a new message in this
-                  // mailbox. Useful for detecting new arrivals.
-                  case "uidnext":
-                    key = "uidNext";
-                    value = Number(value);
-                    break;
-                  // Unique identifier validity value. If this changes between
-                  // sessions, all previously cached UIDs are invalid and the
-                  // client must re-sync from scratch.
-                  case "uidvalidity":
-                    key = "uidValidity";
-                    if (/^[0-9]+$/.test(value)) {
-                      value = BigInt(value);
-                    }
-                    break;
+                let field = VALUED_RESPONSE_CODES[key];
+                if (field) {
+                  let parsed = field.parse(value);
+                  if (parsed !== false) {
+                    map[field.key] = parsed;
+                  }
                 }
-                map[key] = value;
               }
-              if (section2 && section2.length === 1 && section2[0].type === "ATOM" && typeof section2[0].value === "string") {
-                let key = section2[0].value.toLowerCase();
-                switch (key) {
-                  // NOMODSEQ means the mailbox does not support mod-sequences.
-                  // CONDSTORE/QRESYNC features are unavailable for this mailbox.
-                  case "nomodseq":
-                    key = "noModseq";
-                    map[key] = true;
-                    break;
-                }
+              if (section2 && section2.length === 1 && section2[0] && section2[0].type === "ATOM" && section2[0].value?.toUpperCase() === "NOMODSEQ") {
+                map.noModseq = true;
               }
             },
             // Untagged FLAGS response lists all flags defined for this mailbox
@@ -57737,14 +58181,13 @@ var require_select = __commonJS({
               if (!untagged.attributes || !untagged.attributes.length || !Array.isArray(untagged.attributes[0])) {
                 return;
               }
-              let flags = untagged.attributes[0].map((flag) => typeof flag.value === "string" ? flag.value : false).filter((flag) => flag);
-              map.flags = new Set(flags);
+              map.flags = new Set(getStringList(untagged.attributes[0]));
             },
             // Untagged EXISTS response: "* <count> EXISTS" tells us the total number
             // of messages in the mailbox. The count is in the command field (numeric prefix).
             EXISTS: async (untagged) => {
-              let num = Number(untagged.command);
-              if (isNaN(num)) {
+              let num = parseUintValue(untagged.command, MAX_UINT32_DIGITS);
+              if (num === false) {
                 return false;
               }
               map.exists = num;
@@ -57762,8 +58205,9 @@ var require_select = __commonJS({
             }
           }
         });
-        let section = !response.response.attributes[0].value && response.response.attributes[0].section;
-        if (section && section.length && section[0].type === "ATOM" && typeof section[0].value === "string") {
+        let okAttributes = response.response && response.response.attributes || [];
+        let section = okAttributes[0] && !okAttributes[0].value && okAttributes[0].section;
+        if (section && section.length && section[0] && section[0].type === "ATOM" && typeof section[0].value === "string") {
           map.readOnly = section[0].value.toUpperCase() === "READ-ONLY";
         }
         if (map.qresync && (options.uidValidity !== map.uidValidity || !map.highestModseq || map.noModseq)) {
@@ -57800,9 +58244,9 @@ var require_select = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/fetch.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/fetch.js
 var require_fetch2 = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/fetch.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/fetch.js"(exports, module) {
     "use strict";
     var { formatMessageResponse, isRev2Active } = require_tools2();
     module.exports = async (connection, range, query, options) => {
@@ -57942,12 +58386,12 @@ var require_fetch2 = __commonJS({
                 messages.count++;
                 let formatted = await formatMessageResponse(untagged, mailbox);
                 if (typeof options.onUntaggedFetch === "function") {
-                  await new Promise((resolve2, reject) => {
+                  await new Promise((resolve3, reject) => {
                     options.onUntaggedFetch(formatted, (err) => {
                       if (err) {
                         reject(err);
                       } else {
-                        resolve2();
+                        resolve3();
                       }
                     });
                   });
@@ -57972,7 +58416,10 @@ var require_fetch2 = __commonJS({
               retryCount,
               delayMs: delay
             });
-            await new Promise((resolve2) => setTimeout(resolve2, delay));
+            let aborted2 = await connection.throttleWait(delay);
+            if (aborted2) {
+              throw connection.createNoConnectionError(connection.byeReason);
+            }
             retryCount++;
             continue;
           }
@@ -57984,9 +58431,9 @@ var require_fetch2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/create.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/create.js
 var require_create = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/create.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/create.js"(exports, module) {
     "use strict";
     var { encodePath, normalizePath, getStatusCode, enhanceCommandError } = require_tools2();
     module.exports = async (connection, path) => {
@@ -58043,9 +58490,9 @@ var require_create = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/delete.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/delete.js
 var require_delete = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/delete.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/delete.js"(exports, module) {
     "use strict";
     var { encodePath, normalizePath, enhanceCommandError } = require_tools2();
     module.exports = async (connection, path) => {
@@ -58073,9 +58520,9 @@ var require_delete = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/rename.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/rename.js
 var require_rename = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/rename.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/rename.js"(exports, module) {
     "use strict";
     var { encodePath, normalizePath, enhanceCommandError } = require_tools2();
     module.exports = async (connection, path, newPath) => {
@@ -58108,9 +58555,9 @@ var require_rename = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/close.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/close.js
 var require_close = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/close.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/close.js"(exports, module) {
     "use strict";
     module.exports = async (connection) => {
       if (connection.state !== connection.states.SELECTED) {
@@ -58136,9 +58583,9 @@ var require_close = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/subscribe.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/subscribe.js
 var require_subscribe = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/subscribe.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/subscribe.js"(exports, module) {
     "use strict";
     var { encodePath, normalizePath, enhanceCommandError } = require_tools2();
     module.exports = async (connection, path) => {
@@ -58160,9 +58607,9 @@ var require_subscribe = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/unsubscribe.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/unsubscribe.js
 var require_unsubscribe = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/unsubscribe.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/unsubscribe.js"(exports, module) {
     "use strict";
     var { encodePath, normalizePath, enhanceCommandError } = require_tools2();
     module.exports = async (connection, path) => {
@@ -58184,9 +58631,9 @@ var require_unsubscribe = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/store.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/store.js
 var require_store = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/store.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/store.js"(exports, module) {
     "use strict";
     var { formatFlag, canUseFlag, enhanceCommandError } = require_tools2();
     module.exports = async (connection, range, flags, options) => {
@@ -58248,9 +58695,9 @@ var require_store = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/search-compiler.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/search-compiler.js
 var require_search_compiler = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/search-compiler.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/search-compiler.js"(exports, module) {
     "use strict";
     var { formatDate, formatFlag, canUseFlag, isDate, isRev2Active } = require_tools2();
     var setBoolOpt = (attributes, term, value) => {
@@ -58574,11 +59021,19 @@ var require_search_compiler = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/search.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/search.js
 var require_search = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/search.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/search.js"(exports, module) {
     "use strict";
-    var { enhanceCommandError, hasCapability, isValidSequenceValue } = require_tools2();
+    var {
+      enhanceCommandError,
+      hasCapability,
+      isValidSequenceValue,
+      parseBigIntValue,
+      parseUintValue,
+      MAX_UINT32_DIGITS,
+      EXPANDED_RANGE_LIMIT
+    } = require_tools2();
     var { searchCompiler } = require_search_compiler();
     var stripEsearchPrefix = (attrs) => {
       let start = 0;
@@ -58601,24 +59056,26 @@ var require_search = __commonJS({
           continue;
         }
         switch (key) {
+          // COUNT is a plain message count; MIN and MAX are sequence numbers or UIDs. All
+          // three are bounded decimal runs - isNaN() would also admit '1e400' (Infinity)
           case "COUNT": {
-            const n = Number(attrs[++i]?.value);
-            if (!isNaN(n)) result.count = n;
+            const n = parseUintValue(attrs[++i]?.value, MAX_UINT32_DIGITS);
+            if (n !== false) result.count = n;
             break;
           }
           case "MIN": {
-            const n = Number(attrs[++i]?.value);
-            if (!isNaN(n)) result.min = n;
+            const n = parseUintValue(attrs[++i]?.value, MAX_UINT32_DIGITS);
+            if (n !== false) result.min = n;
             break;
           }
           case "MAX": {
-            const n = Number(attrs[++i]?.value);
-            if (!isNaN(n)) result.max = n;
+            const n = parseUintValue(attrs[++i]?.value, MAX_UINT32_DIGITS);
+            if (n !== false) result.max = n;
             break;
           }
           case "MODSEQ": {
-            const value = attrs[++i]?.value;
-            if (typeof value === "string" && /^\d+$/.test(value)) result.modseq = BigInt(value);
+            const modseq = parseBigIntValue(attrs[++i]?.value);
+            if (modseq !== false) result.modseq = modseq;
             break;
           }
           case "ALL": {
@@ -58699,11 +59156,28 @@ var require_search = __commonJS({
           untagged: {
             SEARCH: async (untagged) => {
               if (untagged && untagged.attributes && untagged.attributes.length) {
-                untagged.attributes.forEach((attribute) => {
-                  if (attribute && attribute.value && typeof attribute.value === "string" && !isNaN(attribute.value)) {
-                    results.add(Number(attribute.value));
+                let truncated = false;
+                let discarded = false;
+                for (let attribute of untagged.attributes) {
+                  if (results.size >= EXPANDED_RANGE_LIMIT) {
+                    truncated = true;
+                    break;
                   }
-                });
+                  let value = attribute && typeof attribute.value === "string" ? Number(attribute.value) : NaN;
+                  if (!isValidSequenceValue(value)) {
+                    discarded = true;
+                    continue;
+                  }
+                  results.add(value);
+                }
+                if (truncated || discarded) {
+                  connection.log.warn({
+                    msg: "Invalid entries in the SEARCH result",
+                    truncated,
+                    discarded,
+                    cid: connection.id
+                  });
+                }
               }
             },
             // IMAP4rev2 servers answer even a plain SEARCH with an untagged
@@ -58716,7 +59190,7 @@ var require_search = __commonJS({
               let parsed = parseEsearchResponse(stripEsearchPrefix(untagged.attributes));
               if (parsed.all) {
                 let existsCount = () => connection.mailbox && connection.mailbox.exists || 0;
-                let overBudget = () => results.size >= existsCount();
+                let overBudget = () => results.size >= existsCount() || results.size >= EXPANDED_RANGE_LIMIT;
                 let resolveId = (part) => part === "*" ? options.uid ? 0 : existsCount() : Number(part);
                 let truncated = false;
                 let discarded = false;
@@ -58774,9 +59248,9 @@ var require_search = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/noop.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/noop.js
 var require_noop = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/noop.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/noop.js"(exports, module) {
     "use strict";
     module.exports = async (connection) => {
       try {
@@ -58791,11 +59265,11 @@ var require_noop = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/expunge.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/expunge.js
 var require_expunge = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/expunge.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/expunge.js"(exports, module) {
     "use strict";
-    var { enhanceCommandError, hasCapability } = require_tools2();
+    var { enhanceCommandError, hasCapability, parseBigIntValue } = require_tools2();
     module.exports = async (connection, range, options) => {
       if (connection.state !== connection.states.SELECTED || !range) {
         return;
@@ -58811,7 +59285,7 @@ var require_expunge = __commonJS({
         let section = response.response.attributes && response.response.attributes[0] && response.response.attributes[0].section;
         let responseCode = section && section.length && section[0] && typeof section[0].value === "string" ? section[0].value : "";
         if (responseCode.toUpperCase() === "HIGHESTMODSEQ") {
-          let highestModseq = section[1] && typeof section[1].value === "string" && !isNaN(section[1].value) ? BigInt(section[1].value) : false;
+          let highestModseq = parseBigIntValue(section[1] && section[1].value);
           if (highestModseq && (!connection.mailbox.highestModseq || highestModseq > connection.mailbox.highestModseq)) {
             connection.mailbox.highestModseq = highestModseq;
           }
@@ -58827,11 +59301,22 @@ var require_expunge = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/append.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/append.js
 var require_append = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/append.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/append.js"(exports, module) {
     "use strict";
-    var { formatFlag, canUseFlag, formatDateTime, normalizePath, encodePath, comparePaths, enhanceCommandError } = require_tools2();
+    var {
+      formatFlag,
+      canUseFlag,
+      formatDateTime,
+      normalizePath,
+      encodePath,
+      comparePaths,
+      enhanceCommandError,
+      parseBigIntValue,
+      parseUintValue,
+      MAX_UINT32_DIGITS
+    } = require_tools2();
     module.exports = async (connection, destination, content, flags, idate) => {
       if (![connection.states.AUTHENTICATED, connection.states.SELECTED].includes(connection.state) || !destination) {
         return;
@@ -58868,7 +59353,11 @@ var require_append = __commonJS({
         map.path = connection.mailbox.path;
       }
       const handleExistsUpdate = (untagged) => {
-        map.seq = Number(untagged.command);
+        let seq = parseUintValue(untagged.command, MAX_UINT32_DIGITS);
+        if (seq === false) {
+          return;
+        }
+        map.seq = seq;
         if (expectExists) {
           let prevCount = connection.mailbox.exists;
           if (map.seq !== prevCount) {
@@ -58891,8 +59380,8 @@ var require_append = __commonJS({
         if (section && section.length) {
           let responseCode = section[0] && typeof section[0].value === "string" ? section[0].value : "";
           if (responseCode.toUpperCase() === "APPENDUID") {
-            let uidValidity = section[1] && typeof section[1].value === "string" && !isNaN(section[1].value) ? BigInt(section[1].value) : false;
-            let uid = section[2] && typeof section[2].value === "string" && !isNaN(section[2].value) ? Number(section[2].value) : false;
+            let uidValidity = parseBigIntValue(section[1] && section[1].value, MAX_UINT32_DIGITS);
+            let uid = parseUintValue(section[2] && section[2].value, MAX_UINT32_DIGITS);
             if (uidValidity !== false) {
               map.uidValidity = uidValidity;
             }
@@ -58929,11 +59418,27 @@ var require_append = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/status.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/status.js
 var require_status = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/status.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/status.js"(exports, module) {
     "use strict";
     var { encodePath, normalizePath, buildStatusQueryAttributes, isRev2Active } = require_tools2();
+    var { parseStatusList } = require_status_fields();
+    var MAILBOX_UPDATERS = {
+      messages: (value, connection, path) => {
+        let prevCount = connection.mailbox.exists;
+        if (prevCount !== value) {
+          connection.mailbox.exists = value;
+          connection.emit("exists", { path, count: value, prevCount });
+        }
+      },
+      uidNext: (value, connection) => {
+        connection.mailbox.uidNext = value;
+      },
+      highestModseq: (value, connection) => {
+        connection.mailbox.highestModseq = value;
+      }
+    };
     module.exports = async (connection, path, query) => {
       if (![connection.states.AUTHENTICATED, connection.states.SELECTED].includes(connection.state) || !path) {
         return false;
@@ -58960,61 +59465,10 @@ var require_status = __commonJS({
               if (!list) {
                 return;
               }
-              const STATUS_FIELD_MAP = {
-                MESSAGES: {
-                  key: "messages",
-                  parser: Number,
-                  updateMailbox: (val, conn) => {
-                    let prevCount = conn.mailbox.exists;
-                    if (prevCount !== val) {
-                      conn.mailbox.exists = val;
-                      conn.emit("exists", { path, count: val, prevCount });
-                    }
-                  }
-                },
-                RECENT: { key: "recent", parser: Number },
-                UIDNEXT: {
-                  key: "uidNext",
-                  parser: Number,
-                  updateMailbox: (val, conn) => {
-                    conn.mailbox.uidNext = val;
-                  }
-                },
-                UIDVALIDITY: { key: "uidValidity", parser: BigInt },
-                UNSEEN: { key: "unseen", parser: Number },
-                HIGHESTMODSEQ: {
-                  key: "highestModseq",
-                  parser: BigInt,
-                  updateMailbox: (val, conn) => {
-                    conn.mailbox.highestModseq = val;
-                  }
-                },
-                // IMAP4rev2 additions (RFC 9051): total mailbox size in octets
-                // (number64, exact as a JS number up to 2^53-1) and count of
-                // messages with the \Deleted flag
-                SIZE: { key: "size", parser: Number },
-                DELETED: { key: "deleted", parser: Number }
-              };
-              let key;
-              list.forEach((entry, i) => {
-                if (i % 2 === 0) {
-                  key = entry && typeof entry.value === "string" ? entry.value : false;
-                  return;
-                }
-                if (!key || !entry || typeof entry.value !== "string") {
-                  return;
-                }
-                const fieldConfig = STATUS_FIELD_MAP[key.toUpperCase()];
-                if (!fieldConfig) {
-                  return;
-                }
-                const value = !isNaN(entry.value) ? fieldConfig.parser(entry.value) : false;
-                if (value === false) {
-                  return;
-                }
-                map[fieldConfig.key] = value;
-                if (updateCurrent && fieldConfig.updateMailbox) {
-                  fieldConfig.updateMailbox(value, connection);
+              parseStatusList(list, (key, value) => {
+                map[key] = value;
+                if (updateCurrent && MAILBOX_UPDATERS[key]) {
+                  MAILBOX_UPDATERS[key](value, connection, path);
                 }
               });
             }
@@ -59042,18 +59496,18 @@ var require_status = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/copyuid-parser.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/copyuid-parser.js
 var require_copyuid_parser = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/copyuid-parser.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/copyuid-parser.js"(exports, module) {
     "use strict";
-    var { expandRange } = require_tools2();
+    var { expandRange, parseBigIntValue } = require_tools2();
     function parseCopyUid(response, map) {
       let section = response.attributes && response.attributes[0] && response.attributes[0].section;
       let responseCode = section && section.length && section[0] && typeof section[0].value === "string" ? section[0].value : "";
       if (responseCode !== "COPYUID") {
         return;
       }
-      let uidValidity = section[1] && typeof section[1].value === "string" && !isNaN(section[1].value) ? BigInt(section[1].value) : false;
+      let uidValidity = parseBigIntValue(section[1] && section[1].value);
       if (uidValidity !== false) {
         map.uidValidity = uidValidity;
       }
@@ -59067,9 +59521,9 @@ var require_copyuid_parser = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/copy.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/copy.js
 var require_copy = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/copy.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/copy.js"(exports, module) {
     "use strict";
     var { normalizePath, encodePath, enhanceCommandError } = require_tools2();
     var { parseCopyUid } = require_copyuid_parser();
@@ -59099,9 +59553,9 @@ var require_copy = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/move.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/move.js
 var require_move = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/move.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/move.js"(exports, module) {
     "use strict";
     var { normalizePath, encodePath, enhanceCommandError, hasCapability } = require_tools2();
     var { parseCopyUid } = require_copyuid_parser();
@@ -59142,9 +59596,9 @@ var require_move = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/compress.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/compress.js
 var require_compress = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/compress.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/compress.js"(exports, module) {
     "use strict";
     module.exports = async (connection) => {
       if (!connection.capabilities.has("COMPRESS=DEFLATE") || connection._inflate) {
@@ -59171,11 +59625,11 @@ var require_compress = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/quota.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/quota.js
 var require_quota = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/quota.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/quota.js"(exports, module) {
     "use strict";
-    var { encodePath, normalizePath, enhanceCommandError } = require_tools2();
+    var { encodePath, normalizePath, enhanceCommandError, parseUintValue, isUnsafeKey } = require_tools2();
     module.exports = async (connection, path) => {
       if (![connection.states.AUTHENTICATED, connection.states.SELECTED].includes(connection.state) || !path) {
         return;
@@ -59200,8 +59654,11 @@ var require_quota = __commonJS({
           if (!key) {
             return;
           }
-          let value = attribute && typeof attribute.value === "string" && !isNaN(attribute.value) ? Number(attribute.value) : false;
+          let value = parseUintValue(attribute && attribute.value);
           if (value === false) {
+            return;
+          }
+          if (isUnsafeKey(key) || key === "path" || key === "quotaroot") {
             return;
           }
           if (!map[key]) {
@@ -59259,9 +59716,9 @@ var require_quota = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/idle.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/idle.js
 var require_idle = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/idle.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/idle.js"(exports, module) {
     "use strict";
     var { hasCapability, unrefTimer } = require_tools2();
     var NOOP_INTERVAL = 2 * 60 * 1e3;
@@ -59302,14 +59759,14 @@ var require_idle = __commonJS({
               connection.preCheck = false;
             }
             while (preCheckWaitQueue.length) {
-              let { resolve: resolve2 } = preCheckWaitQueue.shift();
-              resolve2();
+              let { resolve: resolve3 } = preCheckWaitQueue.shift();
+              resolve3();
             }
           }
         };
         let connectionPreCheck = () => {
-          let handler = new Promise((resolve2, reject) => {
-            preCheckWaitQueue.push({ resolve: resolve2, reject });
+          let handler = new Promise((resolve3, reject) => {
+            preCheckWaitQueue.push({ resolve: resolve3, reject });
           });
           connection.log.trace({
             msg: "Requesting IDLE break",
@@ -59358,8 +59815,8 @@ var require_idle = __commonJS({
           connection.preCheck = false;
         }
         while (preCheckWaitQueue.length) {
-          let { resolve: resolve2 } = preCheckWaitQueue.shift();
-          resolve2();
+          let { resolve: resolve3 } = preCheckWaitQueue.shift();
+          resolve3();
         }
       }
     }
@@ -59407,7 +59864,7 @@ var require_idle = __commonJS({
       let interval = maxIdleTime ? Math.min(NOOP_INTERVAL, maxIdleTime) : NOOP_INTERVAL;
       let releaseIdling = claimIdling(connection);
       try {
-        await new Promise((resolve2) => {
+        await new Promise((resolve3) => {
           const cancel = () => {
             if (session.cancelled) {
               return;
@@ -59415,7 +59872,7 @@ var require_idle = __commonJS({
             session.cancelled = true;
             clearTimeout(session.timer);
             session.timer = null;
-            resolve2();
+            resolve3();
           };
           session.preCheck = async () => {
             connection.log.debug({ src: "c", msg: `breaking NOOP loop`, cid: connection.id });
@@ -59430,18 +59887,27 @@ var require_idle = __commonJS({
               return cancel();
             }
             pollOnce(connection, session).then(() => {
+              connection._lastPollAt = Date.now();
               if (session.cancelled) {
                 return;
               }
-              session.timer = setTimeout(runPoll, interval);
-              unrefTimer(session.timer);
+              scheduleNextPoll(interval);
             }).catch((err) => {
               connection.log.warn({ err, cid: connection.id });
               cancel();
             });
           };
+          function scheduleNextPoll(delay) {
+            session.timer = setTimeout(runPoll, delay);
+            unrefTimer(session.timer);
+          }
           connection.log.debug({ src: "c", msg: `initiated NOOP loop`, cid: connection.id });
-          runPoll();
+          let sinceLastPoll = Math.max(0, Date.now() - (connection._lastPollAt || 0));
+          if (sinceLastPoll >= interval) {
+            runPoll();
+          } else {
+            scheduleNextPoll(interval - sinceLastPoll);
+          }
         });
       } finally {
         session.cancelled = true;
@@ -59486,9 +59952,9 @@ var require_idle = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/authenticate.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/authenticate.js
 var require_authenticate = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/commands/authenticate.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/commands/authenticate.js"(exports, module) {
     "use strict";
     var { getStatusCode, getErrorText } = require_tools2();
     async function handleAuthError(err, errorResponse2) {
@@ -59622,9 +60088,9 @@ var require_authenticate = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/imap-commands.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/imap-commands.js
 var require_imap_commands = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/imap-commands.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/imap-commands.js"(exports, module) {
     "use strict";
     module.exports = /* @__PURE__ */ new Map([
       ["ID", require_id2()],
@@ -59659,9 +60125,9 @@ var require_imap_commands = __commonJS({
   }
 });
 
-// node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/imap-flow.js
+// node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/imap-flow.js
 var require_imap_flow = __commonJS({
-  "node_modules/.pnpm/imapflow@1.6.5/node_modules/imapflow/lib/imap-flow.js"(exports, module) {
+  "node_modules/.pnpm/imapflow@1.7.0/node_modules/imapflow/lib/imap-flow.js"(exports, module) {
     "use strict";
     var tls = __require("tls");
     var net = __require("net");
@@ -59671,7 +60137,7 @@ var require_imap_flow = __commonJS({
     var libmime = require_libmime();
     var zlib = __require("zlib");
     var { Headers } = require_mailsplit();
-    var { LimitedPassthrough } = require_limited_passthrough();
+    var { LimitedPassthrough, normalizeByteLimit } = require_limited_passthrough();
     var { ImapStream } = require_imap_stream();
     var { parser, compiler } = require_imap_handler();
     var packageInfo = require_package4();
@@ -59693,7 +60159,11 @@ var require_imap_flow = __commonJS({
       AuthenticationFailure,
       getColorFlags,
       hasCapability,
-      unrefTimer
+      unrefTimer,
+      parseUintValue,
+      isUnsafeKey,
+      getStringList,
+      MAX_UINT32_DIGITS
     } = require_tools2();
     var imapCommands = require_imap_commands();
     var noop = () => {
@@ -59701,12 +60171,34 @@ var require_imap_flow = __commonJS({
     var GREETING_TIMEOUT = 16 * 1e3;
     var UPGRADE_TIMEOUT = 10 * 1e3;
     var SOCKET_TIMEOUT = 5 * 60 * 1e3;
+    var MAX_THROTTLE_DELAY = 5 * 60 * 1e3;
     var HELD_LOCK_WARN_MS = 30 * 60 * 1e3;
+    var AUTO_IDLE_DELAY = 15 * 1e3;
+    var AUTO_IDLE_SOCKET_MARGIN = 1e3;
+    var MAX_TIMER_DELAY = 2 ** 31 - 1;
     var states = {
       NOT_AUTHENTICATED: 1,
       AUTHENTICATED: 2,
       SELECTED: 3,
       LOGOUT: 4
+    };
+    var normalizeAutoIdleDelay = (value, socketTimeout, log, cid) => {
+      const maxDelay = Math.max(0, Math.min(socketTimeout, MAX_TIMER_DELAY) - AUTO_IDLE_SOCKET_MARGIN);
+      const configured = value !== void 0 && value !== null;
+      let delay = typeof value === "number" || typeof value === "string" && value.trim() ? Number(value) : NaN;
+      let reason = null;
+      if (!Number.isFinite(delay) || delay < 0) {
+        reason = "not a non-negative finite number";
+        delay = AUTO_IDLE_DELAY;
+      }
+      if (delay > maxDelay) {
+        reason = reason || `above socketTimeout (${socketTimeout} ms)`;
+        delay = maxDelay;
+      }
+      if (configured && reason) {
+        log.warn({ msg: "Adjusted unusable autoIdleDelay option", requested: value, autoIdleDelay: delay, reason, cid });
+      }
+      return Math.floor(delay);
     };
     var ImapFlow3 = class extends EventEmitter {
       /**
@@ -59772,6 +60264,15 @@ var require_imap_flow = __commonJS({
        *
        * @property {Boolean} [disableAutoIdle=false]
        *     If `true`, do not start IDLE automatically. Useful when only specific operations are needed.
+       *
+       * @property {Number} [autoIdleDelay=15000]
+       *     How long (in milliseconds) the connection has to be inactive before IDLE is started automatically.
+       *     Keep it above the pause your own code usually leaves between two commands, otherwise every command is
+       *     followed by an IDLE that the next command has to break, costing two extra round-trips per command.
+       *     To turn auto-IDLE off entirely use `disableAutoIdle` rather than a very large delay: the value is
+       *     capped below `socketTimeout`, because auto-IDLE has to start before the inactivity watchdog fires.
+       *     On servers without IDLE support this controls when the polling fallback starts, not how often it
+       *     polls - the poll interval is `maxIdleTime`, capped at 2 minutes.
        *
        * @property {Object} [tls]
        *     Additional TLS options. For details, see [Node.js TLS connect](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback).
@@ -59881,13 +60382,13 @@ var require_imap_flow = __commonJS({
           logRaw: this.logRaw,
           secureConnection: this.secureConnection,
           maxLineLength: this.options.maxLineLength,
-          maxLiteralSize: this.options.maxLiteralSize
+          maxLiteralSize: this.options.maxLiteralSize,
+          maxResponseSize: this.options.maxResponseSize
         });
         this.reading = false;
         this.socket = false;
         this.writeSocket = false;
-        this._throttleTimer = null;
-        this._throttleAbort = null;
+        this._throttleWaits = /* @__PURE__ */ new Set();
         this._upgradeReject = null;
         this.isClosed = false;
         this.states = states;
@@ -59922,6 +60423,9 @@ var require_imap_flow = __commonJS({
         this.locks = [];
         this.idRequested = false;
         this.maxIdleTime = this.options.maxIdleTime || false;
+        this.autoIdleDelay = normalizeAutoIdleDelay(this.options.autoIdleDelay, this.socketTimeout, this.log, this.id);
+        this._lastPollAt = 0;
+        this._openDownloads = 0;
         this.missingIdleCommand = (this.options.missingIdleCommand || "").toString().toUpperCase().trim() || "NOOP";
         this.disableBinary = !!this.options.disableBinary;
         this.skipListSubscribedArg = false;
@@ -60114,8 +60618,8 @@ var require_imap_flow = __commonJS({
         }
         let tag = (++this.tagCounter).toString(16).toUpperCase();
         options = options || {};
-        let promise = new Promise((resolve2, reject) => {
-          this.requestTagMap.set(tag, { command, attributes, options, resolve: resolve2, reject });
+        let promise = new Promise((resolve3, reject) => {
+          this.requestTagMap.set(tag, { command, attributes, options, resolve: resolve3, reject });
           this.requestQueue.push({ tag, command, attributes, options });
           this.trySend().catch((err) => this.log.warn({ err, cid: this.id }));
         });
@@ -60207,6 +60711,30 @@ var require_imap_flow = __commonJS({
           request.reject(err);
         }
       }
+      /**
+       * Waits out a throttle back-off.
+       *
+       * The delay is capped at MAX_THROTTLE_DELAY because it can come straight from a server hint
+       * (a Microsoft 365 "Suggested Backoff Time", say) and an uncapped hint would park the caller
+       * for weeks. The timer is unref'd and tracked so it can never outlive the client: a bare
+       * setTimeout here keeps a short-lived process alive for the full delay after close(), and
+       * leaves the caller waiting on a connection that is already gone.
+       *
+       * @param {Number} delay - Requested delay in milliseconds.
+       * @returns {Promise<Boolean>} True if close() aborted the wait, false on normal expiry.
+       */
+      async throttleWait(delay) {
+        delay = Math.min(Math.max(Number(delay) || 0, 0), MAX_THROTTLE_DELAY);
+        return await new Promise((resolve3) => {
+          let entry = { resolve: resolve3 };
+          entry.timer = setTimeout(() => {
+            this._throttleWaits.delete(entry);
+            resolve3(false);
+          }, delay);
+          unrefTimer(entry.timer);
+          this._throttleWaits.add(entry);
+        });
+      }
       async reader() {
         let data;
         let processedCount = 0;
@@ -60230,7 +60758,7 @@ var require_imap_flow = __commonJS({
           }
           processedCount++;
           if (processedCount % 10 === 0) {
-            await new Promise((resolve2) => setImmediate(resolve2));
+            await new Promise((resolve3) => setImmediate(resolve3));
           }
         }
       }
@@ -60273,7 +60801,7 @@ var require_imap_flow = __commonJS({
         try {
           parsed = await parser(data.payload, { literals: data.literals });
         } catch (err) {
-          this.log.error({ src: "s", msg: data.payload.toString(), err, cid: this.id });
+          this.log.error({ src: "s", msg: data.payload.toString("latin1", 0, 1024), payloadBytes: data.payload.length, err, cid: this.id });
           this.rejectUnparsedCompletion(data.payload, err);
           return true;
         }
@@ -60315,7 +60843,7 @@ var require_imap_flow = __commonJS({
           return true;
         }
         let section = parsed.attributes && parsed.attributes.length && parsed.attributes[0] && !parsed.attributes[0].value && parsed.attributes[0].section;
-        if (section && section.length && section[0].type === "ATOM" && typeof section[0].value === "string") {
+        if (section && section.length && section[0] && section[0].type === "ATOM" && typeof section[0].value === "string") {
           let sectionHandler = this.getSectionHandler(section[0].value.toUpperCase().trim());
           if (sectionHandler) {
             try {
@@ -60385,7 +60913,7 @@ var require_imap_flow = __commonJS({
         switch ((parsed.command || "").toUpperCase()) {
           case "OK":
           case "BYE":
-            await new Promise((resolve2) => request.resolve({ response: parsed, next: resolve2, hasTrailingData }));
+            await new Promise((resolve3) => request.resolve({ response: parsed, next: resolve3, hasTrailingData }));
             break;
           case "NO":
           case "BAD": {
@@ -60403,7 +60931,7 @@ var require_imap_flow = __commonJS({
               err.responseText = txt;
               if (err.responseStatus === "NO" && txt.includes("Some of the requested messages no longer exist")) {
                 this.log.warn({ msg: "Partial FETCH response", cid: this.id, err });
-                await new Promise((resolve2) => request.resolve({ response: parsed, next: resolve2 }));
+                await new Promise((resolve3) => request.resolve({ response: parsed, next: resolve3 }));
                 break;
               }
               let throttleDelay = false;
@@ -60416,18 +60944,9 @@ var require_imap_flow = __commonJS({
               if (throttleDelay) {
                 err.code = "ETHROTTLE";
                 err.throttleReset = throttleDelay;
-                let delayResponse = throttleDelay;
-                if (delayResponse > 5 * 60 * 1e3) {
-                  delayResponse = 5 * 60 * 1e3;
-                }
+                let delayResponse = Math.min(throttleDelay, MAX_THROTTLE_DELAY);
                 this.log.warn({ msg: "Throttling detected", cid: this.id, throttleDelay, delayResponse, err });
-                let aborted2 = await new Promise((resolve2) => {
-                  this._throttleAbort = resolve2;
-                  this._throttleTimer = setTimeout(() => resolve2(false), delayResponse);
-                  unrefTimer(this._throttleTimer);
-                });
-                this._throttleTimer = null;
-                this._throttleAbort = null;
+                let aborted2 = await this.throttleWait(delayResponse);
                 if (aborted2) {
                   request.reject(this.createNoConnectionError(this.byeReason));
                   break;
@@ -60487,13 +61006,15 @@ var require_imap_flow = __commonJS({
         this._socketTimeout = this._socketTimeout || (() => {
           const err = new Error("Socket timeout");
           err.code = "ETIMEOUT";
-          if (this.idling) {
+          const quietExpected = this.idling || this._openDownloads || this.currentLock;
+          const commandStuck = this.currentRequest && !(this.idling && this.currentRequest.command === "IDLE");
+          if (quietExpected && !commandStuck) {
             if (!this.usable || !this.socket || this.socket.destroyed) {
               this.emitError(err);
               return;
             }
-            this.run("NOOP").then(() => this.idle()).catch((err2) => {
-              this.log.warn({ msg: "IDLE recovery failed after timeout", err: err2, cid: this.id });
+            this.run("NOOP").catch((err2) => {
+              this.log.warn({ msg: "Connection recovery failed after timeout", err: err2, cid: this.id });
               if (!this.isClosed) {
                 this.close();
               }
@@ -60635,7 +61156,7 @@ var require_imap_flow = __commonJS({
               }
               processedChunks++;
               if (processedChunks % 100 === 0) {
-                await new Promise((resolve2) => setImmediate(resolve2));
+                await new Promise((resolve3) => setImmediate(resolve3));
                 if (!this.writeSocket) {
                   break;
                 }
@@ -60712,11 +61233,17 @@ var require_imap_flow = __commonJS({
         if (injectedTail && injectedTail.length) {
           throw failSTARTTLSInjection();
         }
-        let upgraded = await new Promise((resolve2, reject) => {
+        let upgraded = await new Promise((resolve3, reject) => {
           let socketPlain = this.socket;
           let opts = Object.assign(
             {
               socket: this.socket,
+              // host is required even though the socket is already connected: without
+              // it, a connection made to an IP literal (servername=false) has its
+              // certificate verified against Node's fallback name "localhost" instead
+              // of the IP - accepting any "localhost" certificate for any IP-hosted
+              // server, and rejecting legitimate IP-SAN certificates.
+              host: this.host,
               servername: this.servername,
               port: this.port
             },
@@ -60743,7 +61270,7 @@ var require_imap_flow = __commonJS({
               this.closeAfter();
               return reject(err);
             }
-            resolve2(result);
+            resolve3(result);
           };
           this._upgradeReject = settle2;
           socketPlain.once("error", settle2);
@@ -60857,10 +61384,10 @@ var require_imap_flow = __commonJS({
         }
         this.startSession().then(() => {
           if (typeof this.initialResolve === "function") {
-            let resolve2 = this.initialResolve;
+            let resolve3 = this.initialResolve;
             this.initialResolve = false;
             this.initialReject = false;
-            return resolve2();
+            return resolve3();
           }
         }).catch((err) => {
           this.log.error({ err, cid: this.id });
@@ -60929,10 +61456,13 @@ var require_imap_flow = __commonJS({
         if (!this.mailbox) {
           return;
         }
-        if (!untagged || !untagged.command || isNaN(untagged.command)) {
+        if (!untagged) {
           return;
         }
-        let count = Number(untagged.command);
+        let count = parseUintValue(untagged.command, MAX_UINT32_DIGITS);
+        if (count === false) {
+          return;
+        }
         if (count === this.mailbox.exists) {
           return;
         }
@@ -60948,10 +61478,10 @@ var require_imap_flow = __commonJS({
         if (!this.mailbox) {
           return;
         }
-        if (!untagged || !untagged.command || isNaN(untagged.command)) {
+        if (!untagged) {
           return;
         }
-        let seq = Number(untagged.command);
+        let seq = parseUintValue(untagged.command, MAX_UINT32_DIGITS);
         if (seq && seq <= this.mailbox.exists) {
           this.mailbox.exists--;
           let payload = {
@@ -60977,8 +61507,11 @@ var require_imap_flow = __commonJS({
         }
         let tags = [];
         let uids = false;
+        if (!untagged.attributes || !untagged.attributes.length) {
+          return;
+        }
         if (untagged.attributes.length > 1 && Array.isArray(untagged.attributes[0])) {
-          tags = untagged.attributes[0].map((entry) => typeof entry.value === "string" ? entry.value.toUpperCase() : false).filter((value) => value);
+          tags = getStringList(untagged.attributes[0]).map((value) => value.toUpperCase());
           untagged.attributes.shift();
         }
         if (untagged.attributes[0] && typeof untagged.attributes[0].value === "string") {
@@ -61072,6 +61605,15 @@ var require_imap_flow = __commonJS({
         }
         return range;
       }
+      // The single definition of "the connection is not free". A held or queued mailbox lock, a
+      // command in flight or queued, and an open download stream all mean a caller is
+      // mid-sequence: starting IDLE there injects an IDLE/DONE round trip - or, with
+      // `missingIdleCommand` set to SELECT or STATUS, a mailbox poll - between two of that
+      // caller's own commands. Every one of those states ends by calling autoidle() again, so
+      // declining while busy postpones IDLE, it never cancels it.
+      connectionBusy() {
+        return !!(this.currentLock || this.locks.length || this.currentRequest || this.requestQueue.length || this._openDownloads);
+      }
       // Timer process-liveness policy: connection establishment and greeting deadlines keep the
       // process alive, because a caller is waiting on connect() to settle. Background timers
       // (auto-IDLE, IDLE restart, fallback polling, throttle back-off, the held-lock diagnostic) are
@@ -61082,9 +61624,15 @@ var require_imap_flow = __commonJS({
         if (this.options.disableAutoIdle || this.state !== this.states.SELECTED) {
           return;
         }
+        if (this.connectionBusy()) {
+          return;
+        }
         this.idleStartTimer = setTimeout(() => {
+          if (this.state !== this.states.SELECTED || this.connectionBusy()) {
+            return;
+          }
           this.idle().catch((err) => this.log.warn({ err, cid: this.id }));
-        }, 15 * 1e3);
+        }, this.autoIdleDelay);
         unrefTimer(this.idleStartTimer);
       }
       // PUBLIC API METHODS
@@ -61140,7 +61688,7 @@ var require_imap_flow = __commonJS({
             throw error2;
           }
         }
-        let connectPromise = new Promise((resolve2, reject) => {
+        let connectPromise = new Promise((resolve3, reject) => {
           this.connectTimeout = setTimeout(() => {
             let err = deadline.error();
             this.log.error({ err, cid: this.id });
@@ -61190,7 +61738,7 @@ var require_imap_flow = __commonJS({
               this.setSocketHandlers();
               this.setEventHandlers();
               this.socket.pipe(this.streamer);
-              this.initialResolve = resolve2;
+              this.initialResolve = resolve3;
               this.initialReject = reject;
             } catch (ex) {
               reject(ex);
@@ -61266,12 +61814,11 @@ var require_imap_flow = __commonJS({
           clearTimeout(this.upgradeTimeout);
           clearTimeout(this.connectTimeout);
           clearTimeout(this.greetingTimeout);
-          clearTimeout(this._throttleTimer);
-          this._throttleTimer = null;
-          if (typeof this._throttleAbort === "function") {
-            this._throttleAbort(true);
-            this._throttleAbort = null;
+          for (let entry of this._throttleWaits) {
+            clearTimeout(entry.timer);
+            entry.resolve(true);
           }
+          this._throttleWaits.clear();
           this.usable = false;
           this._idleSession = null;
           this.idling = false;
@@ -62169,17 +62716,17 @@ var require_imap_flow = __commonJS({
         let aborted2 = false;
         let push = false;
         let rowQueue = [];
-        let getNext = () => new Promise((resolve2, reject) => {
+        let getNext = () => new Promise((resolve3, reject) => {
           let check2 = () => {
             if (rowQueue.length) {
               let entry = rowQueue.shift();
               if (entry.err) {
                 return reject(entry.err);
               }
-              return resolve2(entry.value);
+              return resolve3(entry.value);
             }
             if (finished) {
-              return resolve2(null);
+              return resolve3(null);
             }
             push = () => {
               push = false;
@@ -62352,7 +62899,7 @@ var require_imap_flow = __commonJS({
         let hasMore = true;
         let processed = 0;
         let chunkSize = Number(options.chunkSize) || 64 * 1024;
-        let maxBytes = Number(options.maxBytes) || Infinity;
+        let maxBytes = normalizeByteLimit(options.maxBytes);
         let uid = false;
         if (part === "1") {
           let response2 = await this.fetchOne(range, { uid: true, bodyStructure: true }, options);
@@ -62486,37 +63033,35 @@ var require_imap_flow = __commonJS({
           default:
             output = stream = new PassThrough();
         }
+        let limiters = [];
+        let isLimited = () => limiters.some((entry) => entry.limited);
+        let pipeStage = (stage) => {
+          output.on("error", (err) => {
+            stage.emit("error", err);
+          });
+          output = output.pipe(stage);
+          return stage;
+        };
         let isTextNode = ["text/html", "text/plain", "text/x-amp-html"].includes(meta.contentType) || part === "1" && !meta.contentType;
         if ((!meta.disposition || meta.disposition === "inline") && isTextNode) {
           if (meta.flowed) {
-            let flowDecoder = new FlowedDecoder({
-              delSp: meta.delSp
-            });
-            output.on("error", (err) => {
-              flowDecoder.emit("error", err);
-            });
-            output = output.pipe(flowDecoder);
+            limiters.push(pipeStage(new LimitedPassthrough({ maxBytes })));
+            pipeStage(new FlowedDecoder({ delSp: meta.delSp }));
           }
           if (meta.charset && !["ascii", "usascii", "utf8"].includes(meta.charset.toLowerCase().replace(/[^a-z0-9]+/g, ""))) {
             try {
-              let decoder = getDecoder(meta.charset);
+              let decoder = getDecoder(meta.charset, maxBytes);
               decoder.on("error", (err) => {
                 this.log.warn({ err, charset: meta.charset, cid: this.id });
               });
-              output.on("error", (err) => {
-                decoder.emit("error", err);
-              });
-              output = output.pipe(decoder);
+              limiters.push(pipeStage(decoder));
               meta.charset = "utf-8";
             } catch {
             }
           }
         }
-        let limiter = new LimitedPassthrough({ maxBytes });
-        output.on("error", (err) => {
-          limiter.emit("error", err);
-        });
-        output = output.pipe(limiter);
+        let limiter = pipeStage(new LimitedPassthrough({ maxBytes }));
+        limiters.push(limiter);
         const cleanup = () => {
           fetchAborted = true;
           if (stream && !stream.destroyed) {
@@ -62526,20 +63071,20 @@ var require_imap_flow = __commonJS({
         output.once("error", cleanup);
         output.once("close", cleanup);
         let writeChunk = (chunk2) => {
-          if (limiter.limited || fetchAborted || stream.destroyed) {
+          if (isLimited() || fetchAborted || stream.destroyed) {
             return true;
           }
           return stream.write(chunk2);
         };
         let fetchAllParts = async () => {
-          while (hasMore && !limiter.limited && !fetchAborted) {
+          while (hasMore && !isLimited() && !fetchAborted) {
             let { chunk: chunk2 } = await getNextPart();
             if (!chunk2 || fetchAborted) {
               break;
             }
             if (writeChunk(chunk2) === false) {
               try {
-                await new Promise((resolve2, reject) => {
+                await new Promise((resolve3, reject) => {
                   let resolved = false;
                   const finish = (err) => {
                     if (resolved) return;
@@ -62550,7 +63095,7 @@ var require_imap_flow = __commonJS({
                     if (err) {
                       reject(err);
                     } else {
-                      resolve2();
+                      resolve3();
                     }
                   };
                   stream.once("drain", () => finish());
@@ -62568,6 +63113,15 @@ var require_imap_flow = __commonJS({
             }
           }
         };
+        this._openDownloads++;
+        let downloadDone = false;
+        let finishDownload = () => {
+          if (!downloadDone) {
+            downloadDone = true;
+            this._openDownloads--;
+            this.autoidle();
+          }
+        };
         let runFetchAllParts = () => {
           fetchAllParts().catch((err) => {
             if (!fetchAborted && stream && !stream.destroyed) {
@@ -62582,6 +63136,7 @@ var require_imap_flow = __commonJS({
               });
             }
           }).finally(() => {
+            finishDownload();
             if (!fetchAborted && stream && !stream.destroyed) {
               stream.end();
             }
@@ -62593,6 +63148,7 @@ var require_imap_flow = __commonJS({
             writeResult = writeChunk(chunk);
           } catch (err) {
             stream.emit("error", err);
+            finishDownload();
             if (!fetchAborted && stream && !stream.destroyed) {
               stream.end();
             }
@@ -62602,6 +63158,8 @@ var require_imap_flow = __commonJS({
             stream.once("drain", () => {
               if (!fetchAborted) {
                 runFetchAllParts();
+              } else {
+                finishDownload();
               }
             });
           } else {
@@ -62652,6 +63210,9 @@ var require_imap_flow = __commonJS({
         let data = {};
         for (let [part, content] of response.bodyParts) {
           let keyParts = part.split(".mime");
+          if (isUnsafeKey(keyParts[0])) {
+            continue;
+          }
           if (keyParts.length === 1) {
             let key = keyParts[0];
             if (!data[key]) {
@@ -62704,7 +63265,8 @@ var require_imap_flow = __commonJS({
           }
         }
         for (let part of Object.keys(data)) {
-          let meta = data[part].meta;
+          let meta = data[part].meta || {};
+          data[part].meta = meta;
           let clientEncoding = response.binaryParts && response.binaryParts.has(part) ? false : meta.encoding;
           switch (clientEncoding) {
             case "base64":
@@ -62727,14 +63289,16 @@ var require_imap_flow = __commonJS({
           throw this.createNoConnectionError();
         }
         clearTimeout(this.idleStartTimer);
-        if (typeof this.preCheck === "function") {
-          await this.preCheck();
+        try {
+          if (typeof this.preCheck === "function") {
+            await this.preCheck();
+          }
+          return await this.runInternal(command, ...args);
+        } finally {
+          if (command !== "IDLE") {
+            this.autoidle();
+          }
         }
-        let result = await this.runInternal(command, ...args);
-        if (command !== "IDLE") {
-          this.autoidle();
-        }
-        return result;
       }
       /**
        * Dispatches a command without the IDLE handshake that `run()` performs.
@@ -62788,10 +63352,10 @@ var require_imap_flow = __commonJS({
             }
             processedCount++;
             if (processedCount % 5 === 0) {
-              await new Promise((resolve3) => setImmediate(resolve3));
+              await new Promise((resolve4) => setImmediate(resolve4));
             }
             const lock = this.locks.shift();
-            const { resolve: resolve2, reject, path, options, lockId } = lock;
+            const { resolve: resolve3, reject, path, options, lockId } = lock;
             if (lock.acquireTimer) {
               clearTimeout(lock.acquireTimer);
               lock.acquireTimer = null;
@@ -62831,6 +63395,7 @@ var require_imap_flow = __commonJS({
                   idling: this.idling
                 });
                 this.currentLock = false;
+                this.autoidle();
                 setImmediate(() => {
                   this.processLocks().catch((err) => this.log.error({ err, cid: this.id }));
                 });
@@ -62849,6 +63414,12 @@ var require_imap_flow = __commonJS({
               reject(error2);
               continue;
             }
+            const grantLock = () => {
+              this.currentLock = lock;
+              armHeldTimer();
+              this.autoidle();
+              resolve3({ path, release });
+            };
             if (this.mailbox && this.mailbox.path === path && !!this.mailbox.readOnly === !!options.readOnly) {
               this.log.trace({
                 msg: "Mailbox lock acquired [existing]",
@@ -62857,9 +63428,7 @@ var require_imap_flow = __commonJS({
                 idling: this.idling,
                 ...options.description && { description: options.description }
               });
-              this.currentLock = lock;
-              armHeldTimer();
-              resolve2({ path, release });
+              grantLock();
               break;
             }
             try {
@@ -62871,9 +63440,7 @@ var require_imap_flow = __commonJS({
                 idling: this.idling,
                 ...options.description && { description: options.description }
               });
-              this.currentLock = lock;
-              armHeldTimer();
-              resolve2({ path, release });
+              grantLock();
               break;
             } catch (err) {
               if (err.responseStatus === "NO") {
@@ -62941,8 +63508,8 @@ var require_imap_flow = __commonJS({
             ...this.currentLock.options?.description && { description: this.currentLock.options?.description }
           } : null
         });
-        let lockPromise = new Promise((resolve2, reject) => {
-          let lockEntry = { resolve: resolve2, reject, path, options, lockId };
+        let lockPromise = new Promise((resolve3, reject) => {
+          let lockEntry = { resolve: resolve3, reject, path, options, lockId };
           this.locks.push(lockEntry);
           if (Number(options.acquireTimeout) > 0) {
             lockEntry.acquireTimer = setTimeout(() => {
@@ -75140,7 +75707,7 @@ var Protocol = class {
           return;
         }
         const pollInterval = task2.pollInterval ?? this._options?.defaultTaskPollInterval ?? 1e3;
-        await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
+        await new Promise((resolve3) => setTimeout(resolve3, pollInterval));
         options?.signal?.throwIfAborted();
       }
     } catch (error2) {
@@ -75157,7 +75724,7 @@ var Protocol = class {
    */
   request(request, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       const earlyReject = (error2) => {
         reject(error2);
       };
@@ -75235,7 +75802,7 @@ var Protocol = class {
           if (!parseResult.success) {
             reject(parseResult.error);
           } else {
-            resolve2(parseResult.data);
+            resolve3(parseResult.data);
           }
         } catch (error2) {
           reject(error2);
@@ -75496,12 +76063,12 @@ var Protocol = class {
       }
     } catch {
     }
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       if (signal.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
-      const timeoutId = setTimeout(resolve2, interval);
+      const timeoutId = setTimeout(resolve3, interval);
       signal.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
@@ -76814,7 +77381,7 @@ var McpServer = class {
     let task = createTaskResult.task;
     const pollInterval = task.pollInterval ?? 5e3;
     while (task.status !== "completed" && task.status !== "failed" && task.status !== "cancelled") {
-      await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
+      await new Promise((resolve3) => setTimeout(resolve3, pollInterval));
       const updatedTask = await extra.taskStore.getTask(taskId);
       if (!updatedTask) {
         throw new McpError(ErrorCode.InternalError, `Task ${taskId} not found during polling`);
@@ -77502,12 +78069,12 @@ var StdioServerTransport = class {
     this.onclose?.();
   }
   send(message) {
-    return new Promise((resolve2) => {
+    return new Promise((resolve3) => {
       const json = serializeMessage(message);
       if (this._stdout.write(json)) {
-        resolve2();
+        resolve3();
       } else {
-        this._stdout.once("drain", resolve2);
+        this._stdout.once("drain", resolve3);
       }
     });
   }
@@ -77516,6 +78083,8 @@ var StdioServerTransport = class {
 // src/services/appleMailManager.ts
 import { spawnSync as spawnSync2 } from "child_process";
 import {
+  constants as fsConstants,
+  chmodSync,
   existsSync as existsSync3,
   writeFileSync as writeFileSync3,
   readFileSync as readFileSync2,
@@ -77525,11 +78094,11 @@ import {
   renameSync,
   mkdtempSync as mkdtempSync2,
   rmSync as rmSync2,
-  realpathSync,
+  realpathSync as realpathSync2,
   lstatSync
 } from "fs";
-import { isAbsolute, resolve, sep, join as join4 } from "path";
-import { homedir as homedir3 } from "os";
+import { resolve as resolve2, sep as sep2, join as join5 } from "path";
+import { homedir as homedir4 } from "os";
 import { randomUUID } from "crypto";
 
 // src/utils/applescript.ts
@@ -77596,11 +78165,17 @@ function sleep(ms) {
     }
   }
 }
+var PERMISSION_DENIED_PATTERN = /not authorized|not permitted|access.*denied/i;
+var PERMISSION_DENIED_MESSAGE = "Permission denied. Grant automation access in System Settings > Privacy & Security > Automation.";
+function isPermissionDenied(error2) {
+  if (!error2) return false;
+  return PERMISSION_DENIED_PATTERN.test(error2) || error2.includes(PERMISSION_DENIED_MESSAGE);
+}
 var ERROR_MAPPINGS = [
   // Permission errors
   {
-    pattern: /not authorized|not permitted|access.*denied/i,
-    message: "Permission denied. Grant automation access in System Settings > Privacy & Security > Automation."
+    pattern: PERMISSION_DENIED_PATTERN,
+    message: PERMISSION_DENIED_MESSAGE
   },
   // Application not running
   {
@@ -78052,11 +78627,12 @@ var TemplateStore = class {
 
 // src/utils/attachmentMaterialize.ts
 import { writeFileSync as writeFileSync2, rmSync, mkdtempSync } from "fs";
-import { join as join2 } from "path";
-import { tmpdir } from "os";
+import { join as join3 } from "path";
+import { tmpdir as tmpdir2 } from "os";
 
 // src/utils/attachmentLimits.ts
 var MAX_INLINE_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+var MAX_IMAP_ATTACHMENT_BYTES = MAX_INLINE_ATTACHMENT_BYTES;
 var MAX_INLINE_ATTACHMENT_BASE64_CHARS = Math.ceil(MAX_INLINE_ATTACHMENT_BYTES / 3) * 4;
 var MAX_INLINE_ATTACHMENT_BASE64_INPUT_CHARS = MAX_INLINE_ATTACHMENT_BASE64_CHARS * 2;
 function isInlineAttachmentBase64WithinLimit(contentBase64) {
@@ -78078,6 +78654,99 @@ function decodeInlineAttachment(contentBase64) {
   return content;
 }
 
+// src/utils/attachmentReadPolicy.ts
+import { realpathSync, statSync } from "fs";
+import { homedir as homedir2, tmpdir } from "os";
+import { delimiter, isAbsolute, join as join2, resolve, sep } from "path";
+var ATTACHMENT_READ_ROOTS_ENV = "APPLE_MAIL_MCP_ATTACHMENT_READ_ROOTS";
+var DEFAULT_ATTACHMENT_READ_ROOTS = [homedir2(), "/Volumes", tmpdir(), "/tmp", "/private/tmp"];
+var SENSITIVE_HOME_ROOTS = [
+  join2(homedir2(), ".ssh"),
+  join2(homedir2(), ".aws"),
+  join2(homedir2(), ".config", "gh"),
+  join2(homedir2(), "Library", "Keychains")
+];
+function canonicalize(path) {
+  return realpathSync.native(path);
+}
+function sensitiveRoots() {
+  return SENSITIVE_HOME_ROOTS.map((root) => {
+    try {
+      return canonicalize(root);
+    } catch {
+      return root;
+    }
+  });
+}
+function isWithinRoot(candidate, root) {
+  return candidate === root || candidate.startsWith(root + sep);
+}
+function hasHiddenPathSegment(candidate) {
+  return candidate.split(sep).some((segment) => segment.startsWith(".") && segment.length > 1);
+}
+function isProtectedPath(candidate) {
+  if (hasHiddenPathSegment(candidate)) return true;
+  if (sensitiveRoots().some((root) => isWithinRoot(candidate, root))) return true;
+  let home;
+  try {
+    home = canonicalize(homedir2());
+  } catch {
+    home = resolve(homedir2());
+  }
+  if (!isWithinRoot(candidate, home)) return false;
+  const relative = candidate.slice(home.length).split(sep).filter(Boolean);
+  return relative.length >= 4 && relative[0].toLowerCase() === "library" && relative[1].toLowerCase() === "application support" && relative.at(-1)?.toLowerCase() === "config.json";
+}
+function configuredRoots(env) {
+  const raw = env[ATTACHMENT_READ_ROOTS_ENV];
+  const extraRoots = raw === void 0 ? [] : raw.split(delimiter).map((root) => root.trim()).filter(Boolean);
+  const requested = [...DEFAULT_ATTACHMENT_READ_ROOTS, ...extraRoots];
+  for (const root of requested) {
+    if (!isAbsolute(root)) {
+      throw new Error(`${ATTACHMENT_READ_ROOTS_ENV} entries must be absolute paths.`);
+    }
+  }
+  const resolved = [];
+  for (const root of requested) {
+    try {
+      const canonical = canonicalize(resolve(root));
+      if (!resolved.includes(canonical)) resolved.push(canonical);
+    } catch {
+    }
+  }
+  return resolved;
+}
+function resolveAttachmentReadPath(filePath, env = process.env) {
+  if (!isAbsolute(filePath)) {
+    throw new Error(`Attachment path must be absolute: "${filePath}"`);
+  }
+  let canonical;
+  try {
+    canonical = canonicalize(filePath);
+  } catch {
+    throw new Error(`Attachment file not found: "${filePath}"`);
+  }
+  try {
+    if (!statSync(canonical).isFile()) {
+      throw new Error(`Attachment path is not a regular file: "${filePath}"`);
+    }
+  } catch (error2) {
+    if (error2 instanceof Error && error2.message.includes("not a regular file")) throw error2;
+    throw new Error(`Attachment file not found: "${filePath}"`);
+  }
+  if (isProtectedPath(canonical)) {
+    throw new Error(
+      `Attachment path is in a protected location: "${filePath}". Hidden files and credential/configuration locations cannot be sent as attachments.`
+    );
+  }
+  if (!configuredRoots(env).some((root) => isWithinRoot(canonical, root))) {
+    throw new Error(
+      `Attachment path is outside the allowed read roots: "${filePath}". Use an ordinary home-directory, /Volumes, or temporary path, or configure ${ATTACHMENT_READ_ROOTS_ENV} for an additional explicit root.`
+    );
+  }
+  return canonical;
+}
+
 // src/utils/attachmentMaterialize.ts
 function materializeAttachments(attachments) {
   if (!attachments || attachments.length === 0) {
@@ -78087,13 +78756,13 @@ function materializeAttachments(attachments) {
   let paths;
   try {
     paths = attachments.map((a) => {
-      if (typeof a === "string") return a;
+      if (typeof a === "string") return resolveAttachmentReadPath(a);
       if (!a.filename || !a.contentBase64) {
         throw new Error("Inline attachment requires both filename and contentBase64.");
       }
-      if (!dir) dir = mkdtempSync(join2(tmpdir(), "amcp-att-"));
+      if (!dir) dir = mkdtempSync(join3(tmpdir2(), "amcp-att-"));
       const safeName = a.filename.replace(/[/\\]/g, "_");
-      const p = join2(dir, safeName);
+      const p = join3(dir, safeName);
       writeFileSync2(p, decodeInlineAttachment(a.contentBase64));
       return p;
     });
@@ -78111,8 +78780,8 @@ function materializeAttachments(attachments) {
 
 // src/utils/contactsDb.ts
 import { existsSync as existsSync2, readdirSync } from "fs";
-import { join as join3 } from "path";
-import { homedir as homedir2 } from "os";
+import { join as join4 } from "path";
+import { homedir as homedir3 } from "os";
 function loadSqlite() {
   try {
     const mod = __require("node:sqlite");
@@ -78131,11 +78800,11 @@ function loadSqlite() {
   }
 }
 function resolveContactsDbPaths(baseDir) {
-  const root = baseDir ?? join3(homedir2(), "Library", "Application Support", "AddressBook");
+  const root = baseDir ?? join4(homedir3(), "Library", "Application Support", "AddressBook");
   const paths = [];
-  const topLevel = join3(root, "AddressBook-v22.abcddb");
+  const topLevel = join4(root, "AddressBook-v22.abcddb");
   if (existsSync2(topLevel)) paths.push(topLevel);
-  const sourcesDir = join3(root, "Sources");
+  const sourcesDir = join4(root, "Sources");
   if (existsSync2(sourcesDir)) {
     let entries = [];
     try {
@@ -78144,7 +78813,7 @@ function resolveContactsDbPaths(baseDir) {
       entries = [];
     }
     for (const entry of entries) {
-      const candidate = join3(sourcesDir, entry, "AddressBook-v22.abcddb");
+      const candidate = join4(sourcesDir, entry, "AddressBook-v22.abcddb");
       if (existsSync2(candidate)) paths.push(candidate);
     }
   }
@@ -78217,6 +78886,86 @@ function searchContactsDb(query, opts) {
   return results;
 }
 
+// src/services/auditLog.ts
+import { appendFileSync } from "node:fs";
+var AUDIT_LOG_ENV = "APPLE_MAIL_MCP_AUDIT_LOG";
+var AUDIT_SUBJECTS_ENV = "APPLE_MAIL_MCP_AUDIT_SUBJECTS";
+var AUDIT_SNAPSHOT_MAX_ENV = "APPLE_MAIL_MCP_AUDIT_SNAPSHOT_MAX";
+var AUDIT_SNAPSHOT_CHUNK_ENV = "APPLE_MAIL_MCP_AUDIT_SNAPSHOT_CHUNK";
+var DEFAULT_SNAPSHOT_MAX = 2e3;
+var DEFAULT_SNAPSHOT_CHUNK = 250;
+var SNAPSHOT_SLICE_ATTEMPTS = 2;
+function isOn(raw) {
+  return /^(1|true|yes|on)$/i.test((raw ?? "").trim());
+}
+function auditLogPath() {
+  const raw = process.env[AUDIT_LOG_ENV]?.trim();
+  return raw ? raw : null;
+}
+function isAuditEnabled() {
+  return auditLogPath() !== null;
+}
+function auditSubjectsEnabled() {
+  return isAuditEnabled() && isOn(process.env[AUDIT_SUBJECTS_ENV]);
+}
+function auditSnapshotMax() {
+  const raw = process.env[AUDIT_SNAPSHOT_MAX_ENV]?.trim();
+  if (raw === void 0 || raw === "") return DEFAULT_SNAPSHOT_MAX;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return DEFAULT_SNAPSHOT_MAX;
+  return Math.floor(n);
+}
+function auditSnapshotChunk() {
+  const raw = process.env[AUDIT_SNAPSHOT_CHUNK_ENV]?.trim();
+  if (raw === void 0 || raw === "") return DEFAULT_SNAPSHOT_CHUNK;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 1) return DEFAULT_SNAPSHOT_CHUNK;
+  return Math.floor(n);
+}
+function classifyCountStatus(readable, expected, observed) {
+  if (!readable) return { status: "unknown", unknownReason: "count-unreadable" };
+  if (expected === null) return { status: "unknown", unknownReason: "no-expectation" };
+  if (observed === expected) return { status: "match" };
+  if ((observed ?? 0) > expected) return { status: "over" };
+  if (observed === 0) return { status: "unknown", unknownReason: "count-did-not-move" };
+  return { status: "unknown", unknownReason: "count-partial" };
+}
+function writeAuditRecord(record2) {
+  const path = auditLogPath();
+  if (!path) return;
+  try {
+    appendFileSync(path, `${JSON.stringify(record2)}
+`, "utf8");
+  } catch (err) {
+    console.error(
+      `[apple-mail-mcp] audit log write failed (${path}): ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+}
+function writeDestructiveAudit(ctx, report) {
+  if (!isAuditEnabled()) return;
+  writeAuditRecord({
+    ts: (/* @__PURE__ */ new Date()).toISOString(),
+    tool: ctx.tool,
+    serverVersion: ctx.serverVersion,
+    args: ctx.args,
+    preImages: report.preImages,
+    outcomes: report.outcomes,
+    countDeltas: report.countDeltas,
+    collateral: report.collateral,
+    subjectsLogged: auditSubjectsEnabled()
+  });
+}
+function countDeltaWarning(d) {
+  if (d.status !== "over" || d.expected === null) return null;
+  const extra = (d.observed ?? 0) - d.expected;
+  const where = d.account ? `"${d.mailbox}" in account "${d.account}"` : `"${d.mailbox}"`;
+  return `\u26A0\uFE0F Effect mismatch in ${where}: ${d.observed} message(s) left the mailbox but only ${d.expected} were operated on (count ${d.before} \u2192 ${d.after}). ${extra} message(s) are unaccounted for. Anything else removing mail from this mailbox at the same moment \u2014 a Mail rule, a server-side filter, another client, an IMAP expunge \u2014 reads the same way, so rule that out first. If nothing else was touching it, this is the signature of https://github.com/sweetrb/apple-mail-mcp/issues/155 \u2014 please report it there, and set ${AUDIT_LOG_ENV}=/path/to/audit.ndjson to capture which messages disappeared.`;
+}
+function reconciliationWarnings(report) {
+  return report.countDeltas.map((d) => countDeltaWarning(d)).filter((w) => w !== null);
+}
+
 // src/services/appleMailManager.ts
 function getMailboxScanThreshold() {
   const raw = process.env.APPLE_MAIL_MAX_SEARCH_MAILBOX;
@@ -78228,6 +78977,7 @@ function getMailboxScanThreshold() {
 }
 var SEARCH_ACCOUNT_BUDGET_SECONDS = 30;
 var SEARCH_ACCOUNT_TIMEOUT_MS = 45e3;
+var GROUP_SEP = "";
 var FIELD_SEP = "";
 var RECORD_SEP = "";
 var DIAG_MARKER = "DIAG";
@@ -78236,7 +78986,21 @@ var DIAG_ITEM_SEP = "M";
 var CONTENT_MARKER = "CONTENT";
 var MSGID_MARKER = "MSGID";
 var HTML_MARKER = "HTML";
+var LOOKUP_ERROR_MARKER = "ERR";
 var BATCH_FATAL = "FATAL";
+var RECON_TAG = "RECON";
+var SNAP_TAG = "SNAP";
+var SNAP_PAIR = "P";
+var SNAP_ITEM = "I";
+var DELIMITER_REPLACEMENT = "\uFFFD";
+function stripStreamDelimiters(value) {
+  let out = value;
+  for (const d of [GROUP_SEP, RECORD_SEP, FIELD_SEP])
+    out = out.split(d).join(DELIMITER_REPLACEMENT);
+  return out;
+}
+var AMBIGUOUS_ID_PREFIX = "Message id ";
+var AMBIGUOUS_ID_BATCH = "This message id is present in more than one mailbox ";
 function normalizeRfcMessageId(mid) {
   return (mid || "").trim().replace(/^<+/, "").replace(/>+$/, "").trim();
 }
@@ -78276,29 +79040,32 @@ function splitSearchDiagnostics(output, account) {
   }
   return { payload, diagnostics };
 }
-var ALLOWED_SAVE_ROOTS = [homedir3(), "/tmp", "/private/tmp", "/Volumes"];
+var ALLOWED_SAVE_ROOTS = [homedir4(), "/tmp", "/private/tmp", "/Volumes"];
 function isPathWithinAllowedRoots(resolvedPath) {
   return ALLOWED_SAVE_ROOTS.some((root) => {
-    const base = root.endsWith(sep) ? root.slice(0, -1) : root;
-    return resolvedPath === base || resolvedPath.startsWith(base + sep);
+    const base = root.endsWith(sep2) ? root.slice(0, -1) : root;
+    return resolvedPath === base || resolvedPath.startsWith(base + sep2);
   });
 }
 function resolveAttachmentSaveTarget(savePath, attachmentName) {
   let saveDirectory;
   try {
-    saveDirectory = realpathSync(resolve(savePath));
+    saveDirectory = realpathSync2(resolve2(savePath));
   } catch {
     throw new Error(`Save directory "${savePath}" does not exist`);
   }
   if (!isPathWithinAllowedRoots(saveDirectory)) {
     throw new Error(`Save path "${savePath}" is outside allowed directories`);
   }
-  const savedPath = resolve(saveDirectory, attachmentName);
+  const savedPath = resolve2(saveDirectory, attachmentName);
   if (!isPathWithinAllowedRoots(savedPath)) {
     throw new Error(`Output path "${savedPath}" is outside allowed directories`);
   }
-  if (existsSync3(savedPath) && lstatSync(savedPath).isSymbolicLink()) {
-    throw new Error(`Refusing to overwrite symbolic link "${savedPath}"`);
+  if (existsSync3(savedPath)) {
+    if (lstatSync(savedPath).isSymbolicLink()) {
+      throw new Error(`Refusing to overwrite symbolic link "${savedPath}"`);
+    }
+    throw new Error(`Refusing to overwrite existing file "${savedPath}"`);
   }
   return { saveDirectory, savedPath };
 }
@@ -78307,7 +79074,7 @@ function describeMailboxOpError(op, raw) {
   const trimmed = (raw || "").trim();
   if (UNSUPPORTED_APPLESCRIPT_OP.test(trimmed)) {
     const verb = op.charAt(0).toUpperCase() + op.slice(1);
-    return `Mail.app cannot ${op} server-side (IMAP / Gmail / Workspace / iCloud / Exchange) mailboxes via AppleScript \u2014 only local "On My Mac" mailboxes support this. ${verb} it in Mail.app directly. (Mail.app error: ${trimmed})`;
+    return `Mail.app's scripting bridge will not ${op} this mailbox. That covers server-side (IMAP / Gmail / Workspace / iCloud / Exchange) mailboxes, and on current macOS it covers local "On My Mac" mailboxes too \u2014 measured 2026-08-16, see #193. ${verb} it in Mail.app directly; for an IMAP-configured account the IMAP path can do it instead. (Mail.app error: ${trimmed})`;
   }
   return trimmed || `Failed to ${op} mailbox`;
 }
@@ -78339,16 +79106,9 @@ function escapeForAppleScriptBody(text) {
 }
 function buildAttachmentCommands(attachments) {
   if (!attachments || attachments.length === 0) return "";
-  for (const filePath of attachments) {
-    if (!isAbsolute(filePath)) {
-      throw new Error(`Attachment path must be absolute: "${filePath}"`);
-    }
-    if (!existsSync3(filePath)) {
-      throw new Error(`Attachment file not found: "${filePath}"`);
-    }
-  }
+  const readablePaths = attachments.map((filePath) => resolveAttachmentReadPath(filePath));
   let commands = "";
-  for (const filePath of attachments) {
+  for (const filePath of readablePaths) {
     const safePath = escapeForAppleScript(filePath);
     commands += `make new attachment with properties {file name:POSIX file "${safePath}"} at after the last paragraph
 `;
@@ -78471,12 +79231,100 @@ function buildAccountScopedScript(account, command) {
     end tell
   `;
 }
+var LOCAL_STORE_LABEL = "On My Mac";
+var LOCAL_STORE_ALIASES = ["on my mac", "on my computer", "local", "local folders"];
+function isLocalStoreLabel(name) {
+  return name !== void 0 && LOCAL_STORE_ALIASES.includes(name.trim().toLowerCase());
+}
+function localMailboxBindingFragment() {
+  return `
+      set _mbs to {}
+      repeat with _m in mailboxes
+        set _isLoc to false
+        try
+          if (account of _m) is missing value then set _isLoc to true
+        on error
+          set _isLoc to true
+        end try
+        if _isLoc then set end of _mbs to (contents of _m)
+      end repeat`;
+}
+function groupKey(account, mailbox) {
+  return `${account}\0${mailbox}`;
+}
+function canonicalNumericId(raw) {
+  const trimmed = (raw ?? "").trim();
+  if (trimmed === "") return "";
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? String(n) : trimmed;
+}
+var SELF_MOVE_NOTE = "Destination is the source mailbox, so no message should leave it. What Mail does to the count when a message is re-filed into the mailbox it already occupies is unspecified, so there is no expected delta to compare against: this mailbox is reported without a comparison and is never warned about.";
+var COUNT_UNMOVED_NOTE = `Mail's count did not move. This is the ordinary reading on a store that flags deletions instead of removing them (Gmail label mailboxes and IMAP accounts with "move deleted messages to Trash" off), where the message stays put and the operation still fully succeeded. It can also mean Mail's count simply had not caught up yet. The per-id outcomes are what report success; this number is not, so do not retry on the strength of it.`;
+var COUNT_PARTIAL_NOTE = `Mail's count moved by less than this operation accounted for. That is a LOWER BOUND on what left, not a count of what left: Mail has been observed reporting a stale count for a delete it had already performed (issue #155), and new mail arriving mid-operation reads the same way. No claim is made either way. To confirm where the messages went, match them at the destination by "date received" plus sender \u2014 NOT by the numeric ids you passed, which are renumbered by the move and do not survive it.`;
+function snapshotKey(entry) {
+  return `${entry.id}\0${entry.messageId}`;
+}
+function crossCheckRenumbered(disappeared, appeared) {
+  const index = (entries) => {
+    const m = /* @__PURE__ */ new Map();
+    for (const e of entries) {
+      if (!e.messageId) continue;
+      m.set(e.messageId, m.has(e.messageId) ? null : e);
+    }
+    return m;
+  };
+  const gone = index(disappeared);
+  const came = index(appeared);
+  const out = [];
+  for (const [mid, before] of gone) {
+    const after = came.get(mid);
+    if (!before || !after) continue;
+    if (before.id === after.id) continue;
+    out.push({ messageId: mid, before: before.id, after: after.id });
+  }
+  return out;
+}
 function buildAppLevelScript(command) {
   return `
     tell application "Mail"
       ${command}
     end tell
   `;
+}
+function mailboxPathFragment(mailboxVar, outputVar) {
+  return `
+        set ${outputVar} to name of ${mailboxVar}
+        set _pathParent to missing value
+        try
+          set _pathParent to container of ${mailboxVar}
+        end try
+        repeat while _pathParent is not missing value
+          set _parentClass to missing value
+          try
+            set _parentClass to class of _pathParent
+          end try
+          if _parentClass is not mailbox and _parentClass is not container then exit repeat
+          set ${outputVar} to (name of _pathParent) & "/" & ${outputVar}
+          set _pathNext to missing value
+          try
+            set _pathNext to container of _pathParent
+          end try
+          set _pathParent to _pathNext
+        end repeat`;
+}
+function mailboxLookupFragment(collExpr, path, outputVar) {
+  return `
+        set ${outputVar} to missing value
+        repeat with _mbc in (${collExpr})
+          set _mbcPath to ""
+          ${mailboxPathFragment("_mbc", "_mbcPath")}
+          ignoring case
+            if _mbcPath is "${escapeForAppleScript(path)}" then
+              set ${outputVar} to _mbc
+              exit repeat
+            end if
+          end ignoring
+        end repeat`;
 }
 var MAILBOX_ALIASES = {
   inbox: ["INBOX", "Inbox", "inbox"],
@@ -78486,13 +79334,39 @@ var MAILBOX_ALIASES = {
   junk: ["Junk", "Junk Email", "Spam", "JUNK", "junk"],
   archive: ["Archive", "ARCHIVE", "archive", "All Mail"]
 };
+function mailboxLeaf(path) {
+  return path.split("/").at(-1) ?? path;
+}
+function resolveAppleMailboxPath(mailbox, actualPaths) {
+  if (actualPaths.length === 0) return mailbox;
+  const candidates = [mailbox, ...MAILBOX_ALIASES[mailbox.toLowerCase()] ?? []];
+  for (const candidate of candidates) {
+    const exact = actualPaths.find((path) => path === candidate);
+    if (exact) return exact;
+    const folded = actualPaths.find((path) => path.toLowerCase() === candidate.toLowerCase());
+    if (folded) return folded;
+  }
+  for (const candidate of candidates) {
+    const leafMatches = actualPaths.filter(
+      (path) => mailboxLeaf(path).toLowerCase() === candidate.toLowerCase()
+    );
+    if (leafMatches.length === 1) return leafMatches[0];
+    if (leafMatches.length > 1) {
+      const paths = [...leafMatches].sort().map((path) => `"${path}"`).join(" and ");
+      throw new Error(
+        `Mailbox "${mailbox}" is ambiguous \u2014 it matches ${paths}. Pass the full path.`
+      );
+    }
+  }
+  return mailbox;
+}
 var GMAIL_INBOX_MAILBOXES = ["All Mail", "Important"];
 var INBOX_SCOPE_NAMES = /* @__PURE__ */ new Set(["inbox"]);
 function isInboxScope(mailbox) {
   return INBOX_SCOPE_NAMES.has(mailbox.trim().toLowerCase());
 }
 function gmailReceivingMailboxes(mailboxNames) {
-  const lower = mailboxNames.map((n) => n.toLowerCase());
+  const lower = mailboxNames.map((n) => mailboxLeaf(n).toLowerCase());
   if (!lower.includes("all mail")) return null;
   const present = GMAIL_INBOX_MAILBOXES.filter((want) => lower.includes(want.toLowerCase()));
   return present.length > 0 ? present : null;
@@ -78563,6 +79437,8 @@ var AppleMailManager = class {
    * misses and falls back to the full scan, so it can never wedge a lookup.
    */
   idLocationIndex = /* @__PURE__ */ new Map();
+  /** Error from the most recent numeric message read, if it was refused. */
+  lastMessageLookupError;
   /** Cap on the id→location index so a long-lived process can't grow unbounded. */
   ID_LOCATION_MAX = 5e3;
   /** Record (or refresh) where a message id lives, evicting oldest when full. */
@@ -78574,6 +79450,626 @@ var AppleMailManager = class {
       const oldest = this.idLocationIndex.keys().next().value;
       if (oldest !== void 0) this.idLocationIndex.delete(oldest);
     }
+  }
+  /** Where a message id was last listed/searched from, if we've seen it. */
+  locationFor(id) {
+    return this.idLocationIndex.get(String(id));
+  }
+  /**
+   * Publicly record where a message id lives.
+   *
+   * The index fills itself from list/search results, but that is per-process
+   * state: a caller that carried ids across a process boundary (a stored triage
+   * list, a scheduled job resuming) starts with an empty index, so every id is
+   * "unlocated" and a label-store id gets refused as ambiguous. Registering the
+   * known location restores scoped resolution.
+   */
+  noteMessageLocation(id, account, mailbox) {
+    this.rememberLocation(id, account, mailbox);
+  }
+  /** Consume the most recent read refusal so the tool layer can preserve it. */
+  consumeLastMessageLookupError() {
+    const error2 = this.lastMessageLookupError;
+    this.lastMessageLookupError = void 0;
+    return error2;
+  }
+  /**
+   * AppleScript fragment resolving `account` + `mailbox` into `_tmb`, leaving
+   * `_tmb` as `missing value` when it can't be pinned down. Exact-name match
+   * only, and a name matching more than one mailbox resolves to nothing rather
+   * than guessing — the same rule the move destination already applies.
+   */
+  resolveMailboxFragment(account, mailbox) {
+    const resolved = this.resolveMailbox(mailbox, account);
+    return `
+        set _tmb to missing value
+        set _acctM to {}
+        repeat with _a in accounts
+          if (name of _a) is "${escapeForAppleScript(account)}" then set end of _acctM to _a
+        end repeat
+        if (count of _acctM) is 1 then
+          set _mbM to {}
+          repeat with _m in (mailboxes of (item 1 of _acctM))
+            set _mPath to ""
+            ${mailboxPathFragment("_m", "_mPath")}
+            ignoring case
+              if _mPath is "${escapeForAppleScript(resolved)}" then set end of _mbM to _m
+            end ignoring
+          end repeat
+          if (count of _mbM) is 1 then set _tmb to item 1 of _mbM
+        end if`;
+  }
+  // ===========================================================================
+  // Destructive-operation forensics (#155)
+  // ===========================================================================
+  /**
+   * What the last destructive operation observed about its own effect.
+   *
+   * Read once, by the tool layer, immediately after the call — every
+   * AppleScript path in this class is synchronous (`spawnSync`), so there is no
+   * await between the mutation and the read and no other operation can land in
+   * between.
+   *
+   * ## Lifetime (one rule, no exceptions)
+   *
+   * The report belongs to the MOST RECENT message mutation, whatever it was.
+   * `beginMutation()` clears it at the start of EVERY message mutation —
+   * destructive or not, instrumented or not — and `consumeLastForensics()`
+   * clears it on read. So the only two answers a caller can get are "the report
+   * for the call I just made" and `undefined`; a mutation that produces no
+   * report can never hand back the previous one's.
+   *
+   * It used to be cleared only by the instrumented paths, which left
+   * `batch-mark-as-read` returning the preceding `batch-delete-messages`'
+   * evidence if nobody had consumed it.
+   */
+  lastForensics;
+  /**
+   * Start of a message mutation: invalidate whatever the previous one observed.
+   *
+   * Called by every single-message mutation (via `findMessageScript`), by
+   * `moveMessage` (which builds its own script) and by `runBatchOperation`.
+   */
+  beginMutation() {
+    this.lastForensics = void 0;
+  }
+  /** Take (and clear) the forensic report for the destructive op just run. */
+  consumeLastForensics() {
+    const r = this.lastForensics;
+    this.lastForensics = void 0;
+    return r;
+  }
+  /**
+   * AppleScript that reads a mailbox's message count into `varName`, leaving
+   * `-1` when Mail will not answer. Two Apple Events per mutation group, inside
+   * the script that is already running: no extra `osascript`.
+   */
+  countFragment(varName, mbVar = "_tmb") {
+    return `
+        set ${varName} to -1
+        try
+          set ${varName} to (count of messages of ${mbVar})
+        end try`;
+  }
+  /**
+   * AppleScript that strips the stream's structural bytes out of `varName`,
+   * in place, before it is appended to the record stream.
+   *
+   * This is the source-side half of the defence described on
+   * `stripStreamDelimiters`: the values that go into a pre-image or a snapshot
+   * (RFC Message-ID, `date received`, subject, mailbox and account names) are
+   * attacker-influenced — a Message-ID is whatever the sender put in the
+   * header — and a crafted one containing a RECORD_SEP plus a forged `RECON`
+   * tag would otherwise inject a reconciliation record, fabricating an `over`
+   * warning on an operation that did exactly the right thing.
+   *
+   * One pass: AppleScript accepts a LIST of text item delimiters when splitting
+   * and uses the first when joining, so all three characters are replaced in a
+   * single `text items` round trip. Verified with `osascript` directly.
+   *
+   * Deliberately distinct variable names (`_zTid`, `_zParts`) — AppleScript
+   * identifiers are case-insensitive, so `_stid` would be the same variable as
+   * the snapshot fragment's `_sTid`.
+   */
+  sanitizeFragment(varName, indent = "        ") {
+    return `
+${indent}set _zTid to AppleScript's text item delimiters
+${indent}set AppleScript's text item delimiters to {"${GROUP_SEP}", "${RECORD_SEP}", "${FIELD_SEP}"}
+${indent}set _zParts to text items of ${varName}
+${indent}set AppleScript's text item delimiters to "${DELIMITER_REPLACEMENT}"
+${indent}set ${varName} to _zParts as string
+${indent}set AppleScript's text item delimiters to _zTid`;
+  }
+  /**
+   * AppleScript emitting one `error:` outcome record into `_out`, with the
+   * runtime error text sanitised first.
+   *
+   * Mail composes that text, and it routinely quotes back a mailbox or message
+   * property, so it is a runtime-read value like any other — the same invariant
+   * that covers the Message-ID and the snapshot covers it. `_zErr` (not `_e`)
+   * because `sanitizeFragment` rewrites its variable in place and the handler's
+   * own binding should be left alone.
+   */
+  errorEmit(indent) {
+    return `${indent}set _zErr to (_e as string)${this.sanitizeFragment("_zErr", indent)}
+${indent}set _out to _out & (_idx as string) & "${FIELD_SEP}error:" & _zErr & "${RECORD_SEP}"`;
+  }
+  /** AppleScript emitting one RECON record into `_out`. */
+  reconEmit(acctExpr, mbExpr, beforeVar, afterVar, posExpr = '""') {
+    return `
+        set _out to _out & "${RECON_TAG}${FIELD_SEP}" & ${acctExpr} & "${FIELD_SEP}" & ${mbExpr} & "${FIELD_SEP}" & (${beforeVar} as string) & "${FIELD_SEP}" & (${afterVar} as string) & "${FIELD_SEP}" & ${posExpr} & "${RECORD_SEP}"`;
+  }
+  /**
+   * RECON emission for the unlocated paths, where the account and mailbox names
+   * are read from Mail at runtime (`_uacct`, `mailbox of _msg`) instead of being
+   * interpolated as literals from here — so they get the same delimiter
+   * stripping the literal paths get in TypeScript.
+   *
+   * Emits the canonical container-walked path, not the leaf — otherwise
+   * `Inbox` and `Archive/Inbox` collapse into the same RECON record, and the
+   * forensics comparison that reads it back (`sameMailbox` in
+   * `recordSingleForensics`/the batch path) can be handed an ambiguous leaf.
+   */
+  reconEmitFromMessage(beforeVar, afterVar, posExpr = '""', indent = "          ") {
+    return `set _umbName to ""
+${indent}try
+${mailboxPathFragment("_umb", "_umbName")}
+${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragment("_umbName", indent)}${this.reconEmit("_uacct", "_umbName", beforeVar, afterVar, posExpr)}`;
+  }
+  /**
+   * AppleScript capturing every (numeric id, RFC Message-ID) pair in a mailbox
+   * into a SNAP record — the before/after pair the collateral diff subtracts.
+   *
+   * Empty string when the audit log is off or the snapshot is disabled, so the
+   * whole layer costs literally nothing by default. The property reads are BULK
+   * (`id of messages i thru j of mb`) — two Apple Events per SLICE rather than
+   * two per message — and the joining is pure in-memory AppleScript.
+   *
+   * ## Why it is sliced rather than one whole-mailbox read (#176)
+   *
+   * This used to be a single `id of messages of mb` pair. When Mail declined
+   * that request the entire snapshot came back `unavailable`, and the cost of
+   * the request grows with the mailbox — so the one mechanism that can attribute
+   * an unrequested departure was least reliable exactly when the batch and the
+   * mailbox, and therefore the blast radius, were largest. That correlation was
+   * the defect, not any individual failure.
+   *
+   * Now the mailbox is read in `APPLE_MAIL_MCP_AUDIT_SNAPSHOT_CHUNK`-sized
+   * slices; each slice is retried once on its own; and a slice that still will
+   * not read costs only its own range. The unreadable ranges are emitted in
+   * their own field, so the diff can report a PARTIAL snapshot that names its
+   * own gap instead of an all-or-nothing `unavailable`.
+   *
+   * Above `APPLE_MAIL_MCP_AUDIT_SNAPSHOT_MAX` messages the snapshot is skipped,
+   * and the skip is EMITTED as a record with its reason. A silently skipped
+   * snapshot would read as "nothing collateral happened".
+   *
+   * Caveat recorded in the docs: `(id of msg) as string` renders a Mail id above
+   * AppleScript's 2^29 integer range in scientific notation. The Message-ID is
+   * the authoritative key in this record for exactly that reason; the numeric id
+   * is a convenience — and it is put back into decimal form by
+   * `canonicalNumericId` in `parseSnapshot`, because the raw exponential string
+   * would otherwise fail the `unrequested` membership test and name a REQUESTED
+   * message as collateral.
+   */
+  snapshotFragment(phase, acctExpr, mbExpr, countVar, mbVar = "_tmb") {
+    const max = auditSnapshotMax();
+    if (!isAuditEnabled() || max <= 0) return "";
+    const chunk = auditSnapshotChunk();
+    return `
+        set _sStatus to "ok"
+        set _sPayload to ""
+        set _sMiss to ""
+        set _sPairs to {}
+        set _sChunk to ${chunk}
+        -- The mailbox's MEASURED length, emitted only when it disagrees with the
+        -- count (#187). -1 = "not measured", which is the normal case: the probe
+        -- only runs a binary search when the count's last position is unreadable.
+        -- Initialised here, not in the else-branch, or the skipped/unavailable
+        -- paths would reference an unbound variable when emitting.
+        set _sTrue to -1
+        if ${countVar} < 0 then
+          set _sStatus to "unavailable"
+        else if ${countVar} > ${max} then
+          set _sStatus to "skipped"
+          set _sPayload to "mailbox holds " & (${countVar} as string) & " messages, above ${AUDIT_SNAPSHOT_MAX_ENV}=${max}"
+        else
+          -- #187: the count can read HIGH, and an out-of-range range RAISES as
+          -- a whole rather than clamping. On a mailbox smaller than one chunk
+          -- there is only ONE slice, so a high count made it fail entirely:
+          -- _sPairs stayed empty, the status collapsed to "unavailable", and
+          -- the record carried no holes and no warning. The collateral
+          -- instrument switched itself off in exactly the stale direction #155
+          -- evidences, silently.
+          --
+          -- So establish a bound that actually EXISTS before slicing. If the
+          -- last position the count claims is readable, the count is not high
+          -- and this costs one probe. Otherwise binary-search the true end,
+          -- which is O(log n) probes and also MEASURES how stale the count is.
+          set _sBound to ${countVar}
+          if _sBound > 0 then
+            set _sEndOk to false
+            try
+              get id of message _sBound of ${mbVar}
+              set _sEndOk to true
+            end try
+            if not _sEndOk then
+              set _sLoB to 0
+              set _sHiB to _sBound
+              repeat while (_sHiB - _sLoB) > 1
+                set _sMid to (_sLoB + _sHiB) div 2
+                set _sMidOk to false
+                try
+                  get id of message _sMid of ${mbVar}
+                  set _sMidOk to true
+                end try
+                if _sMidOk then
+                  set _sLoB to _sMid
+                else
+                  set _sHiB to _sMid
+                end if
+              end repeat
+              set _sBound to _sLoB
+              set _sTrue to _sLoB
+            end if
+          end if
+          set _sLo to 1
+          repeat while _sLo <= _sBound
+            set _sHi to _sLo + _sChunk - 1
+            if _sHi > _sBound then set _sHi to _sBound
+            set _sGot to false
+            repeat with _sTry from 1 to ${SNAPSHOT_SLICE_ATTEMPTS}
+              set _sIds to {}
+              set _sMids to {}
+              -- A slice is staged into _sBuf and merged only once it has been
+              -- read IN FULL. Appending as we go would leave a slice that threw
+              -- halfway both partially recorded AND marked unread, and the
+              -- retry would then record its messages a second time.
+              set _sBuf to {}
+              try
+                set _sIds to (id of messages _sLo thru _sHi of ${mbVar})
+                set _sMids to (message id of messages _sLo thru _sHi of ${mbVar})
+                if (class of _sIds) is not list then set _sIds to {_sIds}
+                if (class of _sMids) is not list then set _sMids to {_sMids}
+                if (count of _sIds) is (count of _sMids) then
+                  repeat with _q from 1 to (count of _sIds)
+                    set _sOne to ""
+                    try
+                      set _zSnapMid to ((item _q of _sMids) as string)${this.sanitizeFragment("_zSnapMid", "                      ")}
+                      set _sOne to ((item _q of _sIds) as string) & "${SNAP_PAIR}" & _zSnapMid
+                    on error
+                      set _sOne to ((item _q of _sIds) as string) & "${SNAP_PAIR}"
+                    end try
+                    set end of _sBuf to _sOne
+                  end repeat
+                  set _sGot to true
+                end if
+              end try
+              if _sGot then
+                repeat with _sB in _sBuf
+                  set end of _sPairs to (contents of _sB)
+                end repeat
+                exit repeat
+              end if
+            end repeat
+            if not _sGot then
+              if _sMiss is not "" then set _sMiss to _sMiss & ","
+              set _sMiss to _sMiss & (_sLo as string) & "-" & (_sHi as string)
+            end if
+            set _sLo to _sHi + 1
+          end repeat
+          -- #179: the loop above is bounded by the count Mail JUST reported,
+          -- and that count can lag the mailbox (#155). Positions past the bound
+          -- are never requested, so \u2014 unlike a slice that failed \u2014 they leave
+          -- no trace in _sMiss, and the record would claim a complete
+          -- observation while every message past the bound looks like it
+          -- disappeared. That is a FABRICATED finding with names attached,
+          -- which is worse than the gap it papers over.
+          --
+          -- Probe exactly ONE position past the bound. One, not a slice: an
+          -- out-of-range RANGE raises as a whole, so an over-requested slice
+          -- could not distinguish "nothing there" from "count was low by more
+          -- than a chunk". If a message is there, the count was low and the
+          -- unread tail is recorded as a hole, which makes this snapshot
+          -- PARTIAL under the existing rules and withholds the halves a
+          -- truncation would poison.
+          try
+            set _sOverId to ((id of message (_sBound + 1) of ${mbVar}) as string)
+            -- A specifier that CLAMPS rather than raising hands back the LAST
+            -- message instead of failing. That is not evidence of a truncation,
+            -- so only an id this enumeration did not already record counts.
+            set _sSeen to false
+            repeat with _sP in _sPairs
+              if (contents of _sP) starts with (_sOverId & "${SNAP_PAIR}") then set _sSeen to true
+            end repeat
+            if not _sSeen then
+              if _sMiss is not "" then set _sMiss to _sMiss & ","
+              set _sMiss to _sMiss & ((_sBound + 1) as string) & "-end"
+            end if
+          end try
+          if _sMiss is not "" then
+            if (count of _sPairs) is 0 then
+              set _sStatus to "unavailable"
+            else
+              set _sStatus to "partial"
+            end if
+          end if
+          set _sTid to AppleScript's text item delimiters
+          set AppleScript's text item delimiters to "${SNAP_ITEM}"
+          set _sPayload to _sPairs as string
+          set AppleScript's text item delimiters to _sTid
+        end if
+        set _out to _out & "${SNAP_TAG}${FIELD_SEP}" & ${acctExpr} & "${FIELD_SEP}" & ${mbExpr} & "${FIELD_SEP}${phase}${FIELD_SEP}" & _sStatus & "${FIELD_SEP}" & _sPayload & "${FIELD_SEP}" & _sMiss & "${FIELD_SEP}" & (_sTrue as string) & "${RECORD_SEP}"`;
+  }
+  /**
+   * AppleScript capturing the message the op is ABOUT to touch into `_pre`,
+   * appended to that id's outcome record.
+   *
+   * Empty when the audit log is off — the pre-image is the only per-message cost
+   * in this feature, and it must not exist by default. Subjects need the second,
+   * separate opt-in; message bodies are never read.
+   *
+   * Every value here is EXTERNALLY CONTROLLED (the Message-ID and the subject
+   * are whatever the sender wrote), so each one is stripped of the stream's
+   * structural bytes before it is appended — see `sanitizeFragment`.
+   */
+  preImageFragment(msgVar = "_msg") {
+    if (!isAuditEnabled()) return "";
+    const ind = "                ";
+    const subject = auditSubjectsEnabled() ? `
+              if _pre is not "" then
+                try
+                  set _zSub to ((subject of ${msgVar}) as string)${this.sanitizeFragment("_zSub", ind + "  ")}
+                  set _pre to _pre & "${FIELD_SEP}" & _zSub
+                end try
+              end if` : "";
+    return `
+              try
+                set _zMid to ((message id of ${msgVar}) as string)${this.sanitizeFragment("_zMid", ind)}
+                set _zDate to ((date received of ${msgVar}) as string)${this.sanitizeFragment("_zDate", ind)}
+                set _pre to "${FIELD_SEP}" & _zMid & "${FIELD_SEP}" & _zDate
+              end try${subject}`;
+  }
+  /**
+   * Parse the delimited stream a destructive AppleScript returns: per-id
+   * outcomes (with their optional pre-image), RECON records and SNAP records.
+   *
+   * `valid` maps 1-based positions back to the id strings the caller passed —
+   * outcomes are reported BY POSITION because a Mail id past 2^29 does not
+   * survive `as string` (see runBatchOperation).
+   */
+  parseForensicStream(output, valid) {
+    const byId = /* @__PURE__ */ new Map();
+    const okPositions = /* @__PURE__ */ new Set();
+    const outcomes = [];
+    const preImages = /* @__PURE__ */ new Map();
+    const recons = [];
+    const snaps = [];
+    for (const rec of output.split(RECORD_SEP)) {
+      if (!rec) continue;
+      const f = rec.split(FIELD_SEP);
+      if (f.length < 2) continue;
+      if (f[0] === RECON_TAG) {
+        recons.push({
+          account: f[1] ?? "",
+          mailbox: f[2] ?? "",
+          before: Number(f[3]),
+          after: Number(f[4]),
+          pos: f[5] ? Number(f[5]) : null
+        });
+        continue;
+      }
+      if (f[0] === SNAP_TAG) {
+        const measured = f[7] !== void 0 && f[7] !== "" ? Number(f[7]) : -1;
+        snaps.push({
+          account: f[1] ?? "",
+          mailbox: f[2] ?? "",
+          phase: f[3] === "after" ? "after" : "before",
+          status: f[4] ?? "",
+          payload: f[5] ?? "",
+          miss: f[6] ?? "",
+          ...Number.isFinite(measured) && measured >= 0 ? { measuredLength: measured } : {}
+        });
+        continue;
+      }
+      const pos = Number(f[0]);
+      const entry = valid[pos - 1];
+      if (!entry) continue;
+      const status = f[1];
+      const id = entry.id;
+      if (status === "ok") {
+        byId.set(id, { id, success: true });
+        okPositions.add(pos);
+        outcomes.push({ id, status: "ok" });
+        if (f.length >= 4) {
+          preImages.set(pos, {
+            messageId: f[2] || null,
+            date: f[3] || null,
+            ...f.length >= 5 ? { subject: f[4] } : {}
+          });
+        }
+      } else if (status === "notfound") {
+        byId.set(id, { id, success: false, error: "Message not found" });
+        outcomes.push({ id, status: "notfound" });
+      } else if (status.startsWith("error:")) {
+        const error2 = f.slice(1).join(FIELD_SEP).slice("error:".length);
+        byId.set(id, { id, success: false, error: error2 });
+        outcomes.push({ id, status: "error", error: error2 });
+      } else {
+        const error2 = status || "Unknown error";
+        byId.set(id, { id, success: false, error: error2 });
+        outcomes.push({ id, status: "error", error: error2 });
+      }
+    }
+    return { byId, okPositions, outcomes, preImages, recons, snaps };
+  }
+  /**
+   * Parse one SNAP payload into (numeric id → RFC Message-ID) entries.
+   *
+   * The id is CANONICALISED as it is parsed (`canonicalNumericId`), because
+   * AppleScript renders a Mail id above 2^29 in scientific notation. That is the
+   * only point where the AppleScript representation and the caller's own id
+   * strings meet, so normalising here fixes both the `unrequested` membership
+   * test and the id the report hands back to a human.
+   */
+  parseSnapshot(payload) {
+    if (!payload) return [];
+    return payload.split(SNAP_ITEM).map((entry) => {
+      const i = entry.indexOf(SNAP_PAIR);
+      return i < 0 ? { id: canonicalNumericId(entry), messageId: "" } : {
+        id: canonicalNumericId(entry.slice(0, i)),
+        messageId: entry.slice(i + SNAP_PAIR.length)
+      };
+    });
+  }
+  /**
+   * Turn the raw RECON/SNAP records into the report the tool layer reports on.
+   *
+   * `expectedFor(account, mailbox, pos)` says how many messages the operation
+   * should have removed from that mailbox — the caller knows this because only
+   * the caller knows which ids succeeded and whether a move's destination IS the
+   * source mailbox.
+   *
+   * It returns **null** for "not predictable", and null propagates: the mailbox
+   * is classified `unknown` and no comparison is made. That is the only honest
+   * answer for a self-move — Mail's behaviour when a message is re-filed into
+   * the mailbox it already occupies is unspecified, so any number here would be
+   * a guess, and a guess is what turns this instrumentation into a false alarm.
+   *
+   * `requestedNumericIds` MUST already be canonical (`canonicalNumericId`): it is
+   * compared against ids that came back through AppleScript, where a value above
+   * 2^29 arrives in scientific notation.
+   */
+  buildForensicReport(parsed, valid, expectedFor, locationFor, noteFor, requestedNumericIds) {
+    const merged = /* @__PURE__ */ new Map();
+    for (const r of parsed.recons) {
+      const key = groupKey(r.account, r.mailbox);
+      const expected = expectedFor(r.account, r.mailbox, r.pos);
+      const prev = merged.get(key);
+      if (prev) {
+        prev.after = r.after;
+        prev.expected = prev.expected === null || expected === null ? null : prev.expected + expected;
+      } else {
+        merged.set(key, {
+          account: r.account,
+          mailbox: r.mailbox,
+          before: r.before,
+          after: r.after,
+          expected
+        });
+      }
+    }
+    const countDeltas = [...merged.values()].map((m) => {
+      const readable = m.before >= 0 && m.after >= 0;
+      const observed = readable ? m.before - m.after : null;
+      const note = noteFor(m.account, m.mailbox);
+      const { status, unknownReason } = classifyCountStatus(readable, m.expected, observed);
+      return {
+        account: m.account,
+        mailbox: m.mailbox,
+        before: readable ? m.before : null,
+        after: readable ? m.after : null,
+        expected: m.expected,
+        observed,
+        status,
+        ...unknownReason ? { unknownReason } : {},
+        ...note ? { note } : {},
+        ...unknownReason === "count-unreadable" ? { note: note ?? "Mail did not report a message count for this mailbox" } : {},
+        ...unknownReason === "count-did-not-move" && !note ? { note: COUNT_UNMOVED_NOTE } : {},
+        ...unknownReason === "count-partial" && !note ? { note: COUNT_PARTIAL_NOTE } : {}
+      };
+    });
+    const preImages = [];
+    for (const [pos, pre] of parsed.preImages) {
+      const entry = valid[pos - 1];
+      if (!entry) continue;
+      const loc = locationFor(pos);
+      preImages.push({
+        id: entry.id,
+        account: loc.account,
+        mailbox: loc.mailbox,
+        messageId: pre.messageId,
+        date: pre.date,
+        ...pre.subject !== void 0 ? { subject: pre.subject } : {}
+      });
+    }
+    const collateral = [];
+    const byMailbox = /* @__PURE__ */ new Map();
+    for (const s of parsed.snaps) {
+      const key = groupKey(s.account, s.mailbox);
+      const g = byMailbox.get(key) ?? { account: s.account, mailbox: s.mailbox };
+      if (s.phase === "before") g.before = s;
+      else g.after = s;
+      byMailbox.set(key, g);
+    }
+    for (const g of byMailbox.values()) {
+      const b = g.before;
+      const a = g.after;
+      if (!b || !a) {
+        collateral.push({
+          account: g.account,
+          mailbox: g.mailbox,
+          snapshot: "unavailable",
+          skipReason: "only one of the before/after snapshots was produced"
+        });
+        continue;
+      }
+      const dead = (s) => s.status !== "ok" && s.status !== "partial";
+      if (dead(b) || dead(a)) {
+        const bad = dead(b) ? b : a;
+        collateral.push({
+          account: g.account,
+          mailbox: g.mailbox,
+          snapshot: bad.status === "skipped" ? "skipped" : "unavailable",
+          skipReason: bad.payload || `Mail would not produce the ${bad === b ? "before" : "after"} snapshot for this mailbox`
+        });
+        continue;
+      }
+      const beforeEntries = this.parseSnapshot(b.payload);
+      const afterEntries = this.parseSnapshot(a.payload);
+      const afterKeys = new Set(afterEntries.map((e) => snapshotKey(e)));
+      const beforeKeys = new Set(beforeEntries.map((e) => snapshotKey(e)));
+      const rawDisappeared = beforeEntries.filter((e) => !afterKeys.has(snapshotKey(e)));
+      const rawAppeared = afterEntries.filter((e) => !beforeKeys.has(snapshotKey(e)));
+      const renumbered = crossCheckRenumbered(rawDisappeared, rawAppeared);
+      const renumberedMids = new Set(renumbered.map((r) => r.messageId));
+      const disappeared = rawDisappeared.filter((e) => !renumberedMids.has(e.messageId));
+      const appeared = rawAppeared.filter((e) => !renumberedMids.has(e.messageId));
+      const unrequested = disappeared.filter(
+        (e) => !requestedNumericIds.has(canonicalNumericId(e.id))
+      );
+      const countStale = [b, a].filter((s) => s.measuredLength !== void 0).map((s) => ({ phase: s.phase, measuredLength: s.measuredLength }));
+      const holes = [b, a].filter((s) => s.miss !== "").map((s) => ({ phase: s.phase, ranges: s.miss }));
+      if (holes.length === 0) {
+        collateral.push({
+          account: g.account,
+          mailbox: g.mailbox,
+          snapshot: "ok",
+          disappeared,
+          unrequested,
+          appeared,
+          ...countStale.length ? { countStale } : {},
+          ...renumbered.length ? { renumbered } : {}
+        });
+        continue;
+      }
+      const derivable = [
+        a.miss === "" ? `what left the ${beforeEntries.length} message(s) read before it` : null,
+        b.miss === "" ? "what arrived during it" : null
+      ].filter((s) => s !== null);
+      collateral.push({
+        account: g.account,
+        mailbox: g.mailbox,
+        snapshot: "partial",
+        ...countStale.length ? { countStale } : {},
+        ...renumbered.length ? { renumbered } : {},
+        skipReason: `Mail would not read ${holes.map((h) => `${h.ranges} (${h.phase})`).join(", ")} of this mailbox, so the snapshot has a hole in it. ` + (derivable.length > 0 ? `Still derivable and reported: ${derivable.join(" and ")}. ` : `Neither half of the diff is derivable from it. `) + `Anything the unread range could refute is omitted rather than guessed \u2014 an absent field here means "not computable", not "empty".`,
+        unobserved: holes,
+        ...a.miss === "" ? { disappeared, unrequested } : {},
+        ...b.miss === "" ? { appeared } : {}
+      });
+    }
+    return { countDeltas, preImages, outcomes: parsed.outcomes, collateral };
   }
   /**
    * Returns cached accounts or fetches fresh data if cache is expired/empty.
@@ -78592,8 +80088,8 @@ var AppleMailManager = class {
     return accounts;
   }
   /**
-   * Returns cached mailbox names for an account, or fetches fresh.
-   * This caches only the name list used by resolveMailbox(), not the
+   * Returns cached canonical mailbox paths for an account, or fetches fresh.
+   * This caches only the path list used by resolveMailbox(), not the
    * full Mailbox objects with counts (which change frequently).
    */
   getCachedMailboxNames(account) {
@@ -78795,31 +80291,22 @@ var AppleMailManager = class {
    * @returns Actual mailbox name, or original if not found
    */
   resolveMailbox(mailbox, account) {
-    const actualMailboxes = this.getCachedMailboxNames(account);
-    if (actualMailboxes.length === 0) {
+    return resolveAppleMailboxPath(mailbox, this.getCachedMailboxNames(account));
+  }
+  /**
+   * Non-throwing `resolveMailbox`, for callers comparing mailbox names AFTER
+   * a destructive op already ran (the forensics `sameMailbox` closures). An
+   * ambiguous leaf there must not raise — the op already happened, and a
+   * thrown error would misreport a successful move as a failure while the
+   * message sits safely in its new mailbox. Falls back to the unresolved
+   * input, which only degrades the self-move comparison, never the mutation.
+   */
+  resolveMailboxSafe(mailbox, account) {
+    try {
+      return this.resolveMailbox(mailbox, account);
+    } catch {
       return mailbox;
     }
-    if (actualMailboxes.includes(mailbox)) {
-      return mailbox;
-    }
-    const lowerMailbox = mailbox.toLowerCase();
-    const caseMatch = actualMailboxes.find((mb) => mb.toLowerCase() === lowerMailbox);
-    if (caseMatch) {
-      return caseMatch;
-    }
-    const aliases = MAILBOX_ALIASES[lowerMailbox];
-    if (aliases) {
-      for (const alias of aliases) {
-        if (actualMailboxes.includes(alias)) {
-          return alias;
-        }
-        const aliasMatch = actualMailboxes.find((mb) => mb.toLowerCase() === alias.toLowerCase());
-        if (aliasMatch) {
-          return aliasMatch;
-        }
-      }
-    }
-    return mailbox;
   }
   // ===========================================================================
   // Message Operations
@@ -78878,24 +80365,32 @@ var AppleMailManager = class {
       for (const acct of accounts) {
         if (allMessages.length >= limit) break;
         const remaining = limit - allMessages.length;
-        const res = this.searchMessagesWithDiagnostics(
-          query,
-          mailbox,
-          acct.name,
-          remaining,
-          dateFrom,
-          dateTo,
-          from,
-          subject,
-          isRead,
-          isFlagged
-        );
-        allMessages.push(...res.messages);
-        mergeSearchDiagnostics(diagnostics, res.diagnostics);
+        try {
+          const res = this.searchMessagesWithDiagnostics(
+            query,
+            mailbox,
+            acct.name,
+            remaining,
+            dateFrom,
+            dateTo,
+            from,
+            subject,
+            isRead,
+            isFlagged
+          );
+          allMessages.push(...res.messages);
+          mergeSearchDiagnostics(diagnostics, res.diagnostics);
+        } catch (err) {
+          diagnostics.partial = true;
+          const message = err instanceof Error ? err.message : String(err);
+          diagnostics.notSearchedMailboxes.push(`${acct.name} / ${mailbox ?? "*"}: ${message}`);
+        }
       }
       return { messages: allMessages.slice(0, limit), diagnostics };
     }
-    const targetAccount = this.resolveAccount(account);
+    const local = isLocalStoreLabel(account);
+    const targetAccount = local ? LOCAL_STORE_LABEL : this.resolveAccount(account);
+    const mbIter = local ? "_mbs" : "mailboxes";
     const searchCondition = buildSearchCondition({ query, from, subject, isRead, isFlagged });
     let dateSetup = "";
     let dateFilter = "";
@@ -78915,10 +80410,14 @@ var AppleMailManager = class {
     }
     const scanThreshold = getMailboxScanThreshold();
     let searchCommand;
+    let resultMailbox = mailbox || "INBOX";
+    let rowsIncludeMailbox = !mailbox;
     if (mailbox) {
       const targetMailbox = this.resolveMailbox(mailbox, targetAccount);
+      resultMailbox = targetMailbox;
       const gmailInbox = isInboxScope(mailbox) ? gmailReceivingMailboxes(this.getCachedMailboxNames(targetAccount)) : null;
       if (gmailInbox) {
+        rowsIncludeMailbox = true;
         const nameList = appleScriptLowerNameList(gmailInbox);
         searchCommand = `
       ${dateSetup}set outputText to ""
@@ -78927,16 +80426,16 @@ var AppleMailManager = class {
       set _wantNames to ${nameList}
       set msgCount to 0
       set seenIds to {}
-      repeat with mb in mailboxes
+      repeat with mb in ${mbIter}
         if msgCount >= ${limit} then exit repeat
         set mbName to ""
         try
-          set mbName to name of mb
+          ${mailboxPathFragment("mb", "mbName")}
         end try
         ignoring case
-          if _wantNames contains mbName then
+          if _wantNames contains (name of mb) then
             try
-              ${buildMessageRowLoop({ collection: `messages of mb ${searchCondition}`, limit, dedup: true, dateFilter })}
+              ${buildMessageRowLoop({ collection: `messages of mb ${searchCondition}`, limit, dedup: true, dateFilter, trailing: ` & "${FIELD_SEP}" & mbName` })}
             on error _errMsg number _errNum
               set _timedOut to true
               set _notSearched to _notSearched & mbName & "${DIAG_ITEM_SEP}"
@@ -78951,14 +80450,19 @@ var AppleMailManager = class {
       ${dateSetup}set outputText to ""
       set _timedOut to false
       set _notSearched to ""
-      set theMailbox to mailbox "${escapeForAppleScript(targetMailbox)}"
+      ${mailboxLookupFragment(mbIter, targetMailbox, "theMailbox")}
       set msgCount to 0
-      try
-        ${buildMessageRowLoop({ collection: `messages of theMailbox ${searchCondition}`, limit, dateFilter })}
-      on error _errMsg number _errNum
+      if theMailbox is missing value then
         set _timedOut to true
         set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
-      end try
+      else
+        try
+          ${buildMessageRowLoop({ collection: `messages of theMailbox ${searchCondition}`, limit, dateFilter })}
+        on error _errMsg number _errNum
+          set _timedOut to true
+          set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
+        end try
+      end if
       return outputText & "${DIAG_MARKER}timedOut=" & (_timedOut as string) & "${DIAG_FIELD_SEP}skipped=${DIAG_FIELD_SEP}notSearched=" & _notSearched
     `;
       }
@@ -78972,11 +80476,11 @@ var AppleMailManager = class {
       set _skipped to ""
       set _notSearched to ""
       set _startedAt to current date
-      repeat with mb in mailboxes
+      repeat with mb in ${mbIter}
         if msgCount >= ${limit} then exit repeat
         set mbName to ""
         try
-          set mbName to name of mb
+          ${mailboxPathFragment("mb", "mbName")}
         end try
         if ((current date) - _startedAt) > ${SEARCH_ACCOUNT_BUDGET_SECONDS} then
           set _timedOut to true
@@ -79002,7 +80506,7 @@ var AppleMailManager = class {
       return outputText & "${DIAG_MARKER}timedOut=" & (_timedOut as string) & "${DIAG_FIELD_SEP}skipped=" & _skipped & "${DIAG_FIELD_SEP}notSearched=" & _notSearched
     `;
     }
-    const script = buildAccountScopedScript(targetAccount, searchCommand);
+    const script = local ? buildAppLevelScript(`${localMailboxBindingFragment()}${searchCommand}`) : buildAccountScopedScript(targetAccount, searchCommand);
     const result = executeAppleScript(script, { timeoutMs: SEARCH_ACCOUNT_TIMEOUT_MS });
     if (!result.success) {
       console.error(`Failed to search messages in "${targetAccount}": ${result.error}`);
@@ -79016,15 +80520,15 @@ var AppleMailManager = class {
         }
       };
     }
-    return this.parseSearchResult(result.output, mailbox || "INBOX", targetAccount);
+    return this.parseSearchResult(result.output, resultMailbox, targetAccount, rowsIncludeMailbox);
   }
   /**
    * Split a per-account search payload into its message list and the DIAG
    * trailer, parse both, and return a SearchResult. See searchMessagesWithDiagnostics.
    */
-  parseSearchResult(output, mailbox, account) {
+  parseSearchResult(output, mailbox, account, rowsIncludeMailbox = false) {
     const { payload, diagnostics } = splitSearchDiagnostics(output, account);
-    const messages = payload.trim() ? this.parseMessageList(payload, mailbox, account) : [];
+    const messages = payload.trim() ? this.parseMessageList(payload, mailbox, account, rowsIncludeMailbox) : [];
     return { messages, diagnostics };
   }
   /**
@@ -79056,7 +80560,8 @@ var AppleMailManager = class {
                 set msgFlagged to flagged status of msg as string
                 set msgJunk to junk mail status of msg as string
                 set msgDeleted to deleted status of msg as string
-                set msgMailbox to name of mb
+                set msgMailbox to ""
+                ${mailboxPathFragment("mb", "msgMailbox")}
                 set msgAccount to name of acct
                 set hasAtt to "false"
                 try
@@ -79113,18 +80618,32 @@ var AppleMailManager = class {
    */
   scopedByIdScript(account, mailbox, id, innerAction) {
     const resolved = this.resolveMailbox(mailbox, account);
-    return buildAppLevelScript(`
-      try
-        set acct to (first account whose name is "${escapeForAppleScript(account)}")
+    const bind = isLocalStoreLabel(account) ? `${localMailboxBindingFragment()}
         set targetMb to missing value
         ignoring case
-          repeat with mb in mailboxes of acct
-            if (name of mb) is "${escapeForAppleScript(resolved)}" then
+          repeat with mb in _mbs
+            set _mbPath to ""
+            ${mailboxPathFragment("mb", "_mbPath")}
+            if _mbPath is "${escapeForAppleScript(resolved)}" then
               set targetMb to mb
               exit repeat
             end if
           end repeat
-        end ignoring
+        end ignoring` : `set acct to (first account whose name is "${escapeForAppleScript(account)}")
+        set targetMb to missing value
+        ignoring case
+          repeat with mb in mailboxes of acct
+            set _mbPath to ""
+            ${mailboxPathFragment("mb", "_mbPath")}
+            if _mbPath is "${escapeForAppleScript(resolved)}" then
+              set targetMb to mb
+              exit repeat
+            end if
+          end repeat
+        end ignoring`;
+    return buildAppLevelScript(`
+      try
+        ${bind}
         if targetMb is not missing value then
           set matchingMsgs to (messages of targetMb whose id is ${Number(id)})
           if (count of matchingMsgs) > 0 then
@@ -79149,6 +80668,7 @@ var AppleMailManager = class {
    *   returned the entire raw MIME blob mislabeled as HTML (#32).
    */
   getMessageContent(id, includeHtml = false, hint) {
+    this.lastMessageLookupError = void 0;
     const sourceFetch = includeHtml ? `set htmlSource to ""
                 try
                   set htmlSource to source of msg
@@ -79174,17 +80694,38 @@ var AppleMailManager = class {
     }
     const script = buildAppLevelScript(`
       try
+        set _hits to {}
+        set _names to ""
         repeat with acct in accounts
           repeat with mb in mailboxes of acct
             try
               set matchingMsgs to (messages of mb whose id is ${Number(id)})
               if (count of matchingMsgs) > 0 then
-                set msg to item 1 of matchingMsgs
-                ${innerFetch}
+                set end of _hits to item 1 of matchingMsgs
+                set _names to _names & (name of acct) & "/" & (name of mb) & ", "
               end if
             end try
           end repeat
         end repeat
+        -- #183: local mailboxes belong to no account, so the walk above cannot
+        -- reach them. Collect into the SAME _hits/_names, which means an id
+        -- present both in an account and locally is now correctly reported as
+        -- ambiguous rather than silently resolving to the account copy.${localMailboxBindingFragment()}
+        repeat with mb in _mbs
+          try
+            set matchingMsgs to (messages of mb whose id is ${Number(id)})
+            if (count of matchingMsgs) > 0 then
+              set end of _hits to item 1 of matchingMsgs
+              set _names to _names & "${LOCAL_STORE_LABEL}/" & (name of mb) & ", "
+            end if
+          end try
+        end repeat
+        if (count of _hits) is 0 then return "${LOOKUP_ERROR_MARKER}Message not found"
+        if (count of _hits) > 1 then return "${LOOKUP_ERROR_MARKER}${AMBIGUOUS_ID_PREFIX}${Number(id)} is present in more than one mailbox (" & _names & "); list or search that mailbox first so the read targets the right copy"
+        if (count of _hits) is 1 then
+          set msg to item 1 of _hits
+          ${innerFetch}
+        end if
         return ""
       on error errMsg
         return ""
@@ -79204,6 +80745,10 @@ var AppleMailManager = class {
   parseMessageContent(id, result, includeHtml) {
     if (!result.success || !result.output.trim()) {
       if (!result.success) console.error(`Failed to get message content: ${result.error}`);
+      return null;
+    }
+    if (result.output.startsWith(LOOKUP_ERROR_MARKER)) {
+      this.lastMessageLookupError = result.output.slice(LOOKUP_ERROR_MARKER.length).trim();
       return null;
     }
     const htmlSplit = result.output.split(HTML_MARKER);
@@ -79233,6 +80778,7 @@ var AppleMailManager = class {
    * a 20MB attachment can take several seconds over Exchange/IMAP.
    */
   getRawSource(id, hint) {
+    this.lastMessageLookupError = void 0;
     const loc = hint?.account && hint?.mailbox ? { account: hint.account, mailbox: hint.mailbox } : this.idLocationIndex.get(id.toString());
     if (loc) {
       const scopedScript = this.scopedByIdScript(
@@ -79242,21 +80788,47 @@ var AppleMailManager = class {
         "return source of msg"
       );
       const scoped = executeAppleScript(scopedScript, { timeoutMs: 12e4 });
-      if (scoped.success && scoped.output.trim()) return scoped.output;
+      if (scoped.success && scoped.output.trim() && !scoped.output.startsWith(LOOKUP_ERROR_MARKER)) {
+        return scoped.output;
+      }
+      if (scoped.success && scoped.output.startsWith(LOOKUP_ERROR_MARKER)) {
+        this.lastMessageLookupError = scoped.output.slice(LOOKUP_ERROR_MARKER.length).trim();
+      }
     }
     const script = buildAppLevelScript(`
       try
+        set _hits to {}
+        set _names to ""
         repeat with acct in accounts
           repeat with mb in mailboxes of acct
             try
               set matchingMsgs to (messages of mb whose id is ${Number(id)})
               if (count of matchingMsgs) > 0 then
-                set msg to item 1 of matchingMsgs
-                return source of msg
+                set end of _hits to item 1 of matchingMsgs
+                set _names to _names & (name of acct) & "/" & (name of mb) & ", "
               end if
             end try
           end repeat
         end repeat
+        -- #183: local mailboxes belong to no account, so the walk above cannot
+        -- reach them. Collect into the SAME _hits/_names, which means an id
+        -- present both in an account and locally is now correctly reported as
+        -- ambiguous rather than silently resolving to the account copy.${localMailboxBindingFragment()}
+        repeat with mb in _mbs
+          try
+            set matchingMsgs to (messages of mb whose id is ${Number(id)})
+            if (count of matchingMsgs) > 0 then
+              set end of _hits to item 1 of matchingMsgs
+              set _names to _names & "${LOCAL_STORE_LABEL}/" & (name of mb) & ", "
+            end if
+          end try
+        end repeat
+        if (count of _hits) is 0 then return "${LOOKUP_ERROR_MARKER}Message not found"
+        if (count of _hits) > 1 then return "${LOOKUP_ERROR_MARKER}${AMBIGUOUS_ID_PREFIX}${Number(id)} is present in more than one mailbox (" & _names & "); list or search that mailbox first so the read targets the right copy"
+        if (count of _hits) is 1 then
+          set msg to item 1 of _hits
+          return source of msg
+        end if
         return ""
       on error errMsg
         return ""
@@ -79264,6 +80836,10 @@ var AppleMailManager = class {
     `);
     const result = executeAppleScript(script, { timeoutMs: 12e4 });
     if (!result.success || !result.output.trim()) {
+      return null;
+    }
+    if (result.output.startsWith(LOOKUP_ERROR_MARKER)) {
+      this.lastMessageLookupError = result.output.slice(LOOKUP_ERROR_MARKER.length).trim();
       return null;
     }
     return result.output;
@@ -79304,21 +80880,33 @@ var AppleMailManager = class {
       for (const acct of accounts) {
         if (allMessages.length >= limit) break;
         const remaining = limit - allMessages.length;
-        const res = this.listMessagesWithDiagnostics(mailbox, acct.name, remaining, from, offset);
-        allMessages.push(...res.messages);
-        mergeSearchDiagnostics(diagnostics, res.diagnostics);
+        try {
+          const res = this.listMessagesWithDiagnostics(mailbox, acct.name, remaining, from, offset);
+          allMessages.push(...res.messages);
+          mergeSearchDiagnostics(diagnostics, res.diagnostics);
+        } catch (err) {
+          diagnostics.partial = true;
+          const message = err instanceof Error ? err.message : String(err);
+          diagnostics.notSearchedMailboxes.push(`${acct.name} / ${mailbox ?? "*"}: ${message}`);
+        }
       }
       return { messages: allMessages.slice(0, limit), diagnostics };
     }
-    const targetAccount = this.resolveAccount(account);
+    const local = isLocalStoreLabel(account);
+    const targetAccount = local ? LOCAL_STORE_LABEL : this.resolveAccount(account);
     const safeFrom = from ? escapeForAppleScript(from) : "";
     const fromFilter = from ? `whose sender contains "${safeFrom}"` : "";
     const scanThreshold = getMailboxScanThreshold();
+    const mbIter = local ? "_mbs" : "mailboxes";
     let listCommand;
+    let resultMailbox = mailbox || "INBOX";
+    let rowsIncludeMailbox = !mailbox;
     if (mailbox) {
       const targetMailbox = this.resolveMailbox(mailbox, targetAccount);
+      resultMailbox = targetMailbox;
       const gmailInbox = isInboxScope(mailbox) ? gmailReceivingMailboxes(this.getCachedMailboxNames(targetAccount)) : null;
       if (gmailInbox) {
+        rowsIncludeMailbox = true;
         const nameList = appleScriptLowerNameList(gmailInbox);
         listCommand = `
       set outputText to ""
@@ -79328,14 +80916,14 @@ var AppleMailManager = class {
       set msgCount to 0
       set skipped to 0
       set seenIds to {}
-      repeat with mb in mailboxes
+      repeat with mb in ${mbIter}
         if msgCount >= ${limit} then exit repeat
         set mbName to ""
         try
-          set mbName to name of mb
+          ${mailboxPathFragment("mb", "mbName")}
         end try
         ignoring case
-          if _wantNames contains mbName then
+          if _wantNames contains (name of mb) then
             try
               ${buildMessageRowLoop({ collection: `messages of mb ${fromFilter}`, limit, offset, dedup: true, withAttachments: true, trailing: ` & "${FIELD_SEP}" & mbName` })}
             on error _errMsg number _errNum
@@ -79352,15 +80940,20 @@ var AppleMailManager = class {
       set outputText to ""
       set _timedOut to false
       set _notSearched to ""
-      set theMailbox to mailbox "${escapeForAppleScript(targetMailbox)}"
+      ${mailboxLookupFragment(mbIter, targetMailbox, "theMailbox")}
       set msgCount to 0
       set skipped to 0
-      try
-        ${buildMessageRowLoop({ collection: `messages of theMailbox ${fromFilter}`, limit, offset, withAttachments: true })}
-      on error _errMsg number _errNum
+      if theMailbox is missing value then
         set _timedOut to true
         set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
-      end try
+      else
+        try
+          ${buildMessageRowLoop({ collection: `messages of theMailbox ${fromFilter}`, limit, offset, withAttachments: true })}
+        on error _errMsg number _errNum
+          set _timedOut to true
+          set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
+        end try
+      end if
       return outputText & "${DIAG_MARKER}timedOut=" & (_timedOut as string) & "${DIAG_FIELD_SEP}skipped=${DIAG_FIELD_SEP}notSearched=" & _notSearched
     `;
       }
@@ -79375,11 +80968,11 @@ var AppleMailManager = class {
       set _skipped to ""
       set _notSearched to ""
       set _startedAt to current date
-      repeat with mb in mailboxes
+      repeat with mb in ${mbIter}
         if msgCount >= ${limit} then exit repeat
         set mbName to ""
         try
-          set mbName to name of mb
+          ${mailboxPathFragment("mb", "mbName")}
         end try
         if ((current date) - _startedAt) > ${SEARCH_ACCOUNT_BUDGET_SECONDS} then
           set _timedOut to true
@@ -79405,7 +80998,7 @@ var AppleMailManager = class {
       return outputText & "${DIAG_MARKER}timedOut=" & (_timedOut as string) & "${DIAG_FIELD_SEP}skipped=" & _skipped & "${DIAG_FIELD_SEP}notSearched=" & _notSearched
     `;
     }
-    const script = buildAccountScopedScript(targetAccount, listCommand);
+    const script = local ? buildAppLevelScript(`${localMailboxBindingFragment()}${listCommand}`) : buildAccountScopedScript(targetAccount, listCommand);
     const result = executeAppleScript(script, { timeoutMs: SEARCH_ACCOUNT_TIMEOUT_MS });
     if (!result.success) {
       console.error(`Failed to list messages in "${targetAccount}": ${result.error}`);
@@ -79419,7 +81012,7 @@ var AppleMailManager = class {
         }
       };
     }
-    return this.parseSearchResult(result.output, mailbox || "INBOX", targetAccount);
+    return this.parseSearchResult(result.output, resultMailbox, targetAccount, rowsIncludeMailbox);
   }
   /**
    * Parse message list output from AppleScript.
@@ -79432,7 +81025,7 @@ var AppleMailManager = class {
    * false-negative for MIME-embedded attachments (a known AppleScript
    * limitation). Use getMessage or list-attachments for authoritative info.
    */
-  parseMessageList(output, mailbox, account) {
+  parseMessageList(output, mailbox, account, rowsIncludeMailbox = false) {
     const items = output.split(RECORD_SEP);
     const messages = [];
     for (const item of items) {
@@ -79440,9 +81033,9 @@ var AppleMailManager = class {
       if (parts.length < 6) continue;
       let msgMailbox = mailbox;
       let hasAttachments = false;
-      if (parts.length >= 8) {
+      if (rowsIncludeMailbox && parts.length >= 7) {
         msgMailbox = parts[6];
-        hasAttachments = parts[7] === "true";
+        hasAttachments = parts.length >= 8 ? parts[7] === "true" : false;
       } else if (parts.length === 7) {
         hasAttachments = parts[6] === "true";
       }
@@ -79705,34 +81298,15 @@ var AppleMailManager = class {
   replyToMessage(id, body, replyAll = false, send = true) {
     const safeBody = escapeForAppleScriptBody(body);
     const replyAllClause = replyAll ? " with reply to all" : "";
-    const sendAction = send ? "send theReply" : "";
-    const script = buildAppLevelScript(`
-      try
-        repeat with acct in accounts
-          repeat with mb in mailboxes of acct
-            try
-              set matchingMsgs to (messages of mb whose id is ${Number(id)})
-              if (count of matchingMsgs) > 0 then
-                set msg to item 1 of matchingMsgs
-                set theReply to reply msg without opening window${replyAllClause}
-                set content of theReply to "${safeBody}"
-                ${sendAction}
-                return "ok"
-              end if
-            end try
-          end repeat
-        end repeat
-        return "error:Message not found"
-      on error errMsg
-        return "error:" & errMsg
-      end try
-    `);
-    const result = executeAppleScript(script, { timeoutMs: 6e4 });
-    if (!result.success || result.output.startsWith("error:")) {
-      console.error(`Failed to reply to message: ${result.error || result.output}`);
-      return false;
-    }
-    return true;
+    const finalAction = send ? "send theReply" : "save theReply";
+    const script = this.findMessageScript(
+      id,
+      `
+          set theReply to reply msg without opening window${replyAllClause}
+          set content of theReply to "${safeBody}"
+          ${finalAction}`
+    );
+    return this.runComposeScript(script, "reply to");
   }
   /**
    * Forward a message.
@@ -79745,64 +81319,161 @@ var AppleMailManager = class {
    */
   forwardMessage(id, to, body, send = true) {
     const safeBody = body ? escapeForAppleScriptBody(body) : "";
-    const sendAction = send ? "send theForward" : "";
+    const finalAction = send ? "send theForward" : "save theForward";
     let recipientCommands = "";
     for (const addr of to) {
       recipientCommands += `make new to recipient at end of to recipients of theForward with properties {address:"${escapeForAppleScript(addr)}"}
 `;
     }
-    const script = buildAppLevelScript(`
-      try
-        repeat with acct in accounts
-          repeat with mb in mailboxes of acct
-            try
-              set matchingMsgs to (messages of mb whose id is ${Number(id)})
-              if (count of matchingMsgs) > 0 then
-                set msg to item 1 of matchingMsgs
-                set theForward to forward msg without opening window
-                ${recipientCommands}
-                ${safeBody ? `set content of theForward to "${safeBody}"` : ""}
-                ${sendAction}
-                return "ok"
-              end if
-            end try
-          end repeat
-        end repeat
-        return "error:Message not found"
-      on error errMsg
-        return "error:" & errMsg
-      end try
-    `);
-    const result = executeAppleScript(script, { timeoutMs: 6e4 });
-    if (!result.success || result.output.startsWith("error:")) {
-      console.error(`Failed to forward message: ${result.error || result.output}`);
-      return false;
-    }
-    return true;
+    const script = this.findMessageScript(
+      id,
+      `
+          set theForward to forward msg without opening window
+          ${recipientCommands}
+          ${safeBody ? `set content of theForward to "${safeBody}"` : ""}
+          ${finalAction}`
+    );
+    return this.runComposeScript(script, "forward");
   }
   /**
-   * Helper to find and operate on a message by ID.
+   * Helper to find and operate on a message by ID, scoped to the mailbox the id
+   * was listed from.
+   *
+   * Mail.app numeric ids are per-mailbox, and on a label store (Gmail, iCloud)
+   * ONE message is present in several mailboxes under the SAME id — INBOX,
+   * "Important" and "All Mail" all report id 75816 for the same mail. This used
+   * to walk every account's every mailbox and mutate the FIRST hit, so whichever
+   * copy `mailboxes of <account>` happened to reach first won and the mailbox the
+   * id was listed from lost whenever an alias came earlier in that (store-
+   * dependent) order — the op reported success while the copy the caller meant
+   * stayed put and a different one was moved/deleted (#152). See
+   * runBatchOperation for the observed ordering on the reporting account.
+   *
+   * Which mailbox a mutation lands in is semantic — deleting the INBOX copy and
+   * deleting the "All Mail" copy are different operations — so scope to the
+   * mailbox the id actually came from (`idLocationIndex`, populated by every
+   * list/search) and never guess.
+   *
+   * Every single-message mutation in this class builds its script here and runs
+   * it immediately, so this is also where the previous operation's forensic
+   * report is invalidated — see `beginMutation()`.
    */
-  findMessageScript(id, operation) {
-    return buildAppLevelScript(`
+  /**
+   * Run a reply/forward compose script and surface Mail's OWN error text.
+   *
+   * These used to return a bare boolean and log the reason to stderr, so the
+   * tool layer could only say "Failed to reply to message X". That hid the two
+   * failures a caller can actually act on — an id present in several mailboxes
+   * (which names the candidates and tells you to re-list) and a missing id —
+   * behind one indistinguishable message.
+   */
+  runComposeScript(script, verb) {
+    const result = executeAppleScript(script, { timeoutMs: 6e4 });
+    if (!result.success || result.output.startsWith("error:")) {
+      const raw = result.error || result.output;
+      const error2 = raw.startsWith("error:") ? raw.slice("error:".length) : raw;
+      console.error(`Failed to ${verb} message: ${error2}`);
+      return { success: false, error: error2 };
+    }
+    return { success: true };
+  }
+  findMessageScript(id, operation, instrument = false) {
+    this.beginMutation();
+    const loc = this.locationFor(id);
+    if (loc) {
+      const acctLit = `"${escapeForAppleScript(stripStreamDelimiters(loc.account))}"`;
+      const mbLit = `"${escapeForAppleScript(stripStreamDelimiters(loc.mailbox))}"`;
+      return buildAppLevelScript(`
       try
-        repeat with acct in accounts
-          repeat with mb in mailboxes of acct
-            try
-              set matchingMsgs to (messages of mb whose id is ${Number(id)})
-              if (count of matchingMsgs) > 0 then
-                set msg to item 1 of matchingMsgs
-                ${operation}
-                return "ok"
-              end if
-            end try
-          end repeat
-        end repeat
+        ${this.resolveMailboxFragment(loc.account, loc.mailbox)}
+        if _tmb is missing value then return "error:Message not found"
+        set matchingMsgs to (messages of _tmb whose id is ${Number(id)})
+        if (count of matchingMsgs) > 0 then
+          set msg to item 1 of matchingMsgs${instrument ? `
+          set _out to ""
+          set _pre to ""${this.countFragment("_cb")}${this.snapshotFragment("before", acctLit, mbLit, "_cb")}${this.preImageFragment("msg")}
+          ${operation}${this.countFragment("_ca")}${this.snapshotFragment("after", acctLit, mbLit, "_ca")}${this.reconEmit(acctLit, mbLit, "_cb", "_ca")}
+          return "1${FIELD_SEP}ok" & _pre & "${RECORD_SEP}" & _out` : `
+          ${operation}
+          return "ok"`}
+        end if
         return "error:Message not found"
       on error errMsg
         return "error:" & errMsg
       end try
     `);
+    }
+    return buildAppLevelScript(`
+      try
+        set _hits to {}
+        set _names to ""
+        repeat with acct in accounts
+          repeat with mb in mailboxes of acct
+            try
+              set matchingMsgs to (messages of mb whose id is ${Number(id)})
+              if (count of matchingMsgs) > 0 then
+                set end of _hits to (item 1 of matchingMsgs)
+                set _names to _names & (name of acct) & "/" & (name of mb) & ", "
+              end if
+            end try
+          end repeat
+        end repeat
+        if (count of _hits) is 0 then return "error:Message not found"
+        if (count of _hits) > 1 then return "error:${AMBIGUOUS_ID_PREFIX}${Number(id)} is present in more than one mailbox (" & _names & "); list or search that mailbox first so the operation targets the right copy"
+        set msg to item 1 of _hits${instrument ? `
+        set _out to ""
+        set _pre to ""
+        set _umb to missing value
+        set _uacct to ""
+        try
+          set _umb to (mailbox of msg)
+          set _uacct to (name of (account of _umb))
+        end try
+        set _cb to -1
+        set _ca to -1
+        if _umb is not missing value then
+          try
+            set _cb to (count of messages of _umb)
+          end try
+        end if${this.preImageFragment("msg")}
+        ${operation}
+        if _umb is not missing value then
+          try
+            set _ca to (count of messages of _umb)
+          end try
+          ${this.reconEmitFromMessage("_cb", "_ca")}
+        end if
+        return "1${FIELD_SEP}ok" & _pre & "${RECORD_SEP}" & _out` : `
+        ${operation}
+        return "ok"`}
+      on error errMsg
+        return "error:" & errMsg
+      end try
+    `);
+  }
+  /**
+   * Build and stash the forensic report for a SINGLE-message destructive op.
+   *
+   * Same record stream, same parser and same reconciliation rules as the batch
+   * path — a single-message delete is just a one-id batch as far as the evidence
+   * is concerned, so there is exactly one implementation of "what did this
+   * actually do".
+   */
+  recordSingleForensics(output, id, destination) {
+    const valid = [{ id, num: Number(id) }];
+    const parsed = this.parseForensicStream(output, valid);
+    const succeeded = parsed.okPositions.has(1);
+    const sameMailbox = (account, mailbox) => destination !== void 0 && destination.account === account && this.resolveMailboxSafe(destination.mailbox, destination.account) === this.resolveMailboxSafe(mailbox, account);
+    const home = parsed.recons[0];
+    this.lastForensics = this.buildForensicReport(
+      parsed,
+      valid,
+      // null, not 0, for a self-move — see SELF_MOVE_NOTE.
+      (account, mailbox) => sameMailbox(account, mailbox) ? null : succeeded ? 1 : 0,
+      () => home ? { account: home.account, mailbox: home.mailbox } : this.locationFor(id) ?? { account: "", mailbox: "" },
+      (account, mailbox) => sameMailbox(account, mailbox) ? SELF_MOVE_NOTE : void 0,
+      /* @__PURE__ */ new Set([canonicalNumericId(String(Number(id)))])
+    );
   }
   /**
    * Mark a message as read.
@@ -79924,9 +81595,10 @@ var AppleMailManager = class {
    * Delete a message.
    */
   deleteMessage(id) {
-    const script = this.findMessageScript(id, "delete msg");
+    const script = this.findMessageScript(id, "delete msg", true);
     const result = executeAppleScript(script, { timeoutMs: 6e4 });
     if (result.success && !result.output.startsWith("error:")) {
+      this.recordSingleForensics(result.output, id);
       return { success: true };
     }
     const raw = result.success ? result.output.replace(/^error:/, "") : result.error || "Unknown error";
@@ -79964,9 +81636,9 @@ var AppleMailManager = class {
    * Move a message to a destination mailbox, with full nested-mailbox support.
    *
    * Resolving the destination as `mailbox "X" of account "Y"` only finds
-   * top-level mailboxes, so nested destinations (e.g. a "Moore" subfolder)
-   * silently failed. Instead we walk the target account's full mailbox tree and
-   * match by name. Resolution is:
+   * top-level mailboxes on some stores. Instead we walk the account's recursive
+   * mailbox collection, reconstruct each container path, and match by path.
+   * Resolution is:
    *   - account-scoped (won't move to a same-named mailbox in another account)
    *   - ambiguity-aware: if the name matches more than one mailbox in the
    *     account we refuse to guess and return an error — silently moving mail to
@@ -79983,36 +81655,76 @@ var AppleMailManager = class {
     const targetMailbox = this.resolveMailbox(mailbox, targetAccount);
     const safeMailbox = escapeForAppleScript(targetMailbox);
     const safeAccount = escapeForAppleScript(targetAccount);
-    const script = buildAppLevelScript(`
-      try
-        -- \`mailboxes of account\` is already flat: it includes nested mailboxes
-        -- (named by path, e.g. "Processed/Vendors"). Descending via \`mailboxes of mb\`
-        -- is unreliable (it double-prepends the parent path), so we DON'T recurse \u2014
-        -- we match against this flat list by exact name and use the reference directly
-        -- (addressing \`mailbox "X" of account "Y"\` only finds some top-level mailboxes).
-        set destName to "${safeMailbox}"
-        set destMatches to {}
-        repeat with mb in (mailboxes of account "${safeAccount}")
-          if (name of mb) is destName then set end of destMatches to mb
-        end repeat
-        if (count of destMatches) is 0 then return "error:Destination mailbox \\"" & destName & "\\" not found in account \\"${safeAccount}\\""
-        if (count of destMatches) > 1 then return "error:Destination mailbox \\"" & destName & "\\" is ambiguous (" & (count of destMatches) & " matches) in account \\"${safeAccount}\\"; disambiguate or move by full path"
-        set destMailbox to item 1 of destMatches
-
-        -- Find the message by id. The flat mailbox list already covers nested
-        -- mailboxes, so this reaches messages in subfolders without recursing.
+    const loc = this.locationFor(id);
+    const srcAcctLit = loc ? `"${escapeForAppleScript(stripStreamDelimiters(loc.account))}"` : '""';
+    const srcMbLit = loc ? `"${escapeForAppleScript(stripStreamDelimiters(loc.mailbox))}"` : '""';
+    const findAndMove = loc ? `
+        ${this.resolveMailboxFragment(loc.account, loc.mailbox)}
+        if _tmb is missing value then return "error:Message not found"
+        set matchingMsgs to (messages of _tmb whose id is ${Number(id)})
+        if (count of matchingMsgs) is 0 then return "error:Message not found"
+        set msg to item 1 of matchingMsgs
+        set _out to ""
+        set _pre to ""${this.countFragment("_cb")}${this.snapshotFragment("before", srcAcctLit, srcMbLit, "_cb")}${this.preImageFragment("msg")}
+        move msg to destMailbox${this.countFragment("_ca")}${this.snapshotFragment("after", srcAcctLit, srcMbLit, "_ca")}${this.reconEmit(srcAcctLit, srcMbLit, "_cb", "_ca")}
+        return "1${FIELD_SEP}ok" & _pre & "${RECORD_SEP}" & _out` : `
+        set _hits to {}
+        set _names to ""
         repeat with acct in accounts
           repeat with mb in (mailboxes of acct)
             try
               set matchingMsgs to (messages of mb whose id is ${Number(id)})
               if (count of matchingMsgs) > 0 then
-                move (item 1 of matchingMsgs) to destMailbox
-                return "ok"
+                set end of _hits to (item 1 of matchingMsgs)
+                set _names to _names & (name of acct) & "/" & (name of mb) & ", "
               end if
             end try
           end repeat
         end repeat
-        return "error:Message not found"
+        if (count of _hits) is 0 then return "error:Message not found"
+        if (count of _hits) > 1 then return "error:${AMBIGUOUS_ID_PREFIX}${Number(id)} is present in more than one mailbox (" & _names & "); list or search that mailbox first so the move targets the right copy"
+        set msg to item 1 of _hits
+        set _out to ""
+        set _pre to ""
+        set _umb to missing value
+        set _uacct to ""
+        try
+          set _umb to (mailbox of msg)
+          set _uacct to (name of (account of _umb))
+        end try
+        set _cb to -1
+        set _ca to -1
+        if _umb is not missing value then
+          try
+            set _cb to (count of messages of _umb)
+          end try
+        end if${this.preImageFragment("msg")}
+        move msg to destMailbox
+        if _umb is not missing value then
+          try
+            set _ca to (count of messages of _umb)
+          end try
+          ${this.reconEmitFromMessage("_cb", "_ca")}
+        end if
+        return "1${FIELD_SEP}ok" & _pre & "${RECORD_SEP}" & _out`;
+    const script = buildAppLevelScript(`
+      try
+        -- \`mailboxes of account\` recursively includes nested mailboxes, but
+        -- \`name of mb\` is only the leaf. Reconstruct each path from its
+        -- container chain so Inbox and Archive/Inbox remain distinct.
+        set destName to "${safeMailbox}"
+        set destMatches to {}
+        repeat with mb in (mailboxes of account "${safeAccount}")
+          set _destPath to ""
+          ${mailboxPathFragment("mb", "_destPath")}
+          ignoring case
+            if _destPath is destName then set end of destMatches to mb
+          end ignoring
+        end repeat
+        if (count of destMatches) is 0 then return "error:Destination mailbox \\"" & destName & "\\" not found in account \\"${safeAccount}\\""
+        if (count of destMatches) > 1 then return "error:Destination mailbox \\"" & destName & "\\" is ambiguous (" & (count of destMatches) & " matches) in account \\"${safeAccount}\\"; disambiguate or move by full path"
+        set destMailbox to item 1 of destMatches
+        ${findAndMove}
       on error errMsg
         return "error:" & errMsg
       end try
@@ -80024,9 +81736,14 @@ var AppleMailManager = class {
     if (result.output.startsWith("error:")) {
       return { success: false, error: result.output.slice("error:".length) };
     }
+    this.recordSingleForensics(result.output, id, {
+      account: targetAccount,
+      mailbox: targetMailbox
+    });
     return { success: true };
   }
   moveMessage(id, mailbox, account) {
+    this.beginMutation();
     const res = this.moveMessageInternal(id, mailbox, account);
     if (res.success) return { success: true };
     const error2 = this.classifyMessageMutationError(
@@ -80041,63 +81758,245 @@ var AppleMailManager = class {
   // Batch Operations
   // ===========================================================================
   /**
+   * Turn a caller-supplied batch source scope into an account+mailbox pair.
+   *
+   * A numeric source scope is an account+mailbox pair. A mailbox name alone is
+   * not an identity: the same mailbox can exist in several accounts, and a
+   * numeric Mail id is not globally unique. Resolving a missing account from
+   * mutable default-send state can therefore target the wrong account. Require
+   * both fields so a caller cannot silently cross that account boundary.
+   *
+   * The safety property is absolute: when the account cannot be determined there
+   * is NO fallback to the scan-and-guess walk. The caller gets an error naming
+   * the mailbox it asked for, so it can retry with an explicit `sourceAccount`.
+   * (An `account` with no `mailbox` cannot pin anything, so it scopes nothing —
+   * those ids still go through the index / ambiguity-checked path. A supplied
+   * whitespace-only field is rejected rather than silently discarded.)
+   */
+  resolveBatchScope(scope) {
+    const rawMailbox = scope?.mailbox;
+    const rawAccount = scope?.account;
+    const mailbox = rawMailbox?.trim();
+    const account = rawAccount?.trim();
+    if (rawMailbox !== void 0 && !mailbox) {
+      return {
+        kind: "unresolvable",
+        error: "sourceMailbox must contain a mailbox name; whitespace-only scope is not allowed."
+      };
+    }
+    if (rawAccount !== void 0 && !account) {
+      return {
+        kind: "unresolvable",
+        error: "sourceAccount must contain an account name; whitespace-only scope is not allowed."
+      };
+    }
+    if (!mailbox) return { kind: "none" };
+    if (!account) {
+      return {
+        kind: "unresolvable",
+        error: `Cannot scope to source mailbox "${mailbox}" without sourceAccount: numeric Mail ids are only unique within an account and mailbox. Retry with both sourceAccount and sourceMailbox explicitly set.`
+      };
+    }
+    return { kind: "scoped", account, mailbox };
+  }
+  /**
    * Run one operation over many message IDs in a SINGLE osascript invocation.
    *
    * Previously each batch method looped and called the per-id method, so a
    * 100-id batch spawned 100 osascript processes — each one re-resolving
    * accounts and walking the whole account→mailbox tree — all serialized
-   * through the gate (issue #31). This walks the tree exactly once: for each
-   * mailbox it probes the still-pending IDs with `whose id is` (indexed, so
-   * effectively free) and applies `operation` to any match, tracking found IDs
-   * so it can stop early once all are accounted for. Per-id outcomes come back
-   * as control-char-delimited `id<FS>status` records (status: `ok`,
-   * `notfound`, or `error:<msg>`), and results are returned in input order.
+   * through the gate (issue #31). Still one osascript invocation, but the ids
+   * are now grouped by the mailbox they were listed from and each group opens
+   * exactly that one mailbox. Per-id outcomes come back as control-char
+   * delimited `position<FS>status` records (status: `ok`, `notfound`, or
+   * `error:<msg>`), and results are returned in input order.
    *
-   * `setup` runs once before the walk (used by move to resolve the destination);
-   * it may bail the whole batch by returning a `BATCH_FATAL`-prefixed string.
+   * Scoping is a CORRECTNESS requirement, not an optimization (#152). A Mail.app
+   * numeric id is unique only within a mailbox, and a label store (Gmail,
+   * iCloud) exposes one message in several mailboxes under the same id — INBOX,
+   * "Important" and "All Mail" all report id 75816 for the same mail. The old
+   * tree walk applied `operation` to the FIRST mailbox that matched while
+   * iterating `mailboxes of <account>`, so whichever copy that iteration reached
+   * first won — and the ids' real source mailbox lost whenever an alias came
+   * earlier. Observed on the reporting account (`list-mailboxes`, 2026-08-13):
+   * INBOX 1, "[Gmail]/All Mail" 5, "[Gmail]/Important" 9, "Sales Spam" 12 — so a
+   * batch listed from "Sales Spam" was applied to the All Mail copies while the
+   * Sales Spam messages stayed put, and every id still reported `ok`. That order
+   * is a property of the store, not a guarantee: do not rely on it in either
+   * direction — any mailbox the walk reaches late loses the same way. Grouping by
+   * recorded source mailbox makes the op land on the copy the caller actually
+   * listed; ids with no recorded mailbox are refused when ambiguous rather than
+   * applied to an arbitrary copy.
+   *
+   * `setup` runs once up front (used by move to resolve the destination); it may
+   * bail the whole batch by returning a `BATCH_FATAL`-prefixed string.
+   *
+   * ## A repeated id names ONE message, and is operated on once
+   *
+   * A batch is a set of messages, not a multiset: two occurrences of id `75811`
+   * are the same message, and Mail can only delete it once. So the id list is
+   * DEDUPED on the numeric value actually sent to AppleScript (`"75811"` and
+   * `" 75811"` are the same target), and the returned array carries one entry
+   * per distinct id, in first-seen order — hence `success` counts distinct
+   * messages rather than list positions.
+   *
+   * This is a correctness requirement for the #155 reconciliation, not a
+   * tidy-up. Counting a repeat as a second operand makes `expected` disagree
+   * with the mailbox — the duplicate can only be reported `notfound` (the
+   * message is already gone) or `ok` twice (on a flag-only store) — and either
+   * way the always-on warning fires on an operation that did exactly the right
+   * thing. A warning users learn to ignore is worse than no warning.
    */
-  runBatchOperation(ids, operation, setup = "") {
+  runBatchOperation(ids, operation, setup = "", scope, forensics) {
+    const instrument = forensics !== void 0;
+    this.beginMutation();
     const valid = [];
+    const operands = [];
+    const seenNums = /* @__PURE__ */ new Set();
+    const seenInvalid = /* @__PURE__ */ new Set();
     for (const id of ids) {
       const num = Number(id);
-      if (Number.isFinite(num)) valid.push({ id, num });
+      if (Number.isFinite(num)) {
+        if (seenNums.has(num)) continue;
+        seenNums.add(num);
+        valid.push({ id, num });
+      } else {
+        if (seenInvalid.has(id)) continue;
+        seenInvalid.add(id);
+      }
+      operands.push(id);
     }
     if (valid.length === 0) {
-      return ids.map((id) => ({ id, success: false, error: "Invalid message ID" }));
+      return operands.map((id) => ({ id, success: false, error: "Invalid message ID" }));
     }
+    const resolved = this.resolveBatchScope(scope);
+    if (resolved.kind === "unresolvable") {
+      return operands.map((id) => ({ id, success: false, error: resolved.error }));
+    }
+    if (resolved.kind === "scoped") {
+      const disabled = this.disabledAccountGuard(resolved.account);
+      if (disabled) {
+        return operands.map((id) => ({ id, success: false, error: disabled }));
+      }
+    }
+    const callerScope = resolved.kind === "scoped" ? resolved : void 0;
+    const groups = /* @__PURE__ */ new Map();
+    const unlocated = [];
+    valid.forEach((v, i) => {
+      const pos = i + 1;
+      const loc = callerScope ?? this.locationFor(v.id);
+      if (!loc) {
+        unlocated.push({ num: v.num, pos });
+        return;
+      }
+      const key = groupKey(loc.account, loc.mailbox);
+      const g = groups.get(key) ?? { account: loc.account, mailbox: loc.mailbox, items: [] };
+      g.items.push({ num: v.num, pos });
+      groups.set(key, g);
+    });
+    const asList = (nums) => `{${nums.join(", ")}}`;
+    const scopedBlocks = [...groups.values()].map((g) => {
+      const acctLit = `"${escapeForAppleScript(stripStreamDelimiters(g.account))}"`;
+      const mbLit = `"${escapeForAppleScript(stripStreamDelimiters(g.mailbox))}"`;
+      const acctInProse = escapeForAppleScript(stripStreamDelimiters(g.account));
+      const mbInProse = escapeForAppleScript(stripStreamDelimiters(g.mailbox));
+      const pre = instrument ? this.preImageFragment("_msg") : "";
+      return `
+        ${this.resolveMailboxFragment(g.account, g.mailbox)}
+        set _gids to ${asList(g.items.map((it) => it.num))}
+        set _gpos to ${asList(g.items.map((it) => it.pos))}
+        if _tmb is missing value then
+          repeat with _k from 1 to (count of _gpos)
+            set _out to _out & ((item _k of _gpos) as string) & "${FIELD_SEP}error:source mailbox \\"${mbInProse}\\" not found in account \\"${acctInProse}\\"${RECORD_SEP}"
+          end repeat
+        else${instrument ? `${this.countFragment("_cb")}${this.snapshotFragment("before", acctLit, mbLit, "_cb")}` : ""}
+          repeat with _k from 1 to (count of _gids)
+            set _idx to item _k of _gpos
+            set _pre to ""
+            try
+              set _m to (messages of _tmb whose id is (item _k of _gids))
+              if (count of _m) > 0 then
+                set _msg to item 1 of _m${pre}
+                ${operation}
+                set _out to _out & (_idx as string) & "${FIELD_SEP}ok" & _pre & "${RECORD_SEP}"
+              else
+                set _out to _out & (_idx as string) & "${FIELD_SEP}notfound${RECORD_SEP}"
+              end if
+            on error _e
+${this.errorEmit("              ")}
+            end try
+          end repeat${instrument ? `${this.countFragment("_ca")}${this.snapshotFragment("after", acctLit, mbLit, "_ca")}${this.reconEmit(acctLit, mbLit, "_cb", "_ca")}` : ""}
+        end if`;
+    }).join("\n");
+    const unlocatedBlock = unlocated.length ? `
+        set _uids to ${asList(unlocated.map((it) => it.num))}
+        set _upos to ${asList(unlocated.map((it) => it.pos))}
+        set _ucount to count of _uids
+        set _uhit to {}
+        set _umsg to {}
+        set _unames to {}
+        repeat with _k from 1 to _ucount
+          set end of _uhit to 0
+          set end of _umsg to missing value
+          set end of _unames to ""
+        end repeat
+        repeat with acct in accounts
+          repeat with mb in (mailboxes of acct)
+            repeat with _k from 1 to _ucount
+              try
+                set _m to (messages of mb whose id is (item _k of _uids))
+                if (count of _m) > 0 then
+                  set item _k of _uhit to ((item _k of _uhit) + 1)
+                  if (item _k of _uhit) is 1 then set item _k of _umsg to (item 1 of _m)
+                  set item _k of _unames to ((item _k of _unames) & (name of acct) & "/" & (name of mb) & ", ")
+                end if
+              end try
+            end repeat
+          end repeat
+        end repeat
+        repeat with _k from 1 to _ucount
+          set _idx to item _k of _upos
+          if (item _k of _uhit) is 0 then
+            set _out to _out & (_idx as string) & "${FIELD_SEP}notfound${RECORD_SEP}"
+          else if (item _k of _uhit) > 1 then
+            set _uname to (item _k of _unames)${this.sanitizeFragment("_uname", "            ")}
+            set _out to _out & (_idx as string) & "${FIELD_SEP}error:${AMBIGUOUS_ID_BATCH}(" & _uname & "); list or search that mailbox first so the operation targets the right copy${RECORD_SEP}"
+          else
+            set _pre to ""
+            try
+              set _msg to item _k of _umsg${instrument ? `
+              set _umb to missing value
+              set _uacct to ""
+              try
+                set _umb to (mailbox of _msg)
+                set _uacct to (name of (account of _umb))
+              end try
+              set _ucb to -1
+              set _uca to -1
+              if _umb is not missing value then
+                try
+                  set _ucb to (count of messages of _umb)
+                end try
+              end if${this.preImageFragment("_msg")}` : ""}
+              ${operation}
+              set _out to _out & (_idx as string) & "${FIELD_SEP}ok" & _pre & "${RECORD_SEP}"${instrument ? `
+              if _umb is not missing value then
+                try
+                  set _uca to (count of messages of _umb)
+                end try
+                ${this.reconEmitFromMessage("_ucb", "_uca", "(_idx as string)", "                ")}
+              end if` : ""}
+            on error _e
+${this.errorEmit("              ")}
+            end try
+          end if
+        end repeat` : "";
     const script = buildAppLevelScript(`
       try
         ${setup}
         set _out to ""
-        set _done to {}
-        set _ids to {${valid.map((v) => v.num).join(", ")}}
-        set _total to count of _ids
-        repeat with acct in accounts
-          if (count of _done) is _total then exit repeat
-          repeat with mb in (mailboxes of acct)
-            if (count of _done) is _total then exit repeat
-            repeat with _idx from 1 to _total
-              if _idx is not in _done then
-                set _theId to item _idx of _ids
-                try
-                  set _m to (messages of mb whose id is _theId)
-                  if (count of _m) > 0 then
-                    set _msg to item 1 of _m
-                    ${operation}
-                    set end of _done to _idx
-                    set _out to _out & (_idx as string) & "${FIELD_SEP}ok${RECORD_SEP}"
-                  end if
-                on error _e
-                  set end of _done to _idx
-                  set _out to _out & (_idx as string) & "${FIELD_SEP}error:" & _e & "${RECORD_SEP}"
-                end try
-              end if
-            end repeat
-          end repeat
-        end repeat
-        repeat with _idx from 1 to _total
-          if _idx is not in _done then set _out to _out & (_idx as string) & "${FIELD_SEP}notfound${RECORD_SEP}"
-        end repeat
+        ${scopedBlocks}
+        ${unlocatedBlock}
         return _out
       on error errMsg
         return "${BATCH_FATAL}" & errMsg
@@ -80107,41 +82006,54 @@ var AppleMailManager = class {
     const result = executeAppleScript(script, { timeoutMs });
     if (!result.success) {
       const err = result.error || "Batch operation failed";
-      return ids.map((id) => ({ id, success: false, error: err }));
+      return operands.map((id) => ({ id, success: false, error: err }));
     }
     if (result.output.startsWith(BATCH_FATAL)) {
       const err = result.output.slice(BATCH_FATAL.length);
-      return ids.map((id) => ({ id, success: false, error: err }));
+      return operands.map((id) => ({ id, success: false, error: err }));
     }
-    const byId = /* @__PURE__ */ new Map();
-    for (const rec of result.output.split(RECORD_SEP)) {
-      if (!rec) continue;
-      const sep2 = rec.indexOf(FIELD_SEP);
-      if (sep2 < 0) continue;
-      const pos = Number(rec.slice(0, sep2));
-      const status = rec.slice(sep2 + FIELD_SEP.length);
-      const entry = valid[pos - 1];
-      if (!entry) continue;
-      const id = entry.id;
-      if (status === "ok") {
-        byId.set(id, { id, success: true });
-      } else if (status === "notfound") {
-        byId.set(id, { id, success: false, error: "Message not found" });
-      } else if (status.startsWith("error:")) {
-        byId.set(id, { id, success: false, error: status.slice("error:".length) });
-      } else {
-        byId.set(id, { id, success: false, error: status || "Unknown error" });
+    const parsed = this.parseForensicStream(result.output, valid);
+    const { byId } = parsed;
+    if (instrument) {
+      const posLocation = /* @__PURE__ */ new Map();
+      for (const g of groups.values()) {
+        for (const it of g.items)
+          posLocation.set(it.pos, { account: g.account, mailbox: g.mailbox });
       }
+      for (const r of parsed.recons) {
+        if (r.pos !== null) posLocation.set(r.pos, { account: r.account, mailbox: r.mailbox });
+      }
+      const { okPositions } = parsed;
+      const dest = forensics?.destination;
+      const sameMailbox = (account, mailbox) => dest !== void 0 && dest.account === account && this.resolveMailboxSafe(dest.mailbox, dest.account) === this.resolveMailboxSafe(mailbox, account);
+      const expectedFor = (account, mailbox, pos) => {
+        if (sameMailbox(account, mailbox)) return null;
+        if (pos !== null) return okPositions.has(pos) ? 1 : 0;
+        const group = groups.get(groupKey(account, mailbox));
+        if (!group) return 0;
+        return group.items.filter((it) => okPositions.has(it.pos)).length;
+      };
+      const noteFor = (account, mailbox) => sameMailbox(account, mailbox) ? SELF_MOVE_NOTE : void 0;
+      this.lastForensics = this.buildForensicReport(
+        parsed,
+        valid,
+        expectedFor,
+        (pos) => posLocation.get(pos) ?? { account: "", mailbox: "" },
+        noteFor,
+        // Canonicalised, because the ids this is compared against come back
+        // from AppleScript — see canonicalNumericId.
+        new Set(valid.map((v) => canonicalNumericId(String(v.num))))
+      );
     }
-    return ids.map(
+    return operands.map(
       (id) => byId.get(id) ?? (Number.isFinite(Number(id)) ? { id, success: false, error: "No result returned" } : { id, success: false, error: "Invalid message ID" })
     );
   }
   /**
    * Delete multiple messages at once (single tree walk — see runBatchOperation).
    */
-  batchDeleteMessages(ids) {
-    return this.runBatchOperation(ids, "delete _msg");
+  batchDeleteMessages(ids, scope) {
+    return this.runBatchOperation(ids, "delete _msg", "", scope, {});
   }
   /**
    * Move multiple messages to a mailbox at once (single tree walk).
@@ -80150,7 +82062,7 @@ var AppleMailManager = class {
    * matching more than one mailbox fails the whole batch rather than guessing),
    * then every matched message is moved in the same walk.
    */
-  batchMoveMessages(ids, mailbox, account) {
+  batchMoveMessages(ids, mailbox, account, scope) {
     const targetAccount = this.resolveAccount(account);
     const targetMailbox = this.resolveMailbox(mailbox, targetAccount);
     const safeMailbox = escapeForAppleScript(targetMailbox);
@@ -80159,36 +82071,42 @@ var AppleMailManager = class {
         set destName to "${safeMailbox}"
         set destMatches to {}
         repeat with _dmb in (mailboxes of account "${safeAccount}")
-          if (name of _dmb) is destName then set end of destMatches to _dmb
+          set _destPath to ""
+          ${mailboxPathFragment("_dmb", "_destPath")}
+          ignoring case
+            if _destPath is destName then set end of destMatches to _dmb
+          end ignoring
         end repeat
         if (count of destMatches) is 0 then return "${BATCH_FATAL}Destination mailbox \\"" & destName & "\\" not found in account \\"${safeAccount}\\""
         if (count of destMatches) > 1 then return "${BATCH_FATAL}Destination mailbox \\"" & destName & "\\" is ambiguous (" & (count of destMatches) & " matches) in account \\"${safeAccount}\\"; move by full path"
         set destMailbox to item 1 of destMatches`;
-    return this.runBatchOperation(ids, "move _msg to destMailbox", setup);
+    return this.runBatchOperation(ids, "move _msg to destMailbox", setup, scope, {
+      destination: { account: targetAccount, mailbox: targetMailbox }
+    });
   }
   /**
    * Mark multiple messages as read at once (single tree walk).
    */
-  batchMarkAsRead(ids) {
-    return this.runBatchOperation(ids, "set read status of _msg to true");
+  batchMarkAsRead(ids, scope) {
+    return this.runBatchOperation(ids, "set read status of _msg to true", "", scope);
   }
   /**
    * Mark multiple messages as unread at once (single tree walk).
    */
-  batchMarkAsUnread(ids) {
-    return this.runBatchOperation(ids, "set read status of _msg to false");
+  batchMarkAsUnread(ids, scope) {
+    return this.runBatchOperation(ids, "set read status of _msg to false", "", scope);
   }
   /**
    * Flag multiple messages at once (single tree walk).
    */
-  batchFlagMessages(ids, colorIndex) {
-    return this.runBatchOperation(ids, this.flagOperation("_msg", colorIndex));
+  batchFlagMessages(ids, colorIndex, scope) {
+    return this.runBatchOperation(ids, this.flagOperation("_msg", colorIndex), "", scope);
   }
   /**
    * Unflag multiple messages at once (single tree walk).
    */
-  batchUnflagMessages(ids) {
-    return this.runBatchOperation(ids, "set flagged status of _msg to false");
+  batchUnflagMessages(ids, scope) {
+    return this.runBatchOperation(ids, "set flagged status of _msg to false", "", scope);
   }
   /**
    * List attachments for a message.
@@ -80268,7 +82186,21 @@ var AppleMailManager = class {
       return false;
     }
     const safeName = escapeForAppleScript(attachmentName);
-    const safePath = escapeForAppleScript(target.saveDirectory);
+    let temporaryDirectory;
+    try {
+      temporaryDirectory = mkdtempSync2(join5(target.saveDirectory, ".apple-mail-mcp-"));
+    } catch (error2) {
+      console.error(`Failed to create attachment staging directory: ${error2}`);
+      return false;
+    }
+    const temporaryPath = join5(temporaryDirectory, "attachment");
+    const safeTemporaryPath = escapeForAppleScript(temporaryPath);
+    const cleanupTemporaryDirectory = () => {
+      try {
+        rmSync2(temporaryDirectory, { recursive: true, force: true });
+      } catch {
+      }
+    };
     const numericId = Number(id);
     const script = buildAppLevelScript(`
       try
@@ -80280,7 +82212,7 @@ var AppleMailManager = class {
                 set msg to item 1 of matchingMsgs
                 repeat with att in mail attachments of msg
                   if name of att is "${safeName}" then
-                    set savePath to POSIX file "${safePath}/${safeName}"
+                    set savePath to POSIX file "${safeTemporaryPath}"
                     save att in savePath
                     return "ok"
                   end if
@@ -80297,8 +82229,18 @@ var AppleMailManager = class {
     `);
     const result = executeAppleScript(script, { timeoutMs: 6e4 });
     if (result.success && result.output === "ok") {
-      return true;
+      try {
+        copyFileSync(temporaryPath, target.savedPath, fsConstants.COPYFILE_EXCL);
+        chmodSync(target.savedPath, 384);
+        cleanupTemporaryDirectory();
+        return true;
+      } catch (err) {
+        cleanupTemporaryDirectory();
+        console.error(`Failed to commit attachment to disk: ${err}`);
+        return false;
+      }
     }
+    cleanupTemporaryDirectory();
     const rawSource = this.getRawSource(id);
     if (!rawSource) {
       console.error(`Failed to save attachment: could not retrieve message source`);
@@ -80309,12 +82251,24 @@ var AppleMailManager = class {
       console.error(`Failed to save attachment: "${attachmentName}" not found in MIME source`);
       return false;
     }
+    let mimeTemporaryDirectory;
     try {
-      writeFileSync3(target.savedPath, attachment.data);
+      mimeTemporaryDirectory = mkdtempSync2(join5(target.saveDirectory, ".apple-mail-mcp-"));
+      const mimeTemporaryPath = join5(mimeTemporaryDirectory, "attachment");
+      writeFileSync3(mimeTemporaryPath, attachment.data, { flag: "wx", mode: 384 });
+      copyFileSync(mimeTemporaryPath, target.savedPath, fsConstants.COPYFILE_EXCL);
+      chmodSync(target.savedPath, 384);
       return true;
     } catch (err) {
       console.error(`Failed to write attachment to disk: ${err}`);
       return false;
+    } finally {
+      if (mimeTemporaryDirectory) {
+        try {
+          rmSync2(mimeTemporaryDirectory, { recursive: true, force: true });
+        } catch {
+        }
+      }
     }
   }
   /**
@@ -80326,7 +82280,7 @@ var AppleMailManager = class {
     let dir = null;
     try {
       dir = mkdtempSync2("/private/tmp/amcp-fetch-");
-      const dest = join4(dir, attachmentName.replace(/[/\\]/g, "_"));
+      const dest = join5(dir, attachmentName.replace(/[/\\]/g, "_"));
       const ok = this.saveAttachment(id, attachmentName, dir);
       if (!ok) {
         return {
@@ -80349,19 +82303,22 @@ var AppleMailManager = class {
    * List all mailboxes for an account.
    */
   listMailboxes(account, options = {}) {
-    const targetAccount = this.resolveAccount(account);
-    const listCommand = `
+    const local = isLocalStoreLabel(account);
+    const targetAccount = local ? LOCAL_STORE_LABEL : this.resolveAccount(account);
+    const listCommand = (iterExpr) => `
       set mailboxList to {}
-      repeat with mb in mailboxes
-        set mbName to name of mb
+      repeat with mb in ${iterExpr}
+        set mbPath to ""
+        ${mailboxPathFragment("mb", "mbPath")}
         set mbUnread to unread count of mb
         set mbCount to count of messages of mb
-        set end of mailboxList to mbName & "${FIELD_SEP}" & mbUnread & "${FIELD_SEP}" & mbCount
+        set end of mailboxList to mbPath & "${FIELD_SEP}" & mbUnread & "${FIELD_SEP}" & mbCount
       end repeat
       set AppleScript's text item delimiters to "${RECORD_SEP}"
       return mailboxList as text
     `;
-    const script = buildAccountScopedScript(targetAccount, listCommand);
+    const script = local ? buildAppLevelScript(`${localMailboxBindingFragment()}
+      ${listCommand("_mbs")}`) : buildAccountScopedScript(targetAccount, listCommand("mailboxes"));
     const result = executeAppleScript(script, { timeoutMs: options.timeoutMs ?? 6e4 });
     if (!result.success) {
       console.error(`Failed to list mailboxes: ${result.error}`);
@@ -80403,8 +82360,10 @@ var AppleMailManager = class {
   getUnreadCount(mailbox, account) {
     const targetAccount = this.resolveAccount(account);
     const targetMailbox = this.resolveMailbox(mailbox || "INBOX", targetAccount);
-    const safeMailbox = escapeForAppleScript(targetMailbox);
-    const command = `return unread count of mailbox "${safeMailbox}"`;
+    const command = `
+      ${mailboxLookupFragment("mailboxes", targetMailbox, "theMailbox")}
+      if theMailbox is missing value then error "Mailbox \\"${escapeForAppleScript(targetMailbox)}\\" not found"
+      return unread count of theMailbox`;
     const script = buildAccountScopedScript(targetAccount, command);
     const result = executeAppleScript(script, { timeoutMs: 6e4 });
     if (!result.success) {
@@ -80450,6 +82409,180 @@ var AppleMailManager = class {
     return { success: true };
   }
   /**
+   * Create a local "On My Mac" mailbox (no account / no IMAP).
+   * Used when Gmail/iCloud server folders cannot be created via AppleScript.
+   */
+  createLocalMailbox(name) {
+    const safeName = escapeForAppleScript(name);
+    const script = buildAppLevelScript(`
+      try
+        try
+          set existing to mailbox "${safeName}"
+          return "exists"
+        end try
+        make new mailbox with properties {name:"${safeName}"}
+        return "ok"
+      on error errMsg
+        return "error:" & errMsg
+      end try
+    `);
+    const result = executeAppleScript(script);
+    if (!result.success || result.output.startsWith("error:")) {
+      const raw = result.success ? result.output.replace(/^error:/, "") : result.error || "Unknown error";
+      console.error(`Failed to create local mailbox: ${raw}`);
+      return { success: false, error: raw };
+    }
+    this.invalidateCache();
+    if (result.output.trim() === "exists") {
+      return { success: true, alreadyExisted: true };
+    }
+    return { success: true };
+  }
+  /**
+   * Move messages into a local "On My Mac" mailbox by name (single osascript).
+   * Destination is resolved as top-level `mailbox "Name"`, not under an account.
+   *
+   * Prefer {@link moveFromInboxesToLocal} for automation — the full-tree batch
+   * walk often times out on large multi-account setups.
+   */
+  batchMoveToLocalMailbox(ids, mailbox) {
+    if (ids.length === 0) return [];
+    const safeMailbox = escapeForAppleScript(mailbox);
+    const setup = `
+        set destName to "${safeMailbox}"
+        try
+          set destMailbox to mailbox destName
+        on error
+          return "${BATCH_FATAL}Local mailbox \\"" & destName & "\\" not found (On My Mac)"
+        end try`;
+    return this.runBatchOperation(ids, "move _msg to destMailbox", setup);
+  }
+  /**
+   * Fast path for auto-sort: find messages ONLY in each account's INBOX /
+   * Posteingang / Inbox (not the entire mailbox tree), then move to a local
+   * "On My Mac" mailbox. This is what actually works at scale for Gmail/IMAP
+   * accounts where server folders can't be created via AppleScript.
+   */
+  moveFromInboxesToLocal(items, localMailbox) {
+    if (items.length === 0) return [];
+    const ensured = this.createLocalMailbox(localMailbox);
+    if (!ensured.success) {
+      return items.map((it) => ({
+        id: it.id,
+        success: false,
+        error: ensured.error || "Could not create local mailbox"
+      }));
+    }
+    const safeDest = escapeForAppleScript(localMailbox);
+    const valid = items.map((it) => ({ id: it.id, num: Number(it.id), account: it.account || "" })).filter((v) => Number.isFinite(v.num));
+    if (valid.length === 0) {
+      return items.map((it) => ({ id: it.id, success: false, error: "Invalid message ID" }));
+    }
+    const byAccount = /* @__PURE__ */ new Map();
+    for (const v of valid) {
+      const key = v.account || "__any__";
+      const list = byAccount.get(key) ?? [];
+      list.push({ id: v.id, num: v.num });
+      byAccount.set(key, list);
+    }
+    const byId = /* @__PURE__ */ new Map();
+    for (const [account, group] of byAccount) {
+      for (let i = 0; i < group.length; i += 25) {
+        const chunk = group.slice(i, i + 25);
+        const idList = chunk.map((c) => c.num).join(", ");
+        const accountScope = account !== "__any__" ? `
+        set _accounts to {}
+        try
+          set end of _accounts to account "${escapeForAppleScript(account)}"
+        end try
+        if (count of _accounts) is 0 then set _accounts to accounts` : `set _accounts to accounts`;
+        const script = buildAppLevelScript(`
+      try
+        try
+          set destMailbox to mailbox "${safeDest}"
+        on error
+          return "${BATCH_FATAL}Local mailbox \\"${safeDest}\\" not found"
+        end try
+        set _out to ""
+        set _done to {}
+        set _ids to {${idList}}
+        set _total to count of _ids
+        set _inboxNames to {"INBOX", "Inbox", "Posteingang"}
+        ${accountScope}
+        repeat with acct in _accounts
+          if (count of _done) is _total then exit repeat
+          repeat with inName in _inboxNames
+            if (count of _done) is _total then exit repeat
+            try
+              set mb to mailbox inName of acct
+              repeat with _idx from 1 to _total
+                if _idx is not in _done then
+                  set _theId to item _idx of _ids
+                  try
+                    set _m to (messages of mb whose id is _theId)
+                    if (count of _m) > 0 then
+                      move (item 1 of _m) to destMailbox
+                      set end of _done to _idx
+                      set _out to _out & (_idx as string) & "${FIELD_SEP}ok${RECORD_SEP}"
+                    end if
+                  on error _e
+                    set end of _done to _idx
+                    set _out to _out & (_idx as string) & "${FIELD_SEP}error:" & _e & "${RECORD_SEP}"
+                  end try
+                end if
+              end repeat
+            end try
+          end repeat
+        end repeat
+        repeat with _idx from 1 to _total
+          if _idx is not in _done then set _out to _out & (_idx as string) & "${FIELD_SEP}notfound${RECORD_SEP}"
+        end repeat
+        return _out
+      on error errMsg
+        return "${BATCH_FATAL}" & errMsg
+      end try
+    `);
+        const result = executeAppleScript(script, {
+          timeoutMs: Math.min(9e4, 3e4 + chunk.length * 800)
+        });
+        if (!result.success || result.output.startsWith(BATCH_FATAL)) {
+          const err = result.error || (result.output?.startsWith(BATCH_FATAL) ? result.output.slice(BATCH_FATAL.length) : "move failed");
+          for (const c of chunk) {
+            byId.set(c.id, { id: c.id, success: false, error: err });
+          }
+          continue;
+        }
+        for (const rec of result.output.split(RECORD_SEP)) {
+          if (!rec) continue;
+          const sep3 = rec.indexOf(FIELD_SEP);
+          if (sep3 < 0) continue;
+          const pos = Number(rec.slice(0, sep3));
+          const status = rec.slice(sep3 + FIELD_SEP.length);
+          const entry = chunk[pos - 1];
+          if (!entry) continue;
+          if (status === "ok") {
+            byId.set(entry.id, { id: entry.id, success: true });
+          } else if (status === "notfound") {
+            byId.set(entry.id, {
+              id: entry.id,
+              success: false,
+              error: "Message not found in INBOX"
+            });
+          } else if (status.startsWith("error:")) {
+            byId.set(entry.id, {
+              id: entry.id,
+              success: false,
+              error: status.slice("error:".length)
+            });
+          } else {
+            byId.set(entry.id, { id: entry.id, success: false, error: status });
+          }
+        }
+      }
+    }
+    return items.map((it) => byId.get(it.id) ?? { id: it.id, success: false, error: "No result" });
+  }
+  /**
    * Delete a mailbox.
    */
   deleteMailbox(name, account) {
@@ -80460,11 +82593,12 @@ var AppleMailManager = class {
       return { success: false, error: disabled };
     }
     const targetMailbox = this.resolveMailbox(name, targetAccount);
-    const safeName = escapeForAppleScript(targetMailbox);
     const safeAccount = escapeForAppleScript(targetAccount);
     const script = buildAppLevelScript(`
       try
-        delete mailbox "${safeName}" of account "${safeAccount}"
+        ${mailboxLookupFragment(`mailboxes of account "${safeAccount}"`, targetMailbox, "theMailbox")}
+        if theMailbox is missing value then error "Mailbox \\"${escapeForAppleScript(targetMailbox)}\\" not found in account \\"${safeAccount}\\""
+        delete theMailbox
         return "ok"
       on error errMsg
         return "error:" & errMsg
@@ -80490,6 +82624,14 @@ var AppleMailManager = class {
       console.error(`Refusing to rename mailbox: ${serverSide}`);
       return { success: false, error: serverSide };
     }
+    let resolvedOld;
+    try {
+      resolvedOld = this.resolveMailbox(oldName, targetAccount);
+    } catch (err) {
+      const error2 = err instanceof Error ? err.message : String(err);
+      console.error(`Refusing to rename mailbox: ${error2}`);
+      return { success: false, error: error2 };
+    }
     const created = this.createMailbox(newName, targetAccount);
     if (!created.success) {
       return {
@@ -80497,15 +82639,25 @@ var AppleMailManager = class {
         error: created.error ?? `Could not create the destination mailbox "${newName}" needed for the rename.`
       };
     }
-    const resolvedOld = this.resolveMailbox(oldName, targetAccount);
-    const resolvedNew = this.resolveMailbox(newName, targetAccount);
-    const safeOld = escapeForAppleScript(resolvedOld);
-    const safeNew = escapeForAppleScript(resolvedNew);
+    let resolvedNew;
+    try {
+      resolvedNew = this.resolveMailbox(newName, targetAccount);
+    } catch (err) {
+      const rolledBack = this.deleteMailboxIfEmpty(newName, targetAccount);
+      let error2 = err instanceof Error ? err.message : String(err);
+      error2 += rolledBack ? ` The empty destination mailbox "${newName}" was rolled back, so no orphan was left.` : ` The destination mailbox "${newName}" was created and could not be auto-removed; delete it manually if it is an empty leftover.`;
+      console.error(`Failed to rename mailbox: ${error2}`);
+      this.invalidateCache();
+      return { success: false, error: error2 };
+    }
     const safeAccount = escapeForAppleScript(targetAccount);
+    const mbColl = `mailboxes of account "${safeAccount}"`;
     const moveScript = buildAppLevelScript(`
       try
-        set srcMailbox to mailbox "${safeOld}" of account "${safeAccount}"
-        set destMailbox to mailbox "${safeNew}" of account "${safeAccount}"
+        ${mailboxLookupFragment(mbColl, resolvedOld, "srcMailbox")}
+        ${mailboxLookupFragment(mbColl, resolvedNew, "destMailbox")}
+        if srcMailbox is missing value then error "Mailbox \\"${escapeForAppleScript(resolvedOld)}\\" not found in account \\"${safeAccount}\\""
+        if destMailbox is missing value then error "Mailbox \\"${escapeForAppleScript(resolvedNew)}\\" not found in account \\"${safeAccount}\\""
         set srcCount to count of messages of srcMailbox
         set msgs to (every message of srcMailbox)
         repeat with m in msgs
@@ -80515,7 +82667,7 @@ var AppleMailManager = class {
         end repeat
         set srcAfter to count of messages of srcMailbox
         if srcAfter is 0 then
-          delete mailbox "${safeOld}" of account "${safeAccount}"
+          delete srcMailbox
           return "ok${FIELD_SEP}" & srcCount
         else
           return "partial${FIELD_SEP}" & (srcCount - srcAfter) & "${FIELD_SEP}" & srcCount & "${FIELD_SEP}" & srcAfter
@@ -80554,12 +82706,12 @@ var AppleMailManager = class {
   // gives full control over criteria without UI/GUI scripting.
   // ===========================================================================
   findSyncedSmartPlist() {
-    const base = join4(homedir3(), "Library", "Mail");
+    const base = join5(homedir4(), "Library", "Mail");
     try {
       const versions = readdirSync2(base).filter((d) => d.startsWith("V"));
       versions.sort().reverse();
       for (const v of versions) {
-        const p = join4(base, v, "MailData", "SyncedSmartMailboxes.plist");
+        const p = join5(base, v, "MailData", "SyncedSmartMailboxes.plist");
         if (existsSync3(p)) return p;
       }
     } catch {
@@ -81012,20 +83164,20 @@ end tell`;
     return accounts;
   }
   /**
-   * Fetches mailbox names for an account directly from Mail.app.
+   * Fetches canonical mailbox paths for an account directly from Mail.app.
    * Used internally by the cache; prefer getCachedMailboxNames().
    */
   fetchMailboxNames(account) {
-    const script = buildAccountScopedScript(
-      account,
-      `
+    const body = `
       set mbNames to {}
-      repeat with mb in mailboxes
-        set end of mbNames to name of mb
+      repeat with mb in ${isLocalStoreLabel(account) ? "_mbs" : "mailboxes"}
+        set mbPath to ""
+        ${mailboxPathFragment("mb", "mbPath")}
+        set end of mbNames to mbPath
       end repeat
       return mbNames
-    `
-    );
+    `;
+    const script = isLocalStoreLabel(account) ? buildAppLevelScript(`${localMailboxBindingFragment()}${body}`) : buildAccountScopedScript(account, body);
     const result = executeAppleScript(script);
     if (!result.success || !result.output) {
       return [];
@@ -81125,15 +83277,27 @@ end tell`;
     if (a.markFlagged) actionStmts.push(`        set mark flagged of newRule to true`);
     if (a.delete) actionStmts.push(`        set delete message of newRule to true`);
     if (a.moveTo) {
-      const safeMbox = escapeForAppleScript(a.moveTo);
-      const mboxRef = a.moveToAccount ? `mailbox "${safeMbox}" of account "${escapeForAppleScript(a.moveToAccount)}"` : `mailbox "${safeMbox}"`;
       actionStmts.push(`        set should move message of newRule to true`);
-      actionStmts.push(`        set move message of newRule to ${mboxRef}`);
+      if (a.moveToAccount) {
+        const resolvedMbox = this.resolveMailbox(a.moveTo, a.moveToAccount);
+        const safeAccount = escapeForAppleScript(a.moveToAccount);
+        actionStmts.push(
+          `        ${mailboxLookupFragment(`mailboxes of account "${safeAccount}"`, resolvedMbox, "_ruleDestMb")}`
+        );
+        actionStmts.push(
+          `        if _ruleDestMb is missing value then error "Mailbox \\"${escapeForAppleScript(resolvedMbox)}\\" not found in account \\"${safeAccount}\\""`
+        );
+        actionStmts.push(`        set move message of newRule to _ruleDestMb`);
+      } else {
+        actionStmts.push(
+          `        set move message of newRule to mailbox "${escapeForAppleScript(a.moveTo)}"`
+        );
+      }
     }
     if (!actionStmts.length) {
       return { success: false, error: "A rule needs at least one action." };
     }
-    const enabled = opts.enabled !== false;
+    const enabled = opts.enabled === true;
     const matchAll = opts.matchAll !== false;
     const script = buildAppLevelScript(`
       try
@@ -81251,7 +83415,7 @@ ${actionStmts.join("\n")}
         message: "Mail.app is accessible"
       });
     } else {
-      const errorHint = mailCheck.error?.includes("not authorized") ? " (check System Settings > Privacy & Security > Automation)" : "";
+      const errorHint = isPermissionDenied(mailCheck.error) ? " (check System Settings > Privacy & Security > Automation)" : "";
       checks.push({
         name: "mail_app",
         passed: false,
@@ -81267,7 +83431,7 @@ ${actionStmts.join("\n")}
         message: "AppleScript automation permissions granted"
       });
     } else {
-      const isPermError = permCheck.error?.includes("not authorized") || permCheck.error?.includes("not permitted");
+      const isPermError = isPermissionDenied(permCheck.error);
       checks.push({
         name: "permissions",
         passed: !isPermError,
@@ -81499,18 +83663,17 @@ ${actionStmts.join("\n")}
 };
 
 // src/index.ts
-import { writeFileSync as writeFileSync4 } from "fs";
+import { writeFileSync as writeFileSync6 } from "fs";
 import { join as joinPath } from "path";
 
 // src/services/smtpMailer.ts
 var import_nodemailer = __toESM(require_nodemailer(), 1);
 import { execFileSync } from "child_process";
-import { isAbsolute as isAbsolute2 } from "path";
-import { existsSync as existsSync4 } from "fs";
 var SMTP_ENV = {
   host: "APPLE_MAIL_MCP_SMTP_HOST",
   port: "APPLE_MAIL_MCP_SMTP_PORT",
   secure: "APPLE_MAIL_MCP_SMTP_SECURE",
+  allowPlaintext: "APPLE_MAIL_MCP_SMTP_ALLOW_PLAINTEXT",
   user: "APPLE_MAIL_MCP_SMTP_USER",
   from: "APPLE_MAIL_MCP_SMTP_FROM",
   allowedFrom: "APPLE_MAIL_MCP_SMTP_ALLOWED_FROM",
@@ -81571,15 +83734,23 @@ function resolveSmtpConfig(env = process.env) {
       `No SMTP password found. Set ${SMTP_ENV.password}, or store an internet password in the Keychain for service "${env[SMTP_ENV.keychainService]?.trim() || host}" / account "${env[SMTP_ENV.keychainAccount]?.trim() || user}". ` + SETUP_HINT
     );
   }
-  return { host, port, secure, user, pass, from, allowedFrom };
+  const allowPlaintext = /^(1|true|yes|on)$/i.test(env[SMTP_ENV.allowPlaintext]?.trim() ?? "");
+  return {
+    host,
+    port,
+    secure,
+    allowPlaintext,
+    user,
+    pass,
+    from,
+    allowedFrom
+  };
 }
 function buildAttachments(attachments) {
   if (!attachments || attachments.length === 0) return void 0;
   return attachments.map((a) => {
     if (typeof a === "string") {
-      if (!isAbsolute2(a)) throw new Error(`Attachment path must be absolute: "${a}"`);
-      if (!existsSync4(a)) throw new Error(`Attachment file not found: "${a}"`);
-      return { path: a };
+      return { path: resolveAttachmentReadPath(a) };
     }
     if (!a.filename || !a.contentBase64) {
       throw new Error("Inline attachment requires both filename and contentBase64.");
@@ -81610,10 +83781,19 @@ async function sendViaSmtp(opts, config2, createTransport = import_nodemailer.de
   } catch (error2) {
     return { success: false, error: error2 instanceof Error ? error2.message : String(error2) };
   }
+  const requireTLS = !cfg.secure && !cfg.allowPlaintext;
+  if (!cfg.secure && cfg.allowPlaintext) {
+    console.warn(
+      `SMTP plaintext explicitly enabled via ${SMTP_ENV.allowPlaintext}; credentials and message content may be exposed.`
+    );
+  }
   const transporter = createTransport({
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
+    // Port 587/143-style configurations must not silently downgrade to
+    // plaintext when the server advertises no usable TLS upgrade.
+    requireTLS,
     auth: { user: cfg.user, pass: cfg.pass }
   });
   const html = opts.htmlBody?.trim() ? opts.htmlBody : void 0;
@@ -81634,9 +83814,11 @@ async function sendViaSmtp(opts, config2, createTransport = import_nodemailer.de
     });
     return { success: true, messageId: info.messageId };
   } catch (error2) {
+    const detail = error2 instanceof Error ? error2.message : String(error2);
+    const tlsHint = requireTLS ? ` STARTTLS is required for non-implicit TLS; to explicitly allow plaintext (not recommended), set ${SMTP_ENV.allowPlaintext}=1.` : "";
     return {
       success: false,
-      error: `SMTP send failed: ${error2 instanceof Error ? error2.message : String(error2)}`
+      error: `SMTP send failed: ${detail}.${tlsHint}`
     };
   } finally {
     transporter.close();
@@ -81809,6 +83991,7 @@ var IMAP_ENV = {
   password: "APPLE_MAIL_MCP_IMAP_PASSWORD",
   keychainService: "APPLE_MAIL_MCP_IMAP_KEYCHAIN_SERVICE",
   keychainAccount: "APPLE_MAIL_MCP_IMAP_KEYCHAIN_ACCOUNT",
+  allowPlaintext: "APPLE_MAIL_MCP_IMAP_ALLOW_PLAINTEXT",
   // C2 multi-account: JSON array of additional accounts, e.g.
   // [{"account":"Work","user":"me@co.com","host":"imap.co.com","keychainService":"imap.co.com"}]
   accounts: "APPLE_MAIL_MCP_IMAP_ACCOUNTS"
@@ -81848,6 +84031,9 @@ function depsForAccount(account, deps) {
 }
 function depsForMessageRef(ref, deps) {
   return depsForAccount(ref.account, deps);
+}
+function isTruthySetting(value) {
+  return /^(1|true|yes|on)$/i.test(value?.trim() ?? "");
 }
 function specMatchesSelector(spec, selector) {
   return spec.accountLabel === selector || spec.user === selector || (spec.aliases?.includes(selector) ?? false);
@@ -81914,7 +84100,7 @@ function listImapAccountSpecs(env = process.env) {
   }
   return specs;
 }
-function specToConfig(spec) {
+function specToConfig(spec, allowPlaintext = false) {
   if (!Number.isInteger(spec.port) || spec.port <= 0) {
     throw new Error(`Invalid IMAP port for account "${spec.accountLabel}": "${spec.port}".`);
   }
@@ -81931,6 +84117,7 @@ function specToConfig(spec) {
     host: spec.host,
     port: spec.port,
     secure: spec.port === 993,
+    allowPlaintext,
     user: spec.user,
     pass,
     accountLabel: spec.accountLabel
@@ -81948,9 +84135,10 @@ function listImapAccountLabels(env = process.env) {
 }
 function resolveImapConfigs(env = process.env) {
   const out = [];
+  const allowPlaintext = isTruthySetting(env[IMAP_ENV.allowPlaintext]);
   for (const spec of listImapAccountSpecs(env)) {
     try {
-      out.push(specToConfig(spec));
+      out.push(specToConfig(spec, allowPlaintext));
     } catch (e) {
       console.error(`Skipping IMAP account "${spec.accountLabel}": ${String(e)}`);
     }
@@ -81975,23 +84163,49 @@ function resolveImapConfig(env = process.env, account) {
   } else {
     spec = specs[0];
   }
-  return specToConfig(spec);
+  return specToConfig(spec, isTruthySetting(env[IMAP_ENV.allowPlaintext]));
 }
-var defaultConnect = async (cfg) => {
-  const client = new import_imapflow.ImapFlow({
+function buildImapConnectionOptions(cfg) {
+  return {
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
+    // ImapFlow reads this as a tri-state, and the distinction matters:
+    //   true      -> require STARTTLS; fail if the server does not offer it
+    //   false     -> NEVER STARTTLS, even if the server advertises it
+    //   undefined -> opportunistic upgrade (ImapFlow's documented default)
+    //
+    // secure=true already has implicit TLS, so there is no upgrade to negotiate.
+    // Without the escape hatch the upgrade is required. WITH it we must fall back
+    // to `undefined`, not `false`: the escape hatch means "let me reach a server
+    // that cannot do TLS", not "never encrypt". Sending `false` suppressed the
+    // upgrade even against servers still offering it, so enabling the opt-out for
+    // one broken account silently downgraded every other plaintext-port account
+    // below what it already negotiated before this option existed.
+    doSTARTTLS: cfg.secure || cfg.allowPlaintext ? void 0 : true,
     auth: { user: cfg.user, pass: cfg.pass },
     logger: false
-  });
+  };
+}
+var defaultConnect = async (cfg) => {
+  const client = new import_imapflow.ImapFlow(buildImapConnectionOptions(cfg));
   client.on("error", () => {
   });
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error2) {
+    if (!cfg.secure && !cfg.allowPlaintext) {
+      const detail = error2 instanceof Error ? error2.message : String(error2);
+      throw new Error(
+        `IMAP connection failed: ${detail}. STARTTLS is required for non-implicit TLS; to explicitly allow plaintext (not recommended), set ${IMAP_ENV.allowPlaintext}=1.`
+      );
+    }
+    throw error2;
+  }
   return client;
 };
-function resolveMailboxPath(mailbox, mode) {
-  if (!mailbox) return mode === "search" ? "[Gmail]/All Mail" : "INBOX";
+function resolveMailboxPath(mailbox, _mode) {
+  if (!mailbox) return "INBOX";
   const map = {
     "all mail": "[Gmail]/All Mail",
     "sent mail": "[Gmail]/Sent Mail",
@@ -82041,7 +84255,12 @@ function structuredRow(m, account, path) {
     flagColorIndex: mailFlagColorIndex(m.flags),
     mailbox: path,
     account,
-    hasAttachments: false,
+    // Derived from BODYSTRUCTURE, which the list/search fetch now requests.
+    // This was hardcoded `false` from 2.2.0 until 2.11.1 — indistinguishable to
+    // a caller from "no attachments", so every IMAP-sourced message claimed to
+    // have none. Falls back to false only when the fetch carried no
+    // BODYSTRUCTURE at all.
+    hasAttachments: bodyStructureHasAttachments(m.bodyStructure),
     // Message-ID (when the envelope carries it) is the strongest cross-/intra-
     // backend dedup key for the multi-account merge (imapMultiAccount.ts). The
     // AppleScript path does not expose it, so cross-backend dedup falls back to
@@ -82049,46 +84268,127 @@ function structuredRow(m, account, path) {
     ...env.messageId ? { messageId: env.messageId } : {}
   };
 }
+function hasMailboxFlag(mailbox, wanted) {
+  const normalized = wanted.toLowerCase();
+  return [...mailbox.flags ?? []].some((flag) => flag.toLowerCase() === normalized);
+}
+function messageDateEpoch(message) {
+  if (!message.envelope?.date) return 0;
+  const epoch = new Date(message.envelope.date).getTime();
+  return Number.isNaN(epoch) ? 0 : epoch;
+}
+function messageIdentity(entry) {
+  const raw = entry.message.envelope?.messageId?.trim() ?? "";
+  const messageId = raw.replace(/^<+|>+$/g, "").trim().toLowerCase();
+  return messageId ? `mid:${messageId}` : `${entry.path}\0${entry.message.uid}`;
+}
+async function fetchMailboxMatches(client, path, criteria, newestCount) {
+  const lock = await client.getMailboxLock(path);
+  try {
+    const found = await client.search(criteria, { uid: true });
+    const uids = Array.isArray(found) ? found : [];
+    if (uids.length === 0 || newestCount === 0) return { messages: [], total: uids.length };
+    const newest = uids.slice().reverse().slice(0, newestCount);
+    const byUid = /* @__PURE__ */ new Map();
+    for await (const msg of client.fetch(
+      newest.join(","),
+      // BODYSTRUCTURE rides along so `hasAttachments` is computed rather
+      // than assumed. Measured on 50 real messages: ~390ms -> ~465ms for
+      // the fetch (~17%), same single round trip, no extra request.
+      { envelope: true, flags: true, bodyStructure: true },
+      { uid: true }
+    )) {
+      byUid.set(msg.uid, msg);
+    }
+    return {
+      messages: newest.map((uid) => byUid.get(uid)).filter((message) => message !== void 0),
+      total: uids.length
+    };
+  } finally {
+    lock.release();
+  }
+}
 async function run(args, listMode, deps) {
   return useClient(
     { ...deps, account: deps.account ?? args.account },
     async (client, cfg) => {
-      const path = resolveMailboxPath(args.mailbox, listMode ? "list" : "search");
-      const lock = await client.getMailboxLock(path);
-      try {
-        const found = await client.search(buildCriteria(args, listMode), { uid: true });
-        const uids = Array.isArray(found) ? found : [];
-        if (uids.length === 0) {
-          return {
-            text: `No messages found via IMAP in "${path}" (account ${cfg.accountLabel}).`,
-            messages: [],
-            count: 0,
-            partial: false
-          };
+      const unscopedSearch = !listMode && !args.mailbox;
+      let paths;
+      let allMailboxCount = 0;
+      if (unscopedSearch) {
+        const listed = await client.list();
+        const selectable = listed.filter((mailbox) => !hasMailboxFlag(mailbox, "\\Noselect"));
+        const allMailbox = selectable.find(
+          (mailbox) => mailbox.specialUse?.toLowerCase() === "\\all"
+        );
+        paths = allMailbox ? [allMailbox.path] : selectable.map((mailbox) => mailbox.path);
+        allMailboxCount = paths.length;
+        if (paths.length === 0) {
+          throw new Error(`No selectable IMAP mailboxes found for account ${cfg.accountLabel}.`);
         }
-        const limit = args.limit ?? 50;
-        const offset = args.offset ?? 0;
-        const newest = uids.slice().reverse().slice(offset, offset + limit);
-        const byUid = /* @__PURE__ */ new Map();
-        for await (const msg of client.fetch(
-          newest.join(","),
-          { envelope: true, flags: true },
-          { uid: true }
-        )) {
-          byUid.set(msg.uid, msg);
+      } else {
+        paths = [resolveMailboxPath(args.mailbox, listMode ? "list" : "search")];
+      }
+      const limit = args.limit ?? 50;
+      const offset = args.offset ?? 0;
+      const criteria = buildCriteria(args, listMode);
+      const newestPerMailbox = offset + limit;
+      const fetched = [];
+      const failedMailboxes = [];
+      let totalMatched = 0;
+      for (const path of paths) {
+        try {
+          const result = await fetchMailboxMatches(client, path, criteria, newestPerMailbox);
+          totalMatched += result.total;
+          fetched.push(...result.messages.map((message) => ({ message, path })));
+        } catch (error2) {
+          failedMailboxes.push(path);
+          console.error(
+            `IMAP ${listMode ? "list" : "search"} failed for account "${cfg.accountLabel}", mailbox "${path}": ${String(error2)}`
+          );
         }
-        const ordered = newest.map((u) => byUid.get(u)).filter((m) => m !== void 0);
-        const rows = ordered.map((m) => formatRow(m, cfg.accountLabel, path));
-        const messages = ordered.map((m) => structuredRow(m, cfg.accountLabel, path));
-        const verb = listMode ? "listed" : "matched";
-        const text = `Found ${rows.length} message(s) via IMAP (server-side, account ${cfg.accountLabel}, mailbox "${path}"; ${uids.length} total ${verb}):
+      }
+      if (failedMailboxes.length === paths.length) {
+        throw new Error(
+          `IMAP ${listMode ? "list" : "search"} failed in every requested mailbox for account ${cfg.accountLabel}: ${failedMailboxes.join(", ")}.`
+        );
+      }
+      let ordered = fetched;
+      if (unscopedSearch) {
+        ordered = fetched.slice().sort((a, b) => messageDateEpoch(b.message) - messageDateEpoch(a.message));
+        const unique2 = /* @__PURE__ */ new Map();
+        for (const entry of ordered) {
+          const key = messageIdentity(entry);
+          if (!unique2.has(key)) unique2.set(key, entry);
+        }
+        ordered = [...unique2.values()].slice(offset, offset + limit);
+      } else {
+        ordered = fetched.slice(offset, offset + limit);
+      }
+      const rows = ordered.map(({ message, path }) => formatRow(message, cfg.accountLabel, path));
+      const messages = ordered.map(
+        ({ message, path }) => structuredRow(message, cfg.accountLabel, path)
+      );
+      const partial2 = failedMailboxes.length > 0;
+      const failureNote = partial2 ? `
+
+Partial result. Could not search mailbox(es): ${failedMailboxes.map((path) => `"${path}"`).join(", ")}.` : "";
+      const verb = listMode ? "listed" : "matched";
+      const scope = unscopedSearch ? allMailboxCount === 1 ? `mailbox "${paths[0]}"` : `${allMailboxCount} selectable mailboxes` : `mailbox "${paths[0]}"`;
+      if (messages.length === 0) {
+        return {
+          text: `No messages found via IMAP in ${scope} (account ${cfg.accountLabel}).${failureNote}`,
+          messages,
+          count: 0,
+          partial: partial2,
+          failedMailboxes
+        };
+      }
+      const text = `Found ${rows.length} message(s) via IMAP (server-side, account ${cfg.accountLabel}, ${scope}; ${totalMatched} total ${verb}):
 ` + rows.join("\n") + `
 
-Note: these IMAP IDs (imap:\u2026) work with get-message and the message mutations (mark/flag/move/delete-message), which route back to IMAP.`;
-        return { text, messages, count: messages.length, partial: false };
-      } finally {
-        lock.release();
-      }
+Note: these IMAP IDs (imap:\u2026) work with get-message and the message mutations (mark/flag/move/delete-message), which route back to IMAP.` + failureNote;
+      return { text, messages, count: messages.length, partial: partial2, failedMailboxes };
     },
     true
   );
@@ -82174,6 +84474,31 @@ function imapMailStats(deps = {}) {
 }
 function errText(e) {
   return e instanceof Error ? e.message : String(e);
+}
+function assertMutated(result, what) {
+  if (!result) throw new Error(`${what}: server rejected the command (IMAP NO/BAD)`);
+  return result;
+}
+async function verifyMoved(client, moved, uid, srcPath, destPath) {
+  const newUid = moved.uidMap?.get(uid);
+  if (newUid !== void 0) {
+    return {
+      verdict: "verified",
+      how: `COPYUID: UID ${uid} arrived in "${destPath}" as UID ${newUid}`
+    };
+  }
+  try {
+    const stillThere = await client.fetchOne(String(uid), { uid: true }, { uid: true });
+    if (!stillThere) {
+      return { verdict: "verified", how: `UID ${uid} is no longer present in "${srcPath}"` };
+    }
+    return {
+      verdict: "unverified",
+      why: `the server accepted the MOVE, but UID ${uid} is still present in "${srcPath}" and this server does not advertise UIDPLUS, so arrival in "${destPath}" could not be confirmed. A Gmail label store can legitimately keep a message in an all-mail view after a move, so this is not reported as a failure`
+    };
+  } catch (e) {
+    return { verdict: "unverified", why: `the post-move check could not run: ${errText(e)}` };
+  }
 }
 var poolConnect = defaultConnect;
 var pools = /* @__PURE__ */ new Map();
@@ -82513,8 +84838,16 @@ async function imapMoveMessageById(id, destMailbox, deps = {}) {
     const destPath = dest.kind === "found" ? dest.path : resolveMailboxPath(destMailbox, "list");
     const lock = await client.getMailboxLock(ref.path);
     try {
-      await client.messageMove([ref.uid], destPath, { uid: true });
-      return { success: true, info: `Moved UID ${ref.uid} to "${destPath}" via IMAP.` };
+      const moved = assertMutated(
+        await client.messageMove([ref.uid], destPath, { uid: true }),
+        `IMAP move of UID ${ref.uid} to "${destPath}"`
+      );
+      const verification = await verifyMoved(client, moved, ref.uid, ref.path, destPath);
+      return {
+        success: true,
+        info: verification.verdict === "verified" ? `Moved UID ${ref.uid} to "${destPath}" via IMAP (verified: ${verification.how}).` : `Moved UID ${ref.uid} to "${destPath}" via IMAP \u2014 UNVERIFIED: ${verification.why}.`,
+        verification
+      };
     } catch (e) {
       return {
         success: false,
@@ -82525,9 +84858,12 @@ async function imapMoveMessageById(id, destMailbox, deps = {}) {
     }
   });
 }
+var FALLBACK_TRASH_PATH = "Trash";
 async function resolveTrashPath(client) {
+  let listed = false;
   try {
     const boxes = await client.list();
+    listed = true;
     const special = boxes.find((b) => b.specialUse === "\\Trash");
     if (special) return special.path;
     const named = boxes.find(
@@ -82536,26 +84872,55 @@ async function resolveTrashPath(client) {
     if (named) return named.path;
   } catch {
   }
-  return resolveMailboxPath("trash", "list");
+  if (!listed) return resolveMailboxPath("trash", "list");
+  try {
+    const created = await client.mailboxCreate(FALLBACK_TRASH_PATH);
+    return created?.path || FALLBACK_TRASH_PATH;
+  } catch {
+    return FALLBACK_TRASH_PATH;
+  }
 }
 async function trashUids(client, uids, srcPath) {
   const dest = await resolveTrashPath(client);
   if (srcPath.trim().toLowerCase() === dest.trim().toLowerCase()) {
-    await client.messageDelete(uids, { uid: true });
+    assertMutated(
+      await client.messageDelete(uids, { uid: true }),
+      `IMAP expunge of ${uids.length} message(s) from "${srcPath}"`
+    );
     return { dest, expunged: true };
   }
-  await client.messageMove(uids, dest, { uid: true });
-  return { dest, expunged: false };
+  const moved = assertMutated(
+    await client.messageMove(uids, dest, { uid: true }),
+    `IMAP move of ${uids.length} message(s) from "${srcPath}" to "${dest}"`
+  );
+  return { dest, expunged: false, moved };
+}
+async function verifyExpunged(client, uid, path) {
+  try {
+    const stillThere = await client.fetchOne(String(uid), { uid: true }, { uid: true });
+    if (!stillThere) {
+      return { verdict: "verified", how: `UID ${uid} is no longer present in "${path}"` };
+    }
+    return {
+      verdict: "unverified",
+      why: `the server accepted the EXPUNGE but UID ${uid} is still present in "${path}"`
+    };
+  } catch (e) {
+    return { verdict: "unverified", why: `the post-delete check could not run: ${errText(e)}` };
+  }
 }
 async function imapDeleteMessageById(id, deps = {}) {
   const ref = decodeImapId(id);
   if (!ref) return { success: false, error: `Not an IMAP message id: "${id}".` };
   return withMailbox(ref.path, depsForMessageRef(ref, deps), async (client) => {
     try {
-      const { dest, expunged } = await trashUids(client, [ref.uid], ref.path);
+      const { dest, expunged, moved } = await trashUids(client, [ref.uid], ref.path);
+      const verification = expunged || !moved ? await verifyExpunged(client, ref.uid, ref.path) : await verifyMoved(client, moved, ref.uid, ref.path, dest);
+      const what = expunged ? `Permanently deleted UID ${ref.uid} from Trash ("${ref.path}") via IMAP` : `Moved UID ${ref.uid} to Trash ("${dest}") via IMAP`;
       return {
         success: true,
-        info: expunged ? `Permanently deleted UID ${ref.uid} from Trash ("${ref.path}") via IMAP.` : `Moved UID ${ref.uid} to Trash ("${dest}") via IMAP.`
+        info: verification.verdict === "verified" ? `${what} (verified: ${verification.how}).` : `${what} \u2014 UNVERIFIED: ${verification.why}.`,
+        verification
       };
     } catch (e) {
       return { success: false, error: `IMAP delete failed for UID ${ref.uid}: ${errText(e)}` };
@@ -82566,7 +84931,8 @@ function collectAttachments(node, out = []) {
   if (!node) return out;
   const filename = node.dispositionParameters?.filename || node.parameters?.name;
   const disposition = node.disposition?.toLowerCase();
-  const isAttachment = !!node.part && (disposition === "attachment" || !!filename && disposition !== "inline");
+  const isEmbeddedByReference = disposition === "inline" && !!node.id;
+  const isAttachment = !!node.part && (disposition === "attachment" || !!filename && !isEmbeddedByReference);
   if (isAttachment) {
     out.push({
       part: node.part,
@@ -82578,9 +84944,19 @@ function collectAttachments(node, out = []) {
   for (const child of node.childNodes ?? []) collectAttachments(child, out);
   return out;
 }
-async function streamToBuffer(content) {
+function bodyStructureHasAttachments(node) {
+  return !!node && collectAttachments(node).length > 0;
+}
+async function streamToBuffer(content, maxBytes) {
   const chunks = [];
-  for await (const chunk of content) chunks.push(Buffer.from(chunk));
+  let total = 0;
+  for await (const chunk of content) {
+    total += chunk.byteLength;
+    if (total > maxBytes) {
+      throw new Error(`IMAP attachment exceeds the ${maxBytes / 1024 / 1024} MiB size limit.`);
+    }
+    chunks.push(Buffer.from(chunk));
+  }
   return Buffer.concat(chunks);
 }
 async function imapListAttachments(id, deps = {}) {
@@ -82617,17 +84993,35 @@ async function imapFetchAttachment(id, attachmentName, deps = {}) {
         error: `Attachment "${attachmentName}" not found on UID ${ref.uid}. Available: ${names}.`
       };
     }
-    const dl = await client.download(String(ref.uid), match.part, { uid: true });
-    const buf = await streamToBuffer(dl.content);
-    return {
-      success: true,
-      base64: buf.toString("base64"),
-      bytes: buf.length,
-      mimeType: match.mimeType
-    };
+    if (match.size > MAX_IMAP_ATTACHMENT_BYTES) {
+      return {
+        success: false,
+        error: `IMAP attachment "${attachmentName}" is ${match.size} bytes; the maximum is ${MAX_IMAP_ATTACHMENT_BYTES} bytes (25 MiB).`
+      };
+    }
+    try {
+      const dl = await client.download(String(ref.uid), match.part, { uid: true });
+      const buf = await streamToBuffer(dl.content, MAX_IMAP_ATTACHMENT_BYTES);
+      return {
+        success: true,
+        base64: buf.toString("base64"),
+        bytes: buf.length,
+        mimeType: match.mimeType
+      };
+    } catch (e) {
+      return { success: false, error: `IMAP attachment fetch failed: ${errText(e)}` };
+    }
   });
 }
-async function imapBatch(ids, deps, op) {
+async function mailboxCount(client, path) {
+  try {
+    const st = await client.status(path, { messages: true });
+    return typeof st.messages === "number" ? st.messages : null;
+  } catch {
+    return null;
+  }
+}
+async function imapBatch(ids, deps, op, opts = {}) {
   const groups = /* @__PURE__ */ new Map();
   const errors = [];
   let failed = 0;
@@ -82644,15 +85038,39 @@ async function imapBatch(ids, deps, op) {
     groups.set(key, g);
   }
   let success = 0;
+  const countDelta = [];
   for (const g of groups.values()) {
     try {
       await useClient(depsForAccount(g.account, deps), async (client) => {
+        const before = opts.reconcile ? await mailboxCount(client, g.path) : null;
         const lock = await client.getMailboxLock(g.path);
         try {
           await op(client, g.uids, g.path);
         } finally {
           lock.release();
         }
+        if (!opts.reconcile) return;
+        const after = await mailboxCount(client, g.path);
+        const readable = before !== null && after !== null;
+        const observed = readable ? before - after : null;
+        const { status, unknownReason } = classifyCountStatus(readable, g.uids.length, observed);
+        countDelta.push({
+          account: g.account,
+          mailbox: g.path,
+          before,
+          after,
+          expected: g.uids.length,
+          observed,
+          status,
+          ...unknownReason ? { unknownReason } : {},
+          ...unknownReason === "count-unreadable" ? { note: "The server did not answer STATUS for this mailbox" } : {},
+          ...unknownReason === "count-did-not-move" ? {
+            note: `The mailbox count did not move. On a label store (Gmail) a message can stay visible in an all-mail view after being moved out of a label, so this is not by itself evidence the operation failed \u2014 check the destination.`
+          } : {},
+          ...unknownReason === "count-partial" ? {
+            note: `Fewer messages left than were operated on. \`observed\` is a LOWER BOUND on what left, not a count of what left \u2014 a concurrent delivery to this mailbox masks departures one-for-one.`
+          } : {}
+        });
       });
       success += g.uids.length;
     } catch (e) {
@@ -82660,34 +85078,62 @@ async function imapBatch(ids, deps, op) {
       errors.push(`${g.path}: ${errText(e)}`);
     }
   }
-  return { success, failed, errors };
+  return { success, failed, errors, ...countDelta.length ? { countDelta } : {} };
 }
 var imapBatchMarkRead = (ids, deps = {}) => imapBatch(ids, deps, async (c, uids) => {
-  await c.messageFlagsAdd(uids, ["\\Seen"], { uid: true });
+  assertMutated(
+    await c.messageFlagsAdd(uids, ["\\Seen"], { uid: true }),
+    `IMAP mark-read of ${uids.length} message(s)`
+  );
 });
 var imapBatchMarkUnread = (ids, deps = {}) => imapBatch(ids, deps, async (c, uids) => {
-  await c.messageFlagsRemove(uids, ["\\Seen"], { uid: true });
+  assertMutated(
+    await c.messageFlagsRemove(uids, ["\\Seen"], { uid: true }),
+    `IMAP mark-unread of ${uids.length} message(s)`
+  );
 });
 var imapBatchFlag = (ids, colorIndex, deps = {}) => imapBatch(ids, deps, async (c, uids) => {
   if (colorIndex === void 0) {
-    await c.messageFlagsAdd(uids, ["\\Flagged"], { uid: true });
+    assertMutated(
+      await c.messageFlagsAdd(uids, ["\\Flagged"], { uid: true }),
+      `IMAP flag of ${uids.length} message(s)`
+    );
     return;
   }
   const { set, clear } = mailFlagBitsFor(colorIndex);
-  await c.messageFlagsAdd(uids, ["\\Flagged", ...set], { uid: true });
+  assertMutated(
+    await c.messageFlagsAdd(uids, ["\\Flagged", ...set], { uid: true }),
+    `IMAP flag of ${uids.length} message(s)`
+  );
   if (clear.length) await c.messageFlagsRemove(uids, clear, { uid: true });
 });
 var imapBatchUnflag = (ids, deps = {}) => imapBatch(ids, deps, async (c, uids) => {
-  await c.messageFlagsRemove(uids, ["\\Flagged", ...MAIL_FLAG_BITS], { uid: true });
+  assertMutated(
+    await c.messageFlagsRemove(uids, ["\\Flagged", ...MAIL_FLAG_BITS], { uid: true }),
+    `IMAP unflag of ${uids.length} message(s)`
+  );
 });
-var imapBatchDelete = (ids, deps = {}) => imapBatch(ids, deps, async (c, uids, path) => {
-  await trashUids(c, uids, path);
-});
+var imapBatchDelete = (ids, deps = {}) => imapBatch(
+  ids,
+  deps,
+  async (c, uids, path) => {
+    await trashUids(c, uids, path);
+  },
+  { reconcile: true }
+);
 function imapBatchMove(ids, destMailbox, deps = {}) {
-  return imapBatch(ids, deps, async (c, uids) => {
-    const dest = await findMailboxPathOrThrow(c, destMailbox) ?? resolveMailboxPath(destMailbox, "list");
-    await c.messageMove(uids, dest, { uid: true });
-  });
+  return imapBatch(
+    ids,
+    deps,
+    async (c, uids) => {
+      const dest = await findMailboxPathOrThrow(c, destMailbox) ?? resolveMailboxPath(destMailbox, "list");
+      assertMutated(
+        await c.messageMove(uids, dest, { uid: true }),
+        `IMAP move of ${uids.length} message(s) to "${dest}"`
+      );
+    },
+    { reconcile: true }
+  );
 }
 function senderName(from) {
   const a = from?.[0];
@@ -82732,7 +85178,10 @@ async function imapThread(id, deps = {}, limit = 50) {
         const msgs = [];
         for await (const msg of client.fetch(
           uids.join(","),
-          { envelope: true, flags: true },
+          // Same reason as the list/search fetch: get-thread emits structured
+          // rows too, so it needs BODYSTRUCTURE or its hasAttachments would
+          // silently disagree with the same message seen via search.
+          { envelope: true, flags: true, bodyStructure: true },
           { uid: true }
         )) {
           msgs.push(msg);
@@ -82778,7 +85227,7 @@ function createSerialGate(settleMs = 50) {
 }
 function settle(ms) {
   if (ms <= 0) return Promise.resolve();
-  return new Promise((resolve2) => setTimeout(resolve2, ms));
+  return new Promise((resolve3) => setTimeout(resolve3, ms));
 }
 
 // src/tools/respond.ts
@@ -82853,6 +85302,155 @@ function withErrorHandling(handler, errorPrefix) {
   };
 }
 
+// src/tools/mailboxListing.ts
+function unlistableStoreError(account, error2, knownAccounts) {
+  const scope = account ? ` for "${account}"` : "";
+  const parts = [`Could not list mailboxes${scope}: ${error2 ?? "Mail declined the request"}`];
+  if (knownAccounts.length > 0) {
+    parts.push(`Accounts on this Mac: ${knownAccounts.join(", ")}.`);
+  }
+  if (account && isLocalStoreLabel(account)) {
+    parts.push(
+      `"${account}" addresses Mail's LOCAL store, which IS listable \u2014 it is read at the application level rather than through an account, so this failure is not "no such account". Something went wrong reading the local store itself.`
+    );
+  }
+  return parts.join("\n\n");
+}
+
+// src/tools/batchResults.ts
+async function hybridBatchCounts(ids, appleFn, imapFn) {
+  const distinctIds = [...new Set(ids)];
+  const imapIds = distinctIds.filter((i) => i.startsWith("imap:"));
+  const numericIds = distinctIds.filter((i) => !i.startsWith("imap:"));
+  let success = 0;
+  let fail = 0;
+  const errors = [];
+  if (numericIds.length > 0) {
+    const res = appleFn(numericIds);
+    const s = res.filter((r) => r.success).length;
+    success += s;
+    fail += res.length - s;
+    errors.push(...res.filter((r) => !r.success && r.error).map((r) => r.error));
+  }
+  let countDelta;
+  if (imapIds.length > 0) {
+    const r = await imapFn(imapIds);
+    success += r.success;
+    fail += r.failed;
+    errors.push(...r.errors);
+    if (r.countDelta?.length) countDelta = r.countDelta;
+  }
+  return { success, fail, errors, ...countDelta ? { countDelta } : {} };
+}
+function distinctErrors(errors) {
+  return [...new Set(errors.filter(Boolean))];
+}
+function formatBatchErrors(errors, max = 5) {
+  const distinct = distinctErrors(errors);
+  if (distinct.length === 0) return "";
+  const shown = distinct.slice(0, max);
+  const more = distinct.length - shown.length;
+  return `: ${shown.join("; ")}${more > 0 ? ` (+${more} more)` : ""}`;
+}
+var MAX_STRUCTURED_BATCH_ERRORS = 20;
+function batchResponse(counts, messages, extra = {}, warnings = []) {
+  const { success, fail, errors } = counts;
+  const distinct = distinctErrors(errors);
+  const reported = distinct.slice(0, MAX_STRUCTURED_BATCH_ERRORS);
+  const structured = {
+    ok: fail === 0,
+    success,
+    failed: fail,
+    ...extra,
+    ...reported.length > 0 ? { errors: reported } : {},
+    ...distinct.length > reported.length ? { errorsTruncated: true } : {}
+  };
+  const suffix = formatBatchErrors(distinct);
+  const warn = warnings.length > 0 ? `
+
+${warnings.join("\n")}` : "";
+  if (fail === 0) return successResponse(`${messages.allSucceeded(success)}${warn}`, structured);
+  if (success === 0)
+    return errorResponse(`${messages.allFailed(fail)}${suffix}${warn}`, structured);
+  return successResponse(`${messages.partial(success, fail)}${suffix}${warn}`, structured);
+}
+
+// src/tools/batchMutations.ts
+function toManagerScope(args) {
+  return { account: args.sourceAccount, mailbox: args.sourceMailbox };
+}
+function mergeCountDeltas(apple, imap) {
+  const all = [...apple ?? [], ...imap ?? []];
+  return all.length ? { countDelta: all } : {};
+}
+async function runBatchDelete(deps, args) {
+  const { ids, sourceMailbox, sourceAccount } = args;
+  let forensics = { warnings: [] };
+  const counts = await hybridBatchCounts(
+    ids,
+    (n) => {
+      const res = deps.batchDeleteMessages(n, toManagerScope({ sourceAccount, sourceMailbox }));
+      forensics = deps.collectForensics("batch-delete-messages", {
+        ids,
+        sourceMailbox,
+        sourceAccount
+      });
+      return res;
+    },
+    (im) => deps.imapBatchDelete(im)
+  );
+  return batchResponse(
+    counts,
+    {
+      allSucceeded: (n) => `Successfully deleted ${n} message(s)`,
+      allFailed: (n) => `Failed to delete all ${n} message(s)`,
+      partial: (ok, failed) => `Deleted ${ok} message(s), ${failed} failed`
+    },
+    // #181: merge both backends' reconciliation. An AppleScript-only batch is
+    // unchanged; an IMAP-only one now reports a delta where it previously
+    // reported nothing; a mixed batch reports both, per source mailbox.
+    mergeCountDeltas(forensics.countDelta, counts.countDelta),
+    forensics.warnings
+  );
+}
+async function runBatchMove(deps, args) {
+  const { ids, mailbox, account, sourceMailbox, sourceAccount } = args;
+  let forensics = { warnings: [] };
+  const counts = await hybridBatchCounts(
+    ids,
+    (n) => {
+      const res = deps.batchMoveMessages(
+        n,
+        mailbox,
+        account,
+        toManagerScope({ sourceAccount, sourceMailbox })
+      );
+      forensics = deps.collectForensics("batch-move-messages", {
+        ids,
+        mailbox,
+        account,
+        sourceMailbox,
+        sourceAccount
+      });
+      return res;
+    },
+    (im) => deps.imapBatchMove(im, mailbox, { account })
+  );
+  return batchResponse(
+    counts,
+    {
+      allSucceeded: (n) => `Successfully moved ${n} message(s) to "${mailbox}"`,
+      allFailed: (n) => `Failed to move all ${n} message(s)`,
+      partial: (ok, failed) => `Moved ${ok} message(s) to "${mailbox}", ${failed} failed`
+    },
+    {
+      mailbox,
+      ...mergeCountDeltas(forensics.countDelta, counts.countDelta)
+    },
+    forensics.warnings
+  );
+}
+
 // src/services/imapMultiAccount.ts
 function normalizeMessageId2(row) {
   const raw = typeof row.messageId === "string" ? row.messageId.trim() : "";
@@ -82894,26 +85492,26 @@ function mergeMessages(imapRows, appleRows, limit) {
   merged.sort((a, b) => dateEpoch(b) - dateEpoch(a));
   return limit >= 0 ? merged.slice(0, limit) : merged;
 }
-function isGmailHost(host) {
-  return /(^|\.)gmail\.com$/i.test(host.trim());
-}
 async function fanOutImapMessages(args, kind, deps = {}, configs = resolveImapConfigs()) {
   const rows = [];
   const accountsQueried = [];
   const accountsFailed = [];
+  const failedMailboxes = [];
   for (const config2 of configs) {
-    const mailbox = args.mailbox ?? (isGmailHost(config2.host) ? void 0 : "INBOX");
-    const perAccountArgs = { ...args, account: void 0, mailbox };
+    const perAccountArgs = { ...args, account: void 0 };
     try {
       const res = kind === "search" ? await imapSearchMessages(perAccountArgs, { ...deps, config: config2 }) : await imapListMessages(perAccountArgs, { ...deps, config: config2 });
       rows.push(...res.messages);
       accountsQueried.push(config2.accountLabel);
+      failedMailboxes.push(
+        ...res.failedMailboxes.map((mailbox) => `${config2.accountLabel} / ${mailbox}`)
+      );
     } catch (e) {
       accountsFailed.push(config2.accountLabel);
       console.error(`IMAP fan-out failed for account "${config2.accountLabel}": ${String(e)}`);
     }
   }
-  return { rows, accountsQueried, accountsFailed };
+  return { rows, accountsQueried, accountsFailed, failedMailboxes };
 }
 function configMatchesAccount(config2, account) {
   const name = account.name.trim().toLowerCase();
@@ -82971,10 +85569,12 @@ function formatMergedRows(rows, showReadState = true) {
 async function routeMessage(id, opts) {
   if (decodeImapId(id)) {
     const r = await opts.imap();
-    return r.success ? successResponse(
+    if (!r.success) return errorResponse(r.error ?? opts.fail);
+    const structured = opts.structuredFromResult ? opts.structuredFromResult(r) : opts.structured;
+    return successResponse(
       r.info ?? opts.ok,
-      opts.structuredFromResult ? opts.structuredFromResult(r) : opts.structured
-    ) : errorResponse(r.error ?? opts.fail);
+      r.verification && structured ? { ...structured, verification: r.verification } : structured
+    );
   }
   return opts.apple();
 }
@@ -83160,6 +85760,33 @@ function registerResourcesAndPrompts(server2, mailManager2) {
   );
 }
 
+// src/schemas.ts
+var MESSAGE_ID_SCHEMA = external_exports.string().regex(/^(\d+|imap:[A-Za-z0-9_-]+)$/, "Message ID must be numeric or an IMAP id (imap:\u2026)");
+var BATCH_IDS_SCHEMA = external_exports.array(MESSAGE_ID_SCHEMA).min(1, "At least one message ID is required").max(100, "Cannot process more than 100 messages in a single batch");
+var DATE_FILTER_SCHEMA = external_exports.string().regex(
+  /^[a-zA-Z0-9 ,/\-:]+$/,
+  "Date must contain only alphanumeric characters, spaces, commas, slashes, hyphens, and colons"
+).refine((val) => !isNaN(new Date(val).getTime()), {
+  message: "Date string must be a valid date (e.g., 'January 1, 2026' or '2026-03-15')"
+}).optional();
+var ATTACHMENTS_SCHEMA = external_exports.array(
+  external_exports.union([
+    external_exports.string().describe("Absolute path to an existing file in an allowed read root"),
+    external_exports.object({
+      filename: external_exports.string().min(1).max(255).describe("Filename to give the attachment"),
+      contentBase64: external_exports.string().min(1).max(
+        MAX_INLINE_ATTACHMENT_BASE64_INPUT_CHARS,
+        "Inline attachment exceeds the 25 MiB decoded size limit"
+      ).refine(
+        isInlineAttachmentBase64WithinLimit,
+        "Inline attachment exceeds the 25 MiB decoded size limit"
+      ).describe("Base64-encoded file content (maximum 25 MiB decoded)")
+    })
+  ])
+).max(20, "Cannot attach more than 20 files").optional().describe(
+  "Files to attach: absolute paths in the configured attachment read roots (e.g. '/Users/me/Documents/report.pdf') and/or inline {filename, contentBase64} objects up to 25 MiB decoded each."
+);
+
 // src/tools/thread.ts
 function normalizeSubject(subject) {
   const prefix = /^\s*(?:(?:re|fwd?|fw|aw|wg|sv|vs|antw|antwort|enc|rif)\s*(?:\[\d+\])?\s*:\s*)+/i;
@@ -83176,19 +85803,1030 @@ function subjectFromGetMessage(info) {
   return m ? m[1].trim() : null;
 }
 
+// src/services/categoryMemory.ts
+import { existsSync as existsSync4, mkdirSync as mkdirSync2, readFileSync as readFileSync3, renameSync as renameSync2, writeFileSync as writeFileSync4 } from "fs";
+import { dirname as dirname2, join as join6 } from "path";
+import { homedir as homedir5 } from "os";
+var MEMORY_VERSION = 1;
+var CONFIDENCE_LLM = 0.75;
+var CONFIDENCE_DOMAIN_FALLBACK = 0.6;
+var CONFIDENCE_CORRECTION = 0.95;
+var THRESHOLD_AUTO = 0.8;
+var THRESHOLD_AGGRESSIVE = 0.5;
+function defaultMemoryPath(env = process.env) {
+  const override = env.APPLE_MAIL_MCP_CATEGORY_MEMORY;
+  if (override && override.trim()) return override.trim();
+  return join6(
+    homedir5(),
+    "Library",
+    "Application Support",
+    "apple-mail-mcp",
+    "category-memory.json"
+  );
+}
+function emptyMemory() {
+  return {
+    version: MEMORY_VERSION,
+    mappings: {},
+    mailboxesCreated: [],
+    updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function loadMemory(path = defaultMemoryPath()) {
+  try {
+    if (!existsSync4(path)) return emptyMemory();
+    const raw = JSON.parse(readFileSync3(path, "utf8"));
+    if (!raw || typeof raw !== "object") return emptyMemory();
+    return {
+      version: MEMORY_VERSION,
+      mappings: raw.mappings && typeof raw.mappings === "object" ? raw.mappings : {},
+      mailboxesCreated: Array.isArray(raw.mailboxesCreated) ? raw.mailboxesCreated.filter((x) => typeof x === "string") : [],
+      updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : (/* @__PURE__ */ new Date()).toISOString()
+    };
+  } catch {
+    return emptyMemory();
+  }
+}
+function saveMemory(memory, path = defaultMemoryPath()) {
+  memory.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+  memory.version = MEMORY_VERSION;
+  const dir = dirname2(path);
+  mkdirSync2(dir, { recursive: true });
+  const tmp = `${path}.${process.pid}.tmp`;
+  writeFileSync4(tmp, JSON.stringify(memory, null, 2), "utf8");
+  renameSync2(tmp, path);
+}
+function extractSenderKey(from) {
+  const raw = (from || "").trim();
+  const angle = raw.match(/<([^>]+)>/);
+  const email2 = (angle ? angle[1] : raw).trim().toLowerCase();
+  const at = email2.lastIndexOf("@");
+  if (at > 0 && at < email2.length - 1) {
+    const domain = email2.slice(at + 1).replace(/[>\s]+$/g, "");
+    return { key: domain, domain, email: email2 };
+  }
+  const token = raw.toLowerCase().replace(/[^a-z0-9.@_-]+/g, " ").trim() || "unknown";
+  return { key: token, domain: token, email: token };
+}
+function sanitizeMailboxName(name, fallback = "Unsorted") {
+  let s = (name || "").trim();
+  s = s.replace(/[/\\:\0]/g, " ").replace(/\s+/g, " ").trim();
+  if (!s) s = fallback;
+  if (s.length > 48) s = s.slice(0, 48).trim();
+  const lower = s.toLowerCase();
+  if (["inbox", "posteingang", "sent", "trash", "junk", "drafts"].includes(lower)) {
+    s = fallback;
+  }
+  return s;
+}
+function domainToMailboxName(domain) {
+  const d = (domain || "unknown").toLowerCase();
+  const base = d.replace(/^(mail|email|e-mail|newsletter|news|noreply|no-reply)\./, "").replace(/\.(com|de|net|org|io|co|uk|app|ai)$/i, "");
+  const parts = base.split(".").filter(Boolean);
+  const label = parts.length >= 2 ? parts[parts.length - 1] : parts[0] || d;
+  const pretty = label.charAt(0).toUpperCase() + label.slice(1);
+  return sanitizeMailboxName(pretty, sanitizeMailboxName(d));
+}
+function lookupMapping(memory, from) {
+  const { key, email: email2, domain } = extractSenderKey(from);
+  for (const k of [email2, domain, key]) {
+    const m = memory.mappings[k];
+    if (m) return { key: k, mapping: m };
+  }
+  return null;
+}
+function upsertMapping(memory, key, mailbox, opts) {
+  const k = key.toLowerCase().trim();
+  const existing = memory.mappings[k];
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const next = {
+    mailbox: sanitizeMailboxName(mailbox),
+    hits: (existing?.hits ?? 0) + (opts.bumpHits ? 1 : 0),
+    confidence: clamp01(opts.confidence),
+    updatedAt: now,
+    source: opts.source,
+    samples: opts.samples?.slice(0, 5) ?? existing?.samples
+  };
+  memory.mappings[k] = next;
+  if (!memory.mailboxesCreated.includes(next.mailbox)) {
+    memory.mailboxesCreated.push(next.mailbox);
+  }
+  return next;
+}
+function recordSuccessfulMove(memory, from) {
+  const hit = lookupMapping(memory, from);
+  if (!hit) return;
+  hit.mapping.hits += 1;
+  hit.mapping.confidence = clamp01(Math.min(0.99, hit.mapping.confidence + 0.01));
+  hit.mapping.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+}
+function correctMapping(memory, from, mailbox) {
+  const { email: email2, domain } = extractSenderKey(from);
+  const mapping = upsertMapping(memory, domain, mailbox, {
+    confidence: CONFIDENCE_CORRECTION,
+    source: "correction"
+  });
+  if (email2 !== domain) {
+    upsertMapping(memory, email2, mailbox, {
+      confidence: CONFIDENCE_CORRECTION,
+      source: "correction"
+    });
+  }
+  return { key: domain, mapping };
+}
+function forgetKey(memory, key) {
+  const k = key.toLowerCase().trim();
+  if (!(k in memory.mappings)) return false;
+  delete memory.mappings[k];
+  return true;
+}
+function forgetMailbox(memory, mailbox) {
+  const target = mailbox.trim();
+  let n = 0;
+  for (const [k, m] of Object.entries(memory.mappings)) {
+    if (m.mailbox === target) {
+      delete memory.mappings[k];
+      n++;
+    }
+  }
+  memory.mailboxesCreated = memory.mailboxesCreated.filter((x) => x !== target);
+  return n;
+}
+function clamp01(n) {
+  if (Number.isNaN(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+function shouldAutoMove(confidence, opts = {}) {
+  const floor = opts.threshold ?? (opts.aggressive ? THRESHOLD_AGGRESSIVE : THRESHOLD_AUTO);
+  return confidence >= floor;
+}
+
+// src/services/categoryCluster.ts
+function clusterByDomain(messages) {
+  const map = /* @__PURE__ */ new Map();
+  for (const m of messages) {
+    const { key, domain } = extractSenderKey(m.sender);
+    const k = key || domain || "unknown";
+    const list = map.get(k) ?? [];
+    list.push(m);
+    map.set(k, list);
+  }
+  const clusters = [];
+  for (const [key, msgs] of map) {
+    const domain = extractSenderKey(msgs[0]?.sender ?? key).domain;
+    const subjects = unique(
+      msgs.map((m) => (m.subject || "").trim()).filter((s) => s.length > 0),
+      8
+    );
+    const senders = unique(msgs.map((m) => m.sender).filter(Boolean), 5);
+    clusters.push({
+      key,
+      domain,
+      messages: msgs,
+      sampleSubjects: subjects,
+      sampleSenders: senders,
+      fallbackName: domainToMailboxName(domain)
+    });
+  }
+  clusters.sort((a, b) => b.messages.length - a.messages.length);
+  return clusters;
+}
+function mergeTinyClusters(clusters, minSize = 2) {
+  if (clusters.length <= 1) return clusters;
+  const big = clusters.filter((c) => c.messages.length >= minSize);
+  const tiny = clusters.filter((c) => c.messages.length < minSize);
+  if (big.length === 0) return clusters;
+  const result = [...big];
+  for (const t of tiny) {
+    const tokens = subjectTokens(t.sampleSubjects.join(" "));
+    let best = null;
+    let bestScore = 0;
+    for (const b of result) {
+      const bTokens = new Set(subjectTokens(b.sampleSubjects.join(" ")));
+      let score = 0;
+      for (const tok of tokens) if (bTokens.has(tok)) score++;
+      if (score > bestScore) {
+        bestScore = score;
+        best = b;
+      }
+    }
+    if (best && bestScore >= 2) {
+      best.messages.push(...t.messages);
+      best.sampleSubjects = unique([...best.sampleSubjects, ...t.sampleSubjects], 8);
+      best.sampleSenders = unique([...best.sampleSenders, ...t.sampleSenders], 5);
+    } else {
+      result.push(t);
+    }
+  }
+  result.sort((a, b) => b.messages.length - a.messages.length);
+  return result;
+}
+function subjectTokens(text) {
+  return text.toLowerCase().replace(/[^a-z0-9äöüß]+/gi, " ").split(/\s+/).filter((w) => w.length >= 5).slice(0, 20);
+}
+function unique(items, max) {
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const i of items) {
+    const k = i.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(i);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+function finalizeClusterName(proposed, fallback) {
+  return sanitizeMailboxName(proposed || fallback, fallback);
+}
+
+// src/services/appleMailAi.ts
+import { spawnSync as spawnSync3 } from "child_process";
+import { existsSync as existsSync5 } from "fs";
+import { dirname as dirname3, join as join7 } from "path";
+import { fileURLToPath } from "url";
+var __dirname2 = dirname3(fileURLToPath(import.meta.url));
+function resolveAppleMailAiBinary(env = process.env) {
+  if (env.APPLE_MAIL_MCP_AI_HELPER && existsSync5(env.APPLE_MAIL_MCP_AI_HELPER)) {
+    return env.APPLE_MAIL_MCP_AI_HELPER;
+  }
+  const candidates = [
+    join7(__dirname2, "..", "..", "build", "apple-mail-ai"),
+    join7(__dirname2, "apple-mail-ai"),
+    join7(process.cwd(), "build", "apple-mail-ai"),
+    join7(process.cwd(), "swift-helper", ".build", "release", "apple-mail-ai")
+  ];
+  for (const p of candidates) {
+    if (existsSync5(p)) return p;
+  }
+  return null;
+}
+function nameClustersWithAppleAI(clusters, opts = {}) {
+  const env = opts.env ?? process.env;
+  const bin = resolveAppleMailAiBinary(env);
+  if (!bin) {
+    return { names: {}, usedAppleAI: false, error: "apple-mail-ai binary not found" };
+  }
+  if (clusters.length === 0) {
+    return { names: {}, usedAppleAI: true, model: "SystemLanguageModel" };
+  }
+  const payload = clusters.map((c) => ({
+    id: c.key,
+    domain: c.domain,
+    count: c.messages.length,
+    senders: c.sampleSenders.slice(0, 3),
+    subjects: c.sampleSubjects.slice(0, 5)
+  }));
+  const r = spawnSync3(bin, ["name-clusters"], {
+    encoding: "utf8",
+    input: JSON.stringify(payload),
+    timeout: opts.timeoutMs ?? 12e4,
+    maxBuffer: 8 * 1024 * 1024,
+    env: { ...process.env, ...env }
+  });
+  if (r.error) {
+    return { names: {}, usedAppleAI: false, error: r.error.message };
+  }
+  if (r.status !== 0) {
+    return {
+      names: {},
+      usedAppleAI: false,
+      error: (r.stderr || r.stdout || `exit ${r.status}`).slice(0, 300)
+    };
+  }
+  try {
+    const j = JSON.parse((r.stdout || "").trim());
+    if (!j.ok || !j.names) {
+      return { names: {}, usedAppleAI: false, error: j.error || "apple-mail-ai ok=false" };
+    }
+    const names = {};
+    for (const c of clusters) {
+      const raw = j.names[c.key];
+      names[c.key] = raw ? finalizeClusterName(raw, c.fallbackName) : c.fallbackName;
+    }
+    return {
+      names,
+      usedAppleAI: true,
+      model: j.model || "SystemLanguageModel",
+      details: j.details
+    };
+  } catch (e) {
+    return {
+      names: {},
+      usedAppleAI: false,
+      error: e instanceof Error ? e.message : String(e)
+    };
+  }
+}
+
+// src/services/categoryLlm.ts
+function resolveLlmConfig(env = process.env) {
+  const apiKey = env.APPLE_MAIL_MCP_LLM_API_KEY || env.XAI_API_KEY || env.OPENAI_API_KEY || void 0;
+  const baseUrl = (env.APPLE_MAIL_MCP_LLM_BASE_URL || env.XAI_BASE_URL || "https://api.x.ai/v1").replace(/\/$/, "");
+  const model = env.APPLE_MAIL_MCP_LLM_MODEL || env.XAI_MODEL || "grok-4-1-fast-non-reasoning";
+  return { apiKey, baseUrl, model };
+}
+async function nameClusters(clusters, opts = {}) {
+  const env = opts.env ?? process.env;
+  const cfg = resolveLlmConfig(env);
+  const fallbackNames = {};
+  for (const c of clusters) {
+    fallbackNames[c.key] = c.fallbackName;
+  }
+  if (opts.forceFallback) {
+    return { names: fallbackNames, usedLlm: false };
+  }
+  const forceCloud = env.APPLE_MAIL_MCP_FORCE_CLOUD_LLM === "1";
+  if (!forceCloud) {
+    const apple = nameClustersWithAppleAI(clusters, { env });
+    if (apple.usedAppleAI && Object.keys(apple.names).length > 0) {
+      const names = { ...fallbackNames, ...apple.names };
+      for (const c of clusters) {
+        if (!names[c.key]) names[c.key] = c.fallbackName;
+        else names[c.key] = finalizeClusterName(names[c.key], c.fallbackName);
+      }
+      return {
+        names,
+        usedLlm: true,
+        usedAppleAI: true,
+        model: apple.model || "SystemLanguageModel"
+      };
+    }
+  }
+  if (!cfg.apiKey) {
+    return {
+      names: fallbackNames,
+      usedLlm: false,
+      error: "No Apple AI naming and no cloud LLM key (build swift-helper or set XAI_API_KEY)"
+    };
+  }
+  try {
+    const names = await callLlmForNames(clusters, cfg, opts.fetchImpl ?? fetch);
+    for (const c of clusters) {
+      if (!names[c.key]) names[c.key] = c.fallbackName;
+      else names[c.key] = finalizeClusterName(names[c.key], c.fallbackName);
+    }
+    return { names, usedLlm: true, usedAppleAI: false, model: cfg.model };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { names: fallbackNames, usedLlm: false, error: msg, model: cfg.model };
+  }
+}
+async function callLlmForNames(clusters, cfg, fetchImpl) {
+  const payload = clusters.map((c) => ({
+    id: c.key,
+    domain: c.domain,
+    count: c.messages.length,
+    senders: c.sampleSenders.slice(0, 3),
+    subjects: c.sampleSubjects.slice(0, 5)
+  }));
+  const system = `You name email folder categories for a personal inbox.
+Given clusters of messages (domain + sample subjects/senders), invent a short folder name per cluster.
+Rules:
+- German or English OK; prefer short proper nouns or clear themes (max 3 words).
+- No presets required \u2014 invent from evidence only.
+- Never use: Inbox, Sent, Trash, Junk, Drafts.
+- Do not use path separators or colons.
+- Return ONLY valid JSON object mapping cluster id \u2192 folder name string.
+Example: {"amazon.de":"Amazon","github.com":"GitHub"}`;
+  const user = `Name these clusters:
+${JSON.stringify(payload, null, 0)}`;
+  const res = await fetchImpl(`${cfg.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${cfg.apiKey}`
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      temperature: 0.2,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user }
+      ]
+    })
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`LLM HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content ?? "";
+  return parseNameJson(content);
+}
+function parseNameJson(content) {
+  const trimmed = content.trim();
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const jsonText = fence ? fence[1].trim() : trimmed;
+  const start = jsonText.indexOf("{");
+  const end = jsonText.lastIndexOf("}");
+  if (start < 0 || end <= start) return {};
+  const obj = JSON.parse(jsonText.slice(start, end + 1));
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === "string" && v.trim()) out[k] = v.trim();
+  }
+  return out;
+}
+
+// src/services/categoryFilter.ts
+async function learnFromMessages(messages, opts = {}) {
+  const memoryPath = opts.memoryPath ?? defaultMemoryPath(opts.env);
+  const memory = loadMemory(memoryPath);
+  let clusters = clusterByDomain(messages);
+  if (opts.mergeTiny !== false) {
+    clusters = mergeTinyClusters(clusters);
+  }
+  const needsNaming = clusters.filter((c) => {
+    const existing = memory.mappings[c.key];
+    return !existing || existing.confidence < 0.85 || existing.source === "domain";
+  });
+  const nameResult = await nameClusters(needsNaming.length > 0 ? needsNaming : clusters, {
+    env: opts.env,
+    forceFallback: opts.forceFallback,
+    fetchImpl: opts.fetchImpl
+  });
+  const clusterSummaries = [];
+  for (const c of clusters) {
+    const existing = memory.mappings[c.key];
+    let mailbox;
+    let source;
+    let confidence;
+    if (existing && existing.confidence >= 0.85 && existing.source !== "domain") {
+      mailbox = existing.mailbox;
+      source = existing.source;
+      confidence = existing.confidence;
+      upsertMapping(memory, c.key, mailbox, {
+        confidence,
+        source,
+        samples: c.sampleSubjects,
+        bumpHits: false
+      });
+    } else {
+      const proposed = nameResult.names[c.key] ?? c.fallbackName;
+      mailbox = proposed;
+      source = nameResult.usedLlm ? "llm" : "domain";
+      confidence = nameResult.usedLlm ? CONFIDENCE_LLM : CONFIDENCE_DOMAIN_FALLBACK;
+      if (existing && existing.confidence > confidence && existing.mailbox) {
+        mailbox = existing.mailbox;
+        source = existing.source;
+        confidence = existing.confidence;
+      }
+      upsertMapping(memory, c.key, mailbox, {
+        confidence,
+        source,
+        samples: c.sampleSubjects
+      });
+    }
+    clusterSummaries.push({
+      key: c.key,
+      domain: c.domain,
+      count: c.messages.length,
+      mailbox,
+      source,
+      sampleSubjects: c.sampleSubjects.slice(0, 3)
+    });
+  }
+  saveMemory(memory, memoryPath);
+  return {
+    memoryPath,
+    clusters: clusterSummaries,
+    namedCount: clusterSummaries.length,
+    usedLlm: nameResult.usedLlm,
+    llmError: nameResult.error,
+    llmModel: nameResult.model,
+    memory
+  };
+}
+function planAutoSort(messages, opts = {}) {
+  const memoryPath = opts.memoryPath ?? defaultMemoryPath(opts.env);
+  const memory = loadMemory(memoryPath);
+  const items = [];
+  const byMailbox = {};
+  for (const m of messages) {
+    const hit = lookupMapping(memory, m.sender);
+    if (!hit) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: "",
+        key: extractSenderKey(m.sender).key,
+        confidence: 0,
+        action: "skip",
+        reason: "unknown sender \u2014 run filter-learn first"
+      });
+      continue;
+    }
+    const conf = hit.mapping.confidence;
+    const dest = hit.mapping.mailbox;
+    if (opts.categories && opts.categories.length > 0 && !opts.categories.includes(dest)) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: dest,
+        key: hit.key,
+        confidence: conf,
+        action: "skip",
+        reason: `filtered out (not in categories filter)`
+      });
+      continue;
+    }
+    if (m.mailbox.toLowerCase() === dest.toLowerCase()) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: dest,
+        key: hit.key,
+        confidence: conf,
+        action: "skip",
+        reason: "already in destination mailbox"
+      });
+      continue;
+    }
+    if (!shouldAutoMove(conf, { aggressive: opts.aggressive, threshold: opts.threshold })) {
+      items.push({
+        id: m.id,
+        from: m.sender,
+        subject: m.subject,
+        account: m.account,
+        sourceMailbox: m.mailbox,
+        destMailbox: dest,
+        key: hit.key,
+        confidence: conf,
+        action: "skip",
+        reason: `confidence ${conf.toFixed(2)} below threshold`
+      });
+      continue;
+    }
+    items.push({
+      id: m.id,
+      from: m.sender,
+      subject: m.subject,
+      account: m.account,
+      sourceMailbox: m.mailbox,
+      destMailbox: dest,
+      key: hit.key,
+      confidence: conf,
+      action: "move",
+      reason: `learned ${hit.key} \u2192 ${dest}`
+    });
+    (byMailbox[dest] ??= []).push(m.id);
+  }
+  return {
+    items,
+    moveCount: items.filter((i) => i.action === "move").length,
+    skipCount: items.filter((i) => i.action === "skip").length,
+    byMailbox
+  };
+}
+function applyCorrection(from, mailbox, memoryPath) {
+  const path = memoryPath ?? defaultMemoryPath();
+  const memory = loadMemory(path);
+  const result = correctMapping(memory, from, mailbox);
+  saveMemory(memory, path);
+  return { ...result, memoryPath: path };
+}
+function applyForget(opts) {
+  const path = opts.memoryPath ?? defaultMemoryPath();
+  const memory = loadMemory(path);
+  let removed = 0;
+  if (opts.key) {
+    if (forgetKey(memory, opts.key)) removed++;
+  }
+  if (opts.mailbox) {
+    removed += forgetMailbox(memory, opts.mailbox);
+  }
+  saveMemory(memory, path);
+  return { removed, memoryPath: path };
+}
+function bumpMoves(froms, memoryPath) {
+  const path = memoryPath ?? defaultMemoryPath();
+  const memory = loadMemory(path);
+  for (const f of froms) recordSuccessfulMove(memory, f);
+  saveMemory(memory, path);
+}
+function memoryStatus(memoryPath, env) {
+  const path = memoryPath ?? defaultMemoryPath(env);
+  const memory = loadMemory(path);
+  const llm = resolveLlmConfig(env);
+  const byMailbox = {};
+  for (const m of Object.values(memory.mappings)) {
+    byMailbox[m.mailbox] = (byMailbox[m.mailbox] ?? 0) + 1;
+  }
+  return {
+    memoryPath: path,
+    mappingCount: Object.keys(memory.mappings).length,
+    mailboxes: memory.mailboxesCreated,
+    byMailbox,
+    updatedAt: memory.updatedAt,
+    llmConfigured: Boolean(llm.apiKey),
+    llmModel: llm.model,
+    llmBaseUrl: llm.baseUrl,
+    mappings: Object.entries(memory.mappings).map(([key, m]) => ({
+      key,
+      mailbox: m.mailbox,
+      confidence: m.confidence,
+      hits: m.hits,
+      source: m.source
+    })).sort((a, b) => b.hits - a.hits || b.confidence - a.confidence)
+  };
+}
+
+// src/services/mailActions.ts
+import { existsSync as existsSync6, mkdirSync as mkdirSync3, readFileSync as readFileSync4, renameSync as renameSync3, writeFileSync as writeFileSync5 } from "fs";
+import { dirname as dirname4, join as join8 } from "path";
+import { homedir as homedir6 } from "os";
+function escapeForAppleScript2(text) {
+  if (!text) return "";
+  return text.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\x00-\x1f\x7f]/g, "");
+}
+function defaultActionQueuePath(env = process.env) {
+  const override = env.APPLE_MAIL_MCP_ACTION_QUEUE;
+  if (override?.trim()) return override.trim();
+  return join8(homedir6(), "Library", "Application Support", "apple-mail-mcp", "action-queue.json");
+}
+function emptyQueue() {
+  return {
+    version: 1,
+    updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    processedMessageIds: [],
+    actions: []
+  };
+}
+function loadQueue(path = defaultActionQueuePath()) {
+  try {
+    if (!existsSync6(path)) return emptyQueue();
+    const raw = JSON.parse(readFileSync4(path, "utf8"));
+    return {
+      version: 1,
+      updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : (/* @__PURE__ */ new Date()).toISOString(),
+      processedMessageIds: Array.isArray(raw.processedMessageIds) ? raw.processedMessageIds.filter((x) => typeof x === "string") : [],
+      actions: Array.isArray(raw.actions) ? raw.actions : []
+    };
+  } catch {
+    return emptyQueue();
+  }
+}
+function saveQueue(queue, path = defaultActionQueuePath()) {
+  queue.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+  queue.version = 1;
+  const dir = dirname4(path);
+  mkdirSync3(dir, { recursive: true });
+  const tmp = `${path}.${process.pid}.tmp`;
+  writeFileSync5(tmp, JSON.stringify(queue, null, 2), "utf8");
+  renameSync3(tmp, path);
+}
+function deriveActionsHeuristic(mail) {
+  const subject = mail.subject || "";
+  const body = (mail.body || "").slice(0, 4e3);
+  const text = `${subject}
+${body}`.toLowerCase();
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const due = extractDueDate(text, mail.dateReceived);
+  const actions = [];
+  const base = {
+    messageId: mail.id,
+    from: mail.sender,
+    subject: mail.subject,
+    createdAt: now,
+    source: "heuristic",
+    status: "pending",
+    dueDate: due
+  };
+  const replySignals = /\b(please\s+reply|kindly\s+reply|awaiting\s+your|your\s+response|can you|could you|let me know|bitte\s+(um\s+)?(rückmeldung|antwort)|antwortet?\s+bitte|rückmeldung|warte\s+auf|feedback\s+erbeten|dringend\s+antworten)\b/i;
+  const paySignals = /\b(invoice|payment\s+due|pay\s+now|amount\s+due|overdue|rechnung|zahlungsaufforderung|zahlung\s+fällig|offene\s+forderung|mahnung|betrag\s+fällig|please\s+pay)\b/i;
+  const meetSignals = /\b(meeting|invite|invitation|calendar|zoom|teams|termin|einladung|besprechung|videokonferenz|sprechstunde)\b/i;
+  const actionSignals = /\b(action\s+required|action\s+needed|todo|to-do|please\s+confirm|confirm\s+by|deadline|fällig|bitte\s+handeln|bitte\s+bestätigen|zu\s+erledigen|dringend|urgent|asap)\b/i;
+  const reviewSignals = /\b(please\s+review|for\s+your\s+review|approval|genehmigung|freigabe|prüfen\s+sie|zur\s+prüfung|unterschreiben|sign\s+here)\b/i;
+  let any = false;
+  if (paySignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "pay"),
+      kind: "pay",
+      title: `Zahlung pr\xFCfen: ${clip(subject, 60)}`,
+      detail: "Rechnung/Zahlung erkannt \u2014 Reminder + Flag (kein Auto-Pay).",
+      urgency: "high",
+      flagColor: 1,
+      // red
+      autoExecutable: true
+    });
+  }
+  if (meetSignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "appointment"),
+      kind: "appointment",
+      title: `Termin pr\xFCfen: ${clip(subject, 60)}`,
+      detail: "Termin/Einladung erkannt \u2014 Reminder anlegen.",
+      urgency: "medium",
+      flagColor: 6,
+      // blue
+      autoExecutable: true
+    });
+  }
+  if (replySignals.test(text) || actionSignals.test(text) && !paySignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "reply_draft"),
+      kind: "reply_draft",
+      title: `Antwort n\xF6tig: ${clip(subject, 60)}`,
+      detail: "Antwortsignal erkannt \u2014 Flag + Antwort-Entwurf (nicht senden).",
+      urgency: /\b(urgent|dringend|asap|sofort)\b/i.test(text) ? "high" : "medium",
+      flagColor: 2,
+      // orange
+      autoExecutable: true
+    });
+  }
+  if (reviewSignals.test(text)) {
+    any = true;
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "review"),
+      kind: "review",
+      title: `Review: ${clip(subject, 60)}`,
+      detail: "Freigabe/Pr\xFCfung erkannt \u2014 Reminder.",
+      urgency: "medium",
+      flagColor: 3,
+      // yellow
+      autoExecutable: true
+    });
+  }
+  if (!any && /\?/.test(subject) && !isBulkNoise(text, mail.sender)) {
+    actions.push({
+      ...base,
+      id: actionId(mail.id, "follow_up"),
+      kind: "follow_up",
+      title: `Follow-up: ${clip(subject, 60)}`,
+      detail: "Frage im Betreff \u2014 Flag zur Nachverfolgung.",
+      urgency: "low",
+      flagColor: 3,
+      autoExecutable: true
+    });
+  }
+  return dedupeKinds(actions);
+}
+function isBulkNoise(text, sender) {
+  const s = `${sender} ${text}`.toLowerCase();
+  return /noreply|no-reply|newsletter|unsubscribe|list-unsubscribe|donotreply|do-not-reply/.test(s);
+}
+function extractDueDate(text, received) {
+  const de = text.match(/\b(\d{1,2})\.(\d{1,2})\.(\d{4})\b/);
+  if (de) {
+    const d = `${de[3]}-${de[2].padStart(2, "0")}-${de[1].padStart(2, "0")}`;
+    if (isSaneDate(d)) return d;
+  }
+  const iso = text.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+  if (iso && isSaneDate(iso[0])) return iso[0];
+  if (/\b(heute|today|morgen|tomorrow)\b/i.test(text)) {
+    const base = received ? new Date(received) : /* @__PURE__ */ new Date();
+    if (/\b(morgen|tomorrow)\b/i.test(text)) base.setDate(base.getDate() + 1);
+    return base.toISOString().slice(0, 10);
+  }
+  return void 0;
+}
+function isSaneDate(iso) {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return false;
+  const y = new Date(t).getFullYear();
+  return y >= 2020 && y <= 2035;
+}
+function actionId(messageId, kind) {
+  return `${messageId}:${kind}`;
+}
+function clip(s, n) {
+  const t = (s || "").replace(/\s+/g, " ").trim();
+  return t.length <= n ? t : t.slice(0, n - 1) + "\u2026";
+}
+function dedupeKinds(actions) {
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const a of actions) {
+    if (seen.has(a.kind)) continue;
+    seen.add(a.kind);
+    out.push(a);
+  }
+  return out;
+}
+function mergeIntoQueue(queue, derived, opts = {}) {
+  const existingIds = new Set(queue.actions.map((a) => a.id));
+  const processed = new Set(queue.processedMessageIds);
+  let added = 0;
+  for (const a of derived) {
+    if (!opts.reprocess && processed.has(a.messageId) && !queue.actions.some((x) => x.messageId === a.messageId && x.status === "pending")) {
+      const pendingForMsg = queue.actions.filter(
+        (x) => x.messageId === a.messageId && x.status === "pending"
+      );
+      if (pendingForMsg.length === 0 && queue.actions.some((x) => x.messageId === a.messageId)) {
+        continue;
+      }
+    }
+    if (existingIds.has(a.id)) continue;
+    queue.actions.push(a);
+    existingIds.add(a.id);
+    added++;
+  }
+  return { queue, added };
+}
+function executeAction(action, deps) {
+  if (!action.autoExecutable) {
+    action.status = "skipped";
+    action.result = "not auto-executable";
+    return { action, ok: true, note: "skipped (manual)" };
+  }
+  try {
+    switch (action.kind) {
+      case "flag":
+      case "follow_up": {
+        const ok = deps.flagMessage(action.messageId, action.flagColor);
+        action.status = ok ? "done" : "failed";
+        action.result = ok ? "flagged" : "flag failed";
+        return { action, ok, note: action.result };
+      }
+      case "pay":
+      case "appointment":
+      case "review": {
+        const flagged = deps.flagMessage(action.messageId, action.flagColor);
+        const rem = deps.createReminder(
+          action.title,
+          `${action.detail}
+From: ${action.from || "?"}
+Subject: ${action.subject || "?"}
+Mail-ID: ${action.messageId}`,
+          action.dueDate
+        );
+        const ok = flagged || rem.ok;
+        action.status = rem.ok ? "done" : flagged ? "done" : "failed";
+        action.result = `flag=${flagged}; reminder=${rem.ok ? "ok" : rem.error || "fail"}`;
+        return { action, ok, note: action.result };
+      }
+      case "reply_draft": {
+        const flagged = deps.flagMessage(action.messageId, action.flagColor ?? 2);
+        const body = buildReplyStub(action);
+        const drafted = deps.replyDraft(action.messageId, body);
+        const rem = deps.createReminder(
+          action.title,
+          `Antwort-Entwurf angelegt.
+${action.detail}
+From: ${action.from || "?"}`,
+          action.dueDate
+        );
+        const ok = drafted || flagged || rem.ok;
+        action.status = ok ? "done" : "failed";
+        action.result = `flag=${flagged}; draft=${drafted}; reminder=${rem.ok}`;
+        return { action, ok, note: action.result };
+      }
+      default: {
+        action.status = "skipped";
+        action.result = "unknown kind";
+        return { action, ok: true, note: "skipped" };
+      }
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    action.status = "failed";
+    action.result = msg;
+    return { action, ok: false, note: msg };
+  }
+}
+function buildReplyStub(action) {
+  return [
+    "Hallo,",
+    "",
+    "danke f\xFCr Ihre Nachricht \u2014 ich melde mich in K\xFCrze mit einer konkreten Antwort.",
+    "",
+    "(Automatisch vorbereiteter Entwurf aus apple-mail-mcp filter-actions \u2014 bitte pr\xFCfen vor dem Senden.)",
+    "",
+    `Bez\xFCglich: ${action.subject || ""}`
+  ].join("\n");
+}
+function createMailReminder(title, body, dueDate, listName = "Mail Actions") {
+  const safeTitle = escapeForAppleScript2(clip(title, 120));
+  const safeBody = escapeForAppleScript2(clip(body, 500));
+  const safeList = escapeForAppleScript2(listName);
+  let dueBlock = "";
+  if (dueDate && /^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    const [y, m, d] = dueDate.split("-").map(Number);
+    dueBlock = `
+      set dueDate to current date
+      set year of dueDate to ${y}
+      set month of dueDate to ${m}
+      set day of dueDate to ${d}
+      set hours of dueDate to 9
+      set minutes of dueDate to 0
+      set seconds of dueDate to 0
+      set due date of r to dueDate
+    `;
+  } else {
+    dueBlock = `
+      set dueDate to (current date) + (2 * days)
+      set hours of dueDate to 9
+      set minutes of dueDate to 0
+      set seconds of dueDate to 0
+      set due date of r to dueDate
+    `;
+  }
+  const script = `
+tell application "Reminders"
+  try
+    set lst to missing value
+    repeat with L in lists
+      if name of L is "${safeList}" then set lst to L
+    end repeat
+    if lst is missing value then
+      set lst to make new list with properties {name:"${safeList}"}
+    end if
+    set r to make new reminder at end of lst with properties {name:"${safeTitle}", body:"${safeBody}"}
+    ${dueBlock}
+    return "ok"
+  on error errMsg
+    return "error:" & errMsg
+  end try
+end tell
+`;
+  const res = executeAppleScript(script, { timeoutMs: 3e4 });
+  if (!res.success || res.output.startsWith("error:")) {
+    return { ok: false, error: res.error || res.output.replace(/^error:/, "") };
+  }
+  return { ok: true };
+}
+function runPendingActions(queue, deps, opts = {}) {
+  const limit = opts.limit ?? 50;
+  const results = [];
+  let done = 0;
+  let failed = 0;
+  let n = 0;
+  for (const action of queue.actions) {
+    if (n >= limit) break;
+    if (action.status !== "pending") continue;
+    if (opts.kinds && !opts.kinds.includes(action.kind)) continue;
+    const r = executeAction(action, deps);
+    results.push(r);
+    n++;
+    if (r.action.status === "done") done++;
+    else if (r.action.status === "failed") failed++;
+  }
+  const byMsg = /* @__PURE__ */ new Map();
+  for (const a of queue.actions) {
+    const list = byMsg.get(a.messageId) ?? [];
+    list.push(a);
+    byMsg.set(a.messageId, list);
+  }
+  for (const [mid, list] of byMsg) {
+    if (list.every((a) => a.status === "done" || a.status === "skipped" || a.status === "failed")) {
+      if (!queue.processedMessageIds.includes(mid)) queue.processedMessageIds.push(mid);
+    }
+  }
+  return { queue, results, done, failed };
+}
+function queueSummary(queue) {
+  const pending = queue.actions.filter((a) => a.status === "pending");
+  const done = queue.actions.filter((a) => a.status === "done");
+  const failed = queue.actions.filter((a) => a.status === "failed");
+  const byKind = {};
+  for (const a of pending) {
+    byKind[a.kind] = (byKind[a.kind] ?? 0) + 1;
+  }
+  return {
+    total: queue.actions.length,
+    pending: pending.length,
+    done: done.length,
+    failed: failed.length,
+    processedMessages: queue.processedMessageIds.length,
+    byKind,
+    updatedAt: queue.updatedAt
+  };
+}
+
 // src/services/imapIdle.ts
 var import_imapflow2 = __toESM(require_imap_flow(), 1);
 var defaultIdleConnect = async (cfg) => {
-  const client = new import_imapflow2.ImapFlow({
-    host: cfg.host,
-    port: cfg.port,
-    secure: cfg.secure,
-    auth: { user: cfg.user, pass: cfg.pass },
-    logger: false
-  });
+  const client = new import_imapflow2.ImapFlow(buildImapConnectionOptions(cfg));
   client.on("error", () => {
   });
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error2) {
+    if (!cfg.secure && !cfg.allowPlaintext) {
+      const detail = error2 instanceof Error ? error2.message : String(error2);
+      throw new Error(
+        `IMAP IDLE connection failed: ${detail}. STARTTLS is required for non-implicit TLS; to explicitly allow plaintext (not recommended), set ${IMAP_ENV.allowPlaintext}=1.`
+      );
+    }
+    throw error2;
+  }
   return client;
 };
 var ImapIdleWatcher = class {
@@ -83297,19 +86935,19 @@ var ImapIdleWatcher = class {
 };
 
 // src/services/fileConfig.ts
-import { existsSync as existsSync5, readFileSync as readFileSync3 } from "fs";
-import { join as join5 } from "path";
-import { homedir as homedir4 } from "os";
+import { existsSync as existsSync7, readFileSync as readFileSync5 } from "fs";
+import { join as join9 } from "path";
+import { homedir as homedir7 } from "os";
 function fileConfigPath(env = process.env) {
   const override = env.APPLE_MAIL_MCP_CONFIG_FILE;
   if (override && override.trim()) return override.trim();
-  return join5(homedir4(), "Library", "Application Support", "apple-mail-mcp", "config.json");
+  return join9(homedir7(), "Library", "Application Support", "apple-mail-mcp", "config.json");
 }
 function loadFileConfig(env = process.env, path = fileConfigPath(env)) {
   const applied = [];
   try {
-    if (!existsSync5(path)) return applied;
-    const parsed = JSON.parse(readFileSync3(path, "utf8"));
+    if (!existsSync7(path)) return applied;
+    const parsed = JSON.parse(readFileSync5(path, "utf8"));
     if (!parsed || typeof parsed !== "object") return applied;
     for (const [k, v] of Object.entries(parsed)) {
       if (typeof v !== "string") continue;
@@ -83329,10 +86967,125 @@ function isOrphaned(ppid = process.ppid) {
   return ppid === 1;
 }
 
+// src/utils/jsonSchemaDialect.ts
+var JSON_SCHEMA_2020_12 = "https://json-schema.org/draft/2020-12/schema";
+var DEFINITIONS_REF_PREFIX = "#/definitions/";
+var SCHEMA_MAP_KEYWORDS = /* @__PURE__ */ new Set([
+  "properties",
+  "patternProperties",
+  "$defs",
+  "dependentSchemas"
+]);
+var DATA_KEYWORDS = /* @__PURE__ */ new Set([
+  "enum",
+  "const",
+  "default",
+  "examples",
+  "required",
+  "dependentRequired"
+]);
+function isPlainObject3(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function convertSchemaMap(node) {
+  if (!isPlainObject3(node)) return node;
+  const out = {};
+  for (const [name, subschema] of Object.entries(node)) out[name] = convertNode(subschema);
+  return out;
+}
+function convertNode(node) {
+  if (Array.isArray(node)) return node.map(convertNode);
+  if (!isPlainObject3(node)) return node;
+  const hasTupleItems = Array.isArray(node.items);
+  const out = {};
+  for (const [key, value] of Object.entries(node)) {
+    switch (key) {
+      case "$schema":
+        break;
+      case "definitions":
+        out.$defs = convertSchemaMap(value);
+        break;
+      case "$ref":
+        out.$ref = typeof value === "string" && value.startsWith(DEFINITIONS_REF_PREFIX) ? "#/$defs/" + value.slice(DEFINITIONS_REF_PREFIX.length) : value;
+        break;
+      case "items":
+        if (hasTupleItems) out.prefixItems = value.map(convertNode);
+        else out.items = convertNode(value);
+        break;
+      case "additionalItems":
+        if (hasTupleItems) out.items = convertNode(value);
+        break;
+      case "dependencies": {
+        const dependentRequired = {};
+        const dependentSchemas = {};
+        if (isPlainObject3(value)) {
+          for (const [property, dependency] of Object.entries(value)) {
+            if (Array.isArray(dependency)) dependentRequired[property] = dependency;
+            else dependentSchemas[property] = convertNode(dependency);
+          }
+        }
+        if (Object.keys(dependentRequired).length > 0) out.dependentRequired = dependentRequired;
+        if (Object.keys(dependentSchemas).length > 0) out.dependentSchemas = dependentSchemas;
+        break;
+      }
+      case "exclusiveMinimum":
+      case "exclusiveMaximum": {
+        const bound = key === "exclusiveMinimum" ? node.minimum : node.maximum;
+        if (value === true && typeof bound === "number") out[key] = bound;
+        else if (value !== false) out[key] = convertNode(value);
+        break;
+      }
+      case "minimum":
+        if (node.exclusiveMinimum === true) break;
+        out.minimum = convertNode(value);
+        break;
+      case "maximum":
+        if (node.exclusiveMaximum === true) break;
+        out.maximum = convertNode(value);
+        break;
+      default:
+        if (DATA_KEYWORDS.has(key)) out[key] = value;
+        else if (SCHEMA_MAP_KEYWORDS.has(key)) out[key] = convertSchemaMap(value);
+        else out[key] = convertNode(value);
+    }
+  }
+  return out;
+}
+function toJsonSchema2020_12(schema) {
+  if (!isPlainObject3(schema)) return schema;
+  return {
+    $schema: JSON_SCHEMA_2020_12,
+    ...convertNode(schema)
+  };
+}
+function normalizeOutgoingMessage(message) {
+  if (!isPlainObject3(message)) return message;
+  const result = message.result;
+  if (!isPlainObject3(result) || !Array.isArray(result.tools)) return message;
+  const tools = result.tools.map((tool) => {
+    if (!isPlainObject3(tool)) return tool;
+    const next = { ...tool };
+    if (isPlainObject3(tool.inputSchema)) next.inputSchema = toJsonSchema2020_12(tool.inputSchema);
+    if (isPlainObject3(tool.outputSchema))
+      next.outputSchema = toJsonSchema2020_12(tool.outputSchema);
+    return next;
+  });
+  return { ...message, result: { ...result, tools } };
+}
+function withJsonSchema2020_12(transport2) {
+  const originalSend = transport2.send.bind(transport2);
+  transport2.send = (message, options) => originalSend(normalizeOutgoingMessage(message), options);
+  return transport2;
+}
+
 // src/index.ts
 loadFileConfig();
-var MESSAGE_ID_SCHEMA = external_exports.string().regex(/^(\d+|imap:[A-Za-z0-9_-]+)$/, "Message ID must be numeric or an IMAP id (imap:\u2026)");
-var BATCH_IDS_SCHEMA = external_exports.array(MESSAGE_ID_SCHEMA).min(1, "At least one message ID is required").max(100, "Cannot process more than 100 messages in a single batch");
+var BATCH_SOURCE_MAILBOX_SCHEMA = external_exports.string().optional().describe(
+  "Mailbox the numeric ids were listed from (e.g. 'INBOX'). Must be paired with sourceAccount to form an unambiguous scope. Ignored for imap: ids."
+);
+var BATCH_SOURCE_ACCOUNT_SCHEMA = external_exports.string().optional().describe(
+  "Account the numeric ids were listed from. Required when sourceMailbox is supplied; on its own it pins nothing."
+);
 var FLAG_COLOR_INDEX = {
   red: 0,
   orange: 1,
@@ -83346,29 +87099,6 @@ var FLAG_COLOR_INDEX = {
 var FLAG_COLOR_SCHEMA = external_exports.enum(["red", "orange", "yellow", "green", "blue", "purple", "gray", "grey"]).optional().describe(
   "Optional flag color (Apple Mail palette: red, orange, yellow, green, blue, purple, gray \u2014 'grey' accepted). Omit for Mail's default flag. The color is applied on both routes: AppleScript sets the flag index, and IMAP writes the equivalent $MailFlagBit0/1/2 keywords Mail.app reads \u2014 so a smart mailbox keyed on flag color matches either way."
 );
-var DATE_FILTER_SCHEMA = external_exports.string().regex(
-  /^[a-zA-Z0-9 ,/\-:]+$/,
-  "Date must contain only alphanumeric characters, spaces, commas, slashes, hyphens, and colons"
-).refine((val) => !isNaN(new Date(val).getTime()), {
-  message: "Date string must be a valid date (e.g., 'January 1, 2026' or '2026-03-15')"
-}).optional();
-var ATTACHMENTS_SCHEMA = external_exports.array(
-  external_exports.union([
-    external_exports.string().describe("Absolute path to an existing file"),
-    external_exports.object({
-      filename: external_exports.string().min(1).max(255).describe("Filename to give the attachment"),
-      contentBase64: external_exports.string().min(1).max(
-        MAX_INLINE_ATTACHMENT_BASE64_INPUT_CHARS,
-        "Inline attachment exceeds the 25 MiB decoded size limit"
-      ).refine(
-        isInlineAttachmentBase64WithinLimit,
-        "Inline attachment exceeds the 25 MiB decoded size limit"
-      ).describe("Base64-encoded file content (maximum 25 MiB decoded)")
-    })
-  ])
-).max(20, "Cannot attach more than 20 files").optional().describe(
-  "Files to attach: absolute paths (e.g. '/Users/me/report.pdf') and/or inline {filename, contentBase64} objects up to 25 MiB decoded each."
-);
 var MESSAGE_ROW_SCHEMA = external_exports.object({}).passthrough();
 var LIST_OUTPUT_SCHEMA = {
   messages: external_exports.array(MESSAGE_ROW_SCHEMA).optional(),
@@ -83376,14 +87106,53 @@ var LIST_OUTPUT_SCHEMA = {
   partial: external_exports.boolean().optional(),
   skippedLargeMailboxes: external_exports.array(external_exports.string()).optional(),
   notSearchedMailboxes: external_exports.array(external_exports.string()).optional(),
-  timedOutAccounts: external_exports.array(external_exports.string()).optional()
+  timedOutAccounts: external_exports.array(external_exports.string()).optional(),
+  failedMailboxes: external_exports.array(external_exports.string()).optional()
 };
 var BATCH_COUNT_OUTPUT_SCHEMA = {
   ok: external_exports.boolean().optional(),
   success: external_exports.number().optional(),
   failed: external_exports.number().optional(),
-  mailbox: external_exports.string().optional()
+  mailbox: external_exports.string().optional(),
+  // Declared so the failure channel is part of the tool's advertised CONTRACT:
+  // a client can rely on `errors` being string[] and code against it, and it
+  // shows up in generated types and docs. Declaring is not what makes it
+  // deliverable — registerTool() wraps every outputSchema in
+  // `z.object(shape).passthrough()`, so these tools advertise
+  // `additionalProperties: true` (verified against the built server) and an
+  // undeclared key would be carried through, not rejected. Enumerating it is a
+  // promise to callers, not a workaround for a validator.
+  errors: external_exports.array(external_exports.string()).optional(),
+  // Set when `errors` was capped (MAX_STRUCTURED_BATCH_ERRORS distinct reasons),
+  // so a short list is never mistaken for the complete one.
+  errorsTruncated: external_exports.boolean().optional()
 };
+var COUNT_DELTA_OUTPUT_SCHEMA = external_exports.array(
+  external_exports.object({
+    account: external_exports.string().optional(),
+    mailbox: external_exports.string().optional(),
+    before: external_exports.number().nullable().optional(),
+    after: external_exports.number().nullable().optional(),
+    // Nullable for the same reason before/after/observed are: null means no
+    // comparison was possible. For `expected` that is a move whose
+    // destination IS the source mailbox — it always pairs with
+    // `status: "unknown"`, and never with a warning.
+    expected: external_exports.number().nullable().optional(),
+    observed: external_exports.number().nullable().optional(),
+    status: external_exports.enum(["match", "over", "unknown"]).optional(),
+    // Declared explicitly: the SDK stamps additionalProperties:false on a bare
+    // zod shape, so an undeclared key makes the CLIENT reject the result.
+    unknownReason: external_exports.enum(["count-unreadable", "no-expectation", "count-did-not-move", "count-partial"]).optional(),
+    note: external_exports.string().optional()
+  })
+).optional();
+var VERIFICATION_OUTPUT_SCHEMA = external_exports.object({
+  verdict: external_exports.enum(["verified", "unverified"]),
+  /** Present on `verified`: what was observed. */
+  how: external_exports.string().optional(),
+  /** Present on `unverified`: why no observation was possible. */
+  why: external_exports.string().optional()
+}).optional();
 var CHECK_ITEM_SCHEMA = external_exports.object({}).passthrough();
 var require2 = createRequire(import.meta.url);
 var { version: version2 } = require2("../package.json");
@@ -83417,8 +87186,9 @@ function mergedMessageResponse(fan, apple, limit, verb) {
   const merged = mergeMessages(fan.rows, apple.rows, limit);
   const diagnostics = {
     ...apple.diagnostics,
-    partial: apple.diagnostics.partial || fan.accountsFailed.length > 0,
-    timedOutAccounts: [...apple.diagnostics.timedOutAccounts, ...fan.accountsFailed]
+    partial: apple.diagnostics.partial || fan.accountsFailed.length > 0 || fan.failedMailboxes.length > 0,
+    timedOutAccounts: [...apple.diagnostics.timedOutAccounts, ...fan.accountsFailed],
+    notSearchedMailboxes: [...apple.diagnostics.notSearchedMailboxes, ...fan.failedMailboxes]
   };
   const structured = {
     messages: merged,
@@ -83426,7 +87196,8 @@ function mergedMessageResponse(fan, apple, limit, verb) {
     partial: diagnostics.partial,
     skippedLargeMailboxes: diagnostics.skippedLargeMailboxes,
     notSearchedMailboxes: diagnostics.notSearchedMailboxes,
-    timedOutAccounts: diagnostics.timedOutAccounts
+    timedOutAccounts: diagnostics.timedOutAccounts,
+    failedMailboxes: fan.failedMailboxes
   };
   const coverageBlock = partialCoverageBlock(diagnostics);
   if (merged.length === 0) {
@@ -83463,25 +87234,14 @@ function registerTool(name, config2, cb) {
 }
 var mailManager = new AppleMailManager();
 registerResourcesAndPrompts(server, mailManager);
-async function hybridBatchCounts(ids, appleFn, imapFn) {
-  const imapIds = ids.filter((i) => i.startsWith("imap:"));
-  const numericIds = ids.filter((i) => !i.startsWith("imap:"));
-  let success = 0;
-  let fail = 0;
-  const errors = [];
-  if (numericIds.length > 0) {
-    const res = appleFn(numericIds);
-    const s = res.filter((r) => r.success).length;
-    success += s;
-    fail += res.length - s;
-  }
-  if (imapIds.length > 0) {
-    const r = await imapFn(imapIds);
-    success += r.success;
-    fail += r.failed;
-    errors.push(...r.errors);
-  }
-  return { success, fail, errors };
+function collectForensics(tool, args) {
+  const report = mailManager.consumeLastForensics();
+  if (!report) return { warnings: [] };
+  writeDestructiveAudit({ tool, args, serverVersion: version2 }, report);
+  return {
+    ...report.countDeltas.length > 0 ? { countDelta: report.countDeltas } : {},
+    warnings: reconciliationWarnings(report)
+  };
 }
 registerTool(
   "search-messages",
@@ -83533,7 +87293,8 @@ registerTool(
           return successResponse(r.text, {
             messages: r.messages,
             count: r.count,
-            partial: r.partial
+            partial: r.partial,
+            failedMailboxes: r.failedMailboxes
           });
         }
         const fan = await fanOutImapMessages(imapArgs, "search");
@@ -83630,11 +87391,11 @@ Do not use when: you don't yet have an id (use search-messages or list-messages 
       // structuredContent matches the AppleScript branch's shape.
       structuredFromResult: (r) => {
         if (!r.info) return void 0;
-        const sep2 = r.info.indexOf("\n\n");
+        const sep3 = r.info.indexOf("\n\n");
         return {
           id,
           subject: subjectFromGetMessage(r.info),
-          body: sep2 >= 0 ? r.info.slice(sep2 + 2) : r.info,
+          body: sep3 >= 0 ? r.info.slice(sep3 + 2) : r.info,
           isHtml: preferHtml === true,
           rfcMessageId: extractRfcMessageIdFromSource(r.info)
         };
@@ -83644,7 +87405,10 @@ Do not use when: you don't yet have an id (use search-messages or list-messages 
           account,
           mailbox
         });
-        if (!content) return errorResponse(`Message with ID "${id}" not found`);
+        if (!content) {
+          const lookupError = mailManager.consumeLastMessageLookupError();
+          return errorResponse(lookupError ?? `Message with ID "${id}" not found`);
+        }
         const isHtml = preferHtml === true && !!content.htmlContent;
         const body = isHtml ? content.htmlContent : content.plainText;
         return successResponse(`Subject: ${content.subject}
@@ -83677,7 +87441,8 @@ registerTool(
       subject: external_exports.string().optional(),
       messages: external_exports.array(MESSAGE_ROW_SCHEMA).optional(),
       count: external_exports.number().optional(),
-      partial: external_exports.boolean().optional()
+      partial: external_exports.boolean().optional(),
+      failedMailboxes: external_exports.array(external_exports.string()).optional()
     }
   },
   withErrorHandling(async ({ id, account, mailbox, limit = 50 }) => {
@@ -83705,7 +87470,8 @@ ${r.text}`, {
           subject: base,
           messages: r.messages,
           count: r.count,
-          partial: r.partial
+          partial: r.partial,
+          failedMailboxes: r.failedMailboxes
         });
       }
       const fan = await fanOutImapMessages({ subject: base, mailbox, limit }, "search");
@@ -83730,17 +87496,19 @@ ${r.text}`, {
       const orderedRows = mergedNewestFirst.slice().reverse().sort(
         (a, b) => (a.dateReceived ? new Date(a.dateReceived).getTime() : 0) - (b.dateReceived ? new Date(b.dateReceived).getTime() : 0)
       );
-      const partial2 = apple.diagnostics.partial || fan.accountsFailed.length > 0;
+      const partial2 = apple.diagnostics.partial || fan.accountsFailed.length > 0 || fan.failedMailboxes.length > 0;
       const coverage = partialCoverageBlock({
         ...apple.diagnostics,
         partial: partial2,
-        timedOutAccounts: [...apple.diagnostics.timedOutAccounts, ...fan.accountsFailed]
+        timedOutAccounts: [...apple.diagnostics.timedOutAccounts, ...fan.accountsFailed],
+        notSearchedMailboxes: [...apple.diagnostics.notSearchedMailboxes, ...fan.failedMailboxes]
       });
       const structured2 = {
         subject: base,
         messages: orderedRows,
         count: orderedRows.length,
-        partial: partial2
+        partial: partial2,
+        failedMailboxes: fan.failedMailboxes
       };
       if (orderedRows.length === 0) {
         return successResponse(`No messages found in thread "${base}".${coverage}`, structured2);
@@ -83803,7 +87571,8 @@ registerTool(
         return successResponse(r.text, {
           messages: r.messages,
           count: r.count,
-          partial: r.partial
+          partial: r.partial,
+          failedMailboxes: r.failedMailboxes
         });
       }
       const fan = await fanOutImapMessages({ mailbox, limit, offset, from, unreadOnly }, "list");
@@ -83994,6 +87763,23 @@ function resolveSmtpOrFallback() {
     return null;
   }
 }
+async function toNumericMailId(id) {
+  const ref = decodeImapId(id);
+  if (!ref) return { numericId: id };
+  const messageId = await imapFetchMessageId(id);
+  if (!messageId) {
+    return {
+      error: `could not read the RFC Message-ID for "${id}" over IMAP, which is what maps it to a Mail.app id. Pass the numeric id instead (see the resolve-message-id tool).`
+    };
+  }
+  const numericId = mailManager.findNumericIdByMessageId(messageId, ref.account);
+  if (!numericId) {
+    return {
+      error: `Mail.app has no message with Message-ID <${messageId}> in account "${ref.account}", so this IMAP message has no numeric id to reply to or forward. It may not have synced to Mail.app yet.`
+    };
+  }
+  return { numericId };
+}
 async function sendReplyViaSmtp(id, body, replyAll) {
   const cfg = resolveSmtpOrFallback();
   if (!cfg) return { sent: false, fallback: true };
@@ -84052,17 +87838,23 @@ registerTool(
   },
   withErrorHandling(async ({ id, body, replyAll, send }) => {
     if (send && isSmtpConfigured()) {
-      const outcome = await sendReplyViaSmtp(id, body, replyAll);
-      if (outcome.sent) {
+      const outcome2 = await sendReplyViaSmtp(id, body, replyAll);
+      if (outcome2.sent) {
         return successResponse("Reply sent", { ok: true, sent: true, id });
       }
-      if (!outcome.fallback) {
-        return errorResponse(`Failed to reply to message "${id}" via SMTP: ${outcome.error}`);
+      if (!outcome2.fallback) {
+        return errorResponse(`Failed to reply to message "${id}" via SMTP: ${outcome2.error}`);
       }
     }
-    const success = mailManager.replyToMessage(id, body, replyAll, send);
-    if (!success) {
-      return errorResponse(`Failed to reply to message "${id}"`);
+    const resolvedReply = await toNumericMailId(id);
+    if (!resolvedReply.numericId) {
+      return errorResponse(`Failed to reply to message "${id}": ${resolvedReply.error}`);
+    }
+    const outcome = mailManager.replyToMessage(resolvedReply.numericId, body, replyAll, send);
+    if (!outcome.success) {
+      return errorResponse(
+        outcome.error ? `Failed to reply to message "${id}": ${outcome.error}` : `Failed to reply to message "${id}"`
+      );
     }
     return successResponse(send ? "Reply sent" : "Reply saved as draft", {
       ok: true,
@@ -84090,8 +87882,8 @@ registerTool(
   },
   withErrorHandling(async ({ id, to, body, send }) => {
     if (send && isSmtpConfigured()) {
-      const outcome = await sendForwardViaSmtp(id, to, body);
-      if (outcome.sent) {
+      const outcome2 = await sendForwardViaSmtp(id, to, body);
+      if (outcome2.sent) {
         return successResponse(`Message forwarded to ${to.join(", ")}`, {
           ok: true,
           sent: true,
@@ -84099,13 +87891,19 @@ registerTool(
           id
         });
       }
-      if (!outcome.fallback) {
-        return errorResponse(`Failed to forward message "${id}" via SMTP: ${outcome.error}`);
+      if (!outcome2.fallback) {
+        return errorResponse(`Failed to forward message "${id}" via SMTP: ${outcome2.error}`);
       }
     }
-    const success = mailManager.forwardMessage(id, to, body, send);
-    if (!success) {
-      return errorResponse(`Failed to forward message "${id}"`);
+    const resolvedFwd = await toNumericMailId(id);
+    if (!resolvedFwd.numericId) {
+      return errorResponse(`Failed to forward message "${id}": ${resolvedFwd.error}`);
+    }
+    const outcome = mailManager.forwardMessage(resolvedFwd.numericId, to, body, send);
+    if (!outcome.success) {
+      return errorResponse(
+        outcome.error ? `Failed to forward message "${id}": ${outcome.error}` : `Failed to forward message "${id}"`
+      );
     }
     return successResponse(
       send ? `Message forwarded to ${to.join(", ")}` : "Forward saved as draft",
@@ -84212,14 +88010,29 @@ registerTool(
     inputSchema: {
       id: MESSAGE_ID_SCHEMA
     },
-    outputSchema: { ok: external_exports.boolean().optional(), id: external_exports.string().optional() }
+    outputSchema: {
+      ok: external_exports.boolean().optional(),
+      id: external_exports.string().optional(),
+      countDelta: COUNT_DELTA_OUTPUT_SCHEMA,
+      verification: VERIFICATION_OUTPUT_SCHEMA
+    }
   },
   withErrorHandling(
     ({ id }) => routeMessage(id, {
       imap: () => imapDeleteMessageById(id),
       apple: () => {
         const { success, error: error2 } = mailManager.deleteMessage(id);
-        return success ? successResponse("Message deleted", { ok: true, id }) : errorResponse(error2 || `Failed to delete message "${id}"`);
+        const { countDelta, warnings } = collectForensics("delete-message", { id });
+        return success ? successResponse(
+          `Message deleted${warnings.length ? `
+
+${warnings.join("\n")}` : ""}`,
+          {
+            ok: true,
+            id,
+            ...countDelta ? { countDelta } : {}
+          }
+        ) : errorResponse(error2 || `Failed to delete message "${id}"`);
       },
       ok: "Message deleted",
       fail: `Failed to delete message "${id}"`,
@@ -84240,7 +88053,9 @@ registerTool(
     outputSchema: {
       ok: external_exports.boolean().optional(),
       id: external_exports.string().optional(),
-      mailbox: external_exports.string().optional()
+      mailbox: external_exports.string().optional(),
+      countDelta: COUNT_DELTA_OUTPUT_SCHEMA,
+      verification: VERIFICATION_OUTPUT_SCHEMA
     }
   },
   withErrorHandling(
@@ -84248,7 +88063,17 @@ registerTool(
       imap: () => imapMoveMessageById(id, mailbox),
       apple: () => {
         const { success, error: error2 } = mailManager.moveMessage(id, mailbox, account);
-        return success ? successResponse(`Message moved to "${mailbox}"`, { ok: true, id, mailbox }) : errorResponse(error2 || `Failed to move message to "${mailbox}"`);
+        const { countDelta, warnings } = collectForensics("move-message", {
+          id,
+          mailbox,
+          account
+        });
+        return success ? successResponse(
+          `Message moved to "${mailbox}"${warnings.length ? `
+
+${warnings.join("\n")}` : ""}`,
+          { ok: true, id, mailbox, ...countDelta ? { countDelta } : {} }
+        ) : errorResponse(error2 || `Failed to move message to "${mailbox}"`);
       },
       ok: `Message moved to "${mailbox}"`,
       fail: `Failed to move message to "${mailbox}"`,
@@ -84257,176 +88082,146 @@ registerTool(
     "Error moving message"
   )
 );
+var batchMutationDeps = {
+  batchDeleteMessages: (ids, scope) => mailManager.batchDeleteMessages(ids, scope),
+  batchMoveMessages: (ids, mailbox, account, scope) => mailManager.batchMoveMessages(ids, mailbox, account, scope),
+  imapBatchDelete: (ids) => imapBatchDelete(ids),
+  imapBatchMove: (ids, mailbox, opts) => imapBatchMove(ids, mailbox, opts),
+  collectForensics: (tool, args) => collectForensics(tool, args)
+};
 registerTool(
   "batch-delete-messages",
   {
-    description: "Use when: deleting multiple messages in one call (1\u2013100 ids; moves them to Trash).\nReturns: counts of how many were deleted and how many failed.\nDo not use when: deleting just one (use delete-message) or filing messages away (use batch-move-messages).\nSafety: destructive and applies to many messages at once \u2014 require explicit user confirmation, and search-messages/list-messages first to confirm every id is correct before deleting.",
+    description: "Use when: deleting multiple messages in one call (1\u2013100 ids; moves them to Trash).\nReturns: counts of how many were deleted and how many failed, plus the distinct reasons for any failures.\nDo not use when: deleting just one (use delete-message) or filing messages away (use batch-move-messages).\nSafety: destructive and applies to many messages at once \u2014 require explicit user confirmation, and search-messages/list-messages first to confirm every id is correct before deleting. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
-      ids: BATCH_IDS_SCHEMA
+      ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA
     },
-    outputSchema: BATCH_COUNT_OUTPUT_SCHEMA
+    outputSchema: { ...BATCH_COUNT_OUTPUT_SCHEMA, countDelta: COUNT_DELTA_OUTPUT_SCHEMA }
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
-      ids,
-      (n) => mailManager.batchDeleteMessages(n),
-      (im) => imapBatchDelete(im)
-    );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-    if (failCount === 0) {
-      return successResponse(`Successfully deleted ${successCount} message(s)`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to delete all ${failCount} message(s)`);
-    } else {
-      return successResponse(`Deleted ${successCount} message(s), ${failCount} failed`, structured);
-    }
-  }, "Error batch deleting messages")
+  withErrorHandling(
+    async ({ ids, sourceMailbox, sourceAccount }) => runBatchDelete(batchMutationDeps, { ids, sourceMailbox, sourceAccount }),
+    "Error batch deleting messages"
+  )
 );
 registerTool(
   "batch-move-messages",
   {
-    description: "Use when: moving multiple messages (1\u2013100 ids) into the same destination mailbox/folder in one call, e.g. bulk archiving.\nReturns: counts of how many were moved and how many failed.\nDo not use when: moving just one (use move-message) or deleting (use batch-delete-messages). Use list-mailboxes to confirm the destination name exists.\nSafety: moves many real messages at once \u2014 confirm the destination mailbox, and search-messages/list-messages first to confirm the ids.",
+    description: "Use when: moving multiple messages (1\u2013100 ids) into the same destination mailbox/folder in one call, e.g. bulk archiving.\nReturns: counts of how many were moved and how many failed, plus the distinct reasons for any failures.\nDo not use when: moving just one (use move-message) or deleting (use batch-delete-messages). Use list-mailboxes to confirm the destination name exists.\nSafety: moves many real messages at once \u2014 confirm the destination mailbox, and search-messages/list-messages first to confirm the ids. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from \u2014 not the destination) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
       mailbox: external_exports.string().min(1, "Destination mailbox is required"),
-      account: external_exports.string().optional().describe("Account containing the destination mailbox")
+      account: external_exports.string().optional().describe("Account containing the destination mailbox"),
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA
     },
-    outputSchema: BATCH_COUNT_OUTPUT_SCHEMA
+    outputSchema: { ...BATCH_COUNT_OUTPUT_SCHEMA, countDelta: COUNT_DELTA_OUTPUT_SCHEMA }
   },
-  withErrorHandling(async ({ ids, mailbox, account }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
-      ids,
-      (n) => mailManager.batchMoveMessages(n, mailbox, account),
-      (im) => imapBatchMove(im, mailbox, { account })
-    );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount, mailbox };
-    if (failCount === 0) {
-      return successResponse(
-        `Successfully moved ${successCount} message(s) to "${mailbox}"`,
-        structured
-      );
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to move all ${failCount} message(s)`);
-    } else {
-      return successResponse(
-        `Moved ${successCount} message(s) to "${mailbox}", ${failCount} failed`,
-        structured
-      );
-    }
-  }, "Error batch moving messages")
+  withErrorHandling(
+    async ({ ids, mailbox, account, sourceMailbox, sourceAccount }) => runBatchMove(batchMutationDeps, { ids, mailbox, account, sourceMailbox, sourceAccount }),
+    "Error batch moving messages"
+  )
 );
 registerTool(
   "batch-mark-as-read",
   {
-    description: "Use when: marking multiple messages (1\u2013100 ids) as read in one call.\nReturns: counts of how many were marked read and how many failed.\nDo not use when: marking just one (use mark-as-read) or marking unread (use batch-mark-as-unread). Get the ids from search-messages or list-messages first.",
+    description: "Use when: marking multiple messages (1\u2013100 ids) as read in one call.\nReturns: counts of how many were marked read and how many failed.\nDo not use when: marking just one (use mark-as-read) or marking unread (use batch-mark-as-unread). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
-      ids: BATCH_IDS_SCHEMA
+      ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+  withErrorHandling(async ({ ids, sourceMailbox, sourceAccount }) => {
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchMarkAsRead(n),
+      (n) => mailManager.batchMarkAsRead(n, { account: sourceAccount, mailbox: sourceMailbox }),
       (im) => imapBatchMarkRead(im)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-    if (failCount === 0) {
-      return successResponse(`Successfully marked ${successCount} message(s) as read`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to mark all ${failCount} message(s) as read`);
-    } else {
-      return successResponse(
-        `Marked ${successCount} message(s) as read, ${failCount} failed`,
-        structured
-      );
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully marked ${n} message(s) as read`,
+      allFailed: (n) => `Failed to mark all ${n} message(s) as read`,
+      partial: (ok, failed) => `Marked ${ok} message(s) as read, ${failed} failed`
+    });
   }, "Error batch marking messages as read")
 );
 registerTool(
   "batch-mark-as-unread",
   {
-    description: "Use when: marking multiple messages (1\u2013100 ids) as unread in one call.\nReturns: counts of how many were marked unread and how many failed.\nDo not use when: marking just one (use mark-as-unread) or marking read (use batch-mark-as-read). Get the ids from search-messages or list-messages first.",
+    description: "Use when: marking multiple messages (1\u2013100 ids) as unread in one call.\nReturns: counts of how many were marked unread and how many failed.\nDo not use when: marking just one (use mark-as-unread) or marking read (use batch-mark-as-read). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
-      ids: BATCH_IDS_SCHEMA
+      ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+  withErrorHandling(async ({ ids, sourceMailbox, sourceAccount }) => {
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchMarkAsUnread(n),
+      (n) => mailManager.batchMarkAsUnread(n, { account: sourceAccount, mailbox: sourceMailbox }),
       (im) => imapBatchMarkUnread(im)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-    if (failCount === 0) {
-      return successResponse(
-        `Successfully marked ${successCount} message(s) as unread`,
-        structured
-      );
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to mark all ${failCount} message(s) as unread`);
-    } else {
-      return successResponse(
-        `Marked ${successCount} message(s) as unread, ${failCount} failed`,
-        structured
-      );
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully marked ${n} message(s) as unread`,
+      allFailed: (n) => `Failed to mark all ${n} message(s) as unread`,
+      partial: (ok, failed) => `Marked ${ok} message(s) as unread, ${failed} failed`
+    });
   }, "Error batch marking messages as unread")
 );
 registerTool(
   "batch-flag-messages",
   {
-    description: "Use when: flagging multiple messages (1\u2013100 ids) in one call, optionally with a color (red/orange/yellow/green/blue/purple/gray).\nReturns: counts of how many were flagged and how many failed.\nDo not use when: flagging just one (use flag-message) or removing flags (use batch-unflag-messages). Get the ids from search-messages or list-messages first.\nNote: the color is applied on both routes \u2014 AppleScript sets the flag index, IMAP writes the equivalent $MailFlagBit0/1/2 keywords Mail.app reads \u2014 so a mixed batch of numeric and `imap:` ids all end up colored.",
+    description: "Use when: flagging multiple messages (1\u2013100 ids) in one call, optionally with a color (red/orange/yellow/green/blue/purple/gray).\nReturns: counts of how many were flagged and how many failed.\nDo not use when: flagging just one (use flag-message) or removing flags (use batch-unflag-messages). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.\nNote: the color is applied on both routes \u2014 AppleScript sets the flag index, IMAP writes the equivalent $MailFlagBit0/1/2 keywords Mail.app reads \u2014 so a mixed batch of numeric and `imap:` ids all end up colored.",
     inputSchema: {
       ids: BATCH_IDS_SCHEMA,
-      color: FLAG_COLOR_SCHEMA
+      color: FLAG_COLOR_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA
   },
-  withErrorHandling(async ({ ids, color }) => {
+  withErrorHandling(async ({ ids, color, sourceMailbox, sourceAccount }) => {
     const colorIndex = color ? FLAG_COLOR_INDEX[color] : void 0;
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchFlagMessages(n, colorIndex),
+      (n) => mailManager.batchFlagMessages(n, colorIndex, {
+        account: sourceAccount,
+        mailbox: sourceMailbox
+      }),
       (im) => imapBatchFlag(im, colorIndex)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-    if (failCount === 0) {
-      return successResponse(`Successfully flagged ${successCount} message(s)`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to flag all ${failCount} message(s)`);
-    } else {
-      return successResponse(`Flagged ${successCount} message(s), ${failCount} failed`, structured);
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully flagged ${n} message(s)`,
+      allFailed: (n) => `Failed to flag all ${n} message(s)`,
+      partial: (ok, failed) => `Flagged ${ok} message(s), ${failed} failed`
+    });
   }, "Error batch flagging messages")
 );
 registerTool(
   "batch-unflag-messages",
   {
-    description: "Use when: removing flags from multiple messages (1\u2013100 ids) in one call.\nReturns: counts of how many were unflagged and how many failed.\nDo not use when: unflagging just one (use unflag-message) or adding flags (use batch-flag-messages). Get the ids from search-messages or list-messages first.",
+    description: "Use when: removing flags from multiple messages (1\u2013100 ids) in one call.\nReturns: counts of how many were unflagged and how many failed.\nDo not use when: unflagging just one (use unflag-message) or adding flags (use batch-flag-messages). Get the ids from search-messages or list-messages first. Pass sourceMailbox/sourceAccount (the mailbox you listed the ids from) so each numeric id is pinned to that mailbox; an id that matches in several mailboxes is refused, not guessed.",
     inputSchema: {
-      ids: BATCH_IDS_SCHEMA
+      ids: BATCH_IDS_SCHEMA,
+      sourceMailbox: BATCH_SOURCE_MAILBOX_SCHEMA,
+      sourceAccount: BATCH_SOURCE_ACCOUNT_SCHEMA
     },
     outputSchema: BATCH_COUNT_OUTPUT_SCHEMA
   },
-  withErrorHandling(async ({ ids }) => {
-    const { success: successCount, fail: failCount } = await hybridBatchCounts(
+  withErrorHandling(async ({ ids, sourceMailbox, sourceAccount }) => {
+    const counts = await hybridBatchCounts(
       ids,
-      (n) => mailManager.batchUnflagMessages(n),
+      (n) => mailManager.batchUnflagMessages(n, { account: sourceAccount, mailbox: sourceMailbox }),
       (im) => imapBatchUnflag(im)
     );
-    const structured = { ok: failCount === 0, success: successCount, failed: failCount };
-    if (failCount === 0) {
-      return successResponse(`Successfully unflagged ${successCount} message(s)`, structured);
-    } else if (successCount === 0) {
-      return errorResponse(`Failed to unflag all ${failCount} message(s)`);
-    } else {
-      return successResponse(
-        `Unflagged ${successCount} message(s), ${failCount} failed`,
-        structured
-      );
-    }
+    return batchResponse(counts, {
+      allSucceeded: (n) => `Successfully unflagged ${n} message(s)`,
+      allFailed: (n) => `Failed to unflag all ${n} message(s)`,
+      partial: (ok, failed) => `Unflagged ${ok} message(s), ${failed} failed`
+    });
   }, "Error batch unflagging messages")
 );
 registerTool(
@@ -84530,7 +88325,7 @@ registerTool(
       if (!r.success || !r.base64) {
         return errorResponse(r.error || `Failed to fetch attachment "${attachmentName}"`);
       }
-      writeFileSync4(target.savedPath, Buffer.from(r.base64, "base64"));
+      writeFileSync6(target.savedPath, Buffer.from(r.base64, "base64"), { flag: "wx", mode: 384 });
       return successResponse(`Attachment "${attachmentName}" saved to ${savePath}`, {
         ok: true,
         attachmentName,
@@ -84551,7 +88346,7 @@ registerTool(
 registerTool(
   "fetch-attachment",
   {
-    description: "Use when: retrieving an attachment's raw bytes inline as base64 (by message id and attachmentName), e.g. to process its contents without touching disk.\nReturns: the attachment's bytes base64-encoded, with its size and (for IMAP) MIME type.\nDo not use when: you don't know the attachment name (use list-attachments first) or you just want it saved to disk (use save-attachment).",
+    description: "Use when: retrieving an attachment's raw bytes inline as base64 (by message id and attachmentName), e.g. to process its contents without keeping a file.\nReturns: the attachment's bytes base64-encoded, with its size and (for IMAP) MIME type.\nDo not use when: you don't know the attachment name (use list-attachments first) or you just want it saved to disk (use save-attachment).\nSafety: leaves no file behind, but the AppleScript path is not disk-free \u2014 Mail writes the attachment into a private temp directory, which is read back and then deleted. Needs no Full Disk Access either way: Mail performs that write under the Automation grant, and this server never reads the mail store itself.",
     inputSchema: {
       id: MESSAGE_ID_SCHEMA,
       attachmentName: external_exports.string().min(1, "Attachment name is required")
@@ -84588,16 +88383,36 @@ ${r.base64}`,
     );
   }, "Error fetching attachment")
 );
+function appendLocalStoreRows(rows, failedAccounts) {
+  const checked = mailManager.listMailboxesChecked(LOCAL_STORE_LABEL);
+  if (checked.failed) {
+    console.error(`list-mailboxes failed for "${LOCAL_STORE_LABEL}": ${checked.error}`);
+    failedAccounts.push(LOCAL_STORE_LABEL);
+    return;
+  }
+  for (const mb of checked.mailboxes) {
+    rows.push({
+      name: `${LOCAL_STORE_LABEL}/${mb.name}`,
+      account: LOCAL_STORE_LABEL,
+      unreadCount: mb.unreadCount,
+      messageCount: mb.messageCount
+    });
+  }
+}
 registerTool(
   "list-mailboxes",
   {
-    description: "Use when: discovering the mailbox/folder names (and unread/message counts) available in an account, e.g. before moving messages or searching a specific mailbox.\nReturns: each mailbox's name with its unread (and, for IMAP, total message) count, plus a count.\nDo not use when: you want the messages inside a mailbox (use list-messages or search-messages) or the list of accounts (use list-accounts).",
+    description: 'Use when: discovering the mailbox/folder paths (and unread/message counts) available in an account, e.g. before moving messages or searching a specific mailbox.\nReturns: each mailbox\'s canonical account-relative path in `name`, unread/message counts, and a total count. Use the full path for nested mailboxes (for example `Archive/Inbox`); a top-level `Inbox` remains `Inbox`. A source that could not be read is NAMED \u2014 the result carries `partial: true` + `failedAccounts` and the list is a floor, not the complete set \u2014 and a listing Mail refused outright (e.g. an account that does not exist) returns an ERROR naming the accounts that do exist, never an empty list.\nDo not use when: you want the messages inside a mailbox (use list-messages or search-messages) or the list of accounts (use list-accounts).\nNote: Mail\'s local "On My Mac" mailboxes are not part of any account, so they are reported under the synthetic account label "On My Mac" \u2014 an unscoped call includes them, and `account: "On My Mac"` lists only them. They will not appear in list-accounts, which reports real accounts only.',
     inputSchema: {
       account: external_exports.string().optional().describe("Account to list mailboxes from")
     },
     outputSchema: {
       mailboxes: external_exports.array(external_exports.object({}).passthrough()).optional(),
-      count: external_exports.number().optional()
+      count: external_exports.number().optional(),
+      // Declared explicitly: the SDK stamps additionalProperties:false on a bare
+      // zod shape, so an undeclared key makes the CLIENT reject the result.
+      partial: external_exports.boolean().optional(),
+      failedAccounts: external_exports.array(external_exports.string()).optional()
     }
   },
   withErrorHandling(async ({ account }) => {
@@ -84619,6 +88434,7 @@ ${list2}`, structured3);
       }
       const configs = resolveImapConfigs();
       const rows = [];
+      const failedAccounts = [];
       for (const config2 of configs) {
         try {
           const boxes = await imapListMailboxes({ config: config2 });
@@ -84632,11 +88448,18 @@ ${list2}`, structured3);
           }
         } catch (e) {
           console.error(`IMAP list-mailboxes failed for "${config2.accountLabel}": ${String(e)}`);
+          failedAccounts.push(config2.accountLabel);
         }
       }
       const { appleScriptOnly } = partitionAccountsForCounts(mailManager.listAccounts(), configs);
       for (const acct of appleScriptOnly) {
-        for (const mb of mailManager.listMailboxes(acct.name)) {
+        const checked = mailManager.listMailboxesChecked(acct.name);
+        if (checked.failed) {
+          console.error(`list-mailboxes failed for "${acct.name}": ${checked.error}`);
+          failedAccounts.push(acct.name);
+          continue;
+        }
+        for (const mb of checked.mailboxes) {
           rows.push({
             name: `${acct.name}/${mb.name}`,
             account: acct.name,
@@ -84645,14 +88468,42 @@ ${list2}`, structured3);
           });
         }
       }
-      const structured2 = { mailboxes: rows, count: rows.length };
-      if (rows.length === 0) return successResponse("No mailboxes found", structured2);
+      appendLocalStoreRows(rows, failedAccounts);
+      const partial2 = failedAccounts.length > 0;
+      const structured2 = {
+        mailboxes: rows,
+        count: rows.length,
+        ...partial2 ? { partial: partial2, failedAccounts } : {}
+      };
+      const caveat = partial2 ? `
+
+PARTIAL \u2014 could not read: ${failedAccounts.join(", ")}. This list is incomplete.` : "";
+      if (rows.length === 0) {
+        return partial2 ? errorResponse(
+          `Could not list mailboxes from any source. Failed: ${failedAccounts.join(", ")}.`
+        ) : successResponse("No mailboxes found", structured2);
+      }
       const list = rows.map((b) => `  - ${b.name} (${b.unreadCount} unread)`).join("\n");
       return successResponse(`Found ${rows.length} mailbox(es):
-${list}`, structured2);
+${list}${caveat}`, structured2);
     }
-    const mailboxes = mailManager.listMailboxes(account);
-    const structured = { mailboxes, count: mailboxes.length };
+    const { mailboxes, failed, error: error2 } = mailManager.listMailboxesChecked(account);
+    if (failed) {
+      return errorResponse(
+        unlistableStoreError(
+          account,
+          error2,
+          mailManager.listAccounts().map((a) => a.name)
+        )
+      );
+    }
+    const localFailures = [];
+    if (account === void 0) appendLocalStoreRows(mailboxes, localFailures);
+    const structured = {
+      mailboxes,
+      count: mailboxes.length,
+      ...localFailures.length ? { partial: true, failedAccounts: localFailures } : {}
+    };
     if (mailboxes.length === 0) {
       return successResponse("No mailboxes found", structured);
     }
@@ -84944,6 +88795,672 @@ ${lines || "  (none met the threshold)"}`,
     );
   }, "Error creating newsletter smart mailboxes")
 );
+function toClusterMessages(messages) {
+  return messages.map((m) => ({
+    id: m.id,
+    subject: m.subject ?? "",
+    sender: m.sender ?? "",
+    account: m.account ?? "",
+    mailbox: m.mailbox ?? "INBOX"
+  }));
+}
+function listInboxForFilter(account, limit) {
+  const { messages } = mailManager.listMessagesWithDiagnostics("INBOX", account, limit);
+  return toClusterMessages(messages);
+}
+async function executeSortPlan(plan, messages, opts) {
+  const byAccountMailbox = /* @__PURE__ */ new Map();
+  const idToMsg = new Map(messages.map((m) => [m.id, m]));
+  const created = [];
+  const errors = [];
+  const movedFroms = [];
+  for (const item of plan.items) {
+    if (item.action !== "move") continue;
+    const msg = idToMsg.get(item.id);
+    const account = item.account || msg?.account || "";
+    const key = `${account}\0${item.destMailbox}`;
+    let g = byAccountMailbox.get(key);
+    if (!g) {
+      g = { account, mailbox: item.destMailbox, ids: [] };
+      byAccountMailbox.set(key, g);
+    }
+    g.ids.push(item.id);
+  }
+  let moved = 0;
+  let failed = 0;
+  for (const g of byAccountMailbox.values()) {
+    if (opts.ensureMailboxes && g.mailbox) {
+      const res = mailManager.createMailbox(g.mailbox, g.account || void 0);
+      if (res.success) {
+        created.push(g.account ? `${g.account}/${g.mailbox}` : g.mailbox);
+      } else if (res.error && !/already exists|existiert bereits|duplicate/i.test(res.error)) {
+        errors.push(`create-mailbox "${g.mailbox}": ${res.error}`);
+      }
+    }
+    for (let i = 0; i < g.ids.length; i += 100) {
+      const chunk = g.ids.slice(i, i + 100);
+      const {
+        success,
+        fail,
+        errors: batchErrs
+      } = await hybridBatchCounts(
+        chunk,
+        (n) => mailManager.batchMoveMessages(n, g.mailbox, g.account || void 0),
+        (im) => imapBatchMove(im, g.mailbox, { account: g.account || void 0 })
+      );
+      moved += success;
+      failed += fail;
+      errors.push(...batchErrs);
+      if (success > 0) {
+        for (const id of chunk) {
+          const m = idToMsg.get(id);
+          if (m) movedFroms.push(m.sender);
+        }
+      }
+    }
+  }
+  return { moved, failed, created, errors, movedFroms };
+}
+server.registerTool(
+  "filter-status",
+  {
+    description: "Use when: checking the self-learning inbox filter \u2014 memory path, how many domain\u2192mailbox mappings exist, LLM config, and top learned categories.\nReturns: mapping counts, mailboxes, confidence stats, whether an LLM API key is configured.\nDo not use when: you want to learn/sort now (use filter-learn / filter-auto-sort).",
+    inputSchema: {
+      memoryPath: external_exports.string().optional().describe("Override path to category-memory.json (default Application Support)")
+    },
+    outputSchema: {
+      mappingCount: external_exports.number().optional(),
+      llmConfigured: external_exports.boolean().optional()
+    }
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    const top = st.mappings.slice(0, 25).map(
+      (m) => `  - ${m.key} \u2192 ${m.mailbox} (conf ${m.confidence.toFixed(2)}, hits ${m.hits}, ${m.source})`
+    ).join("\n");
+    const text = [
+      `Self-learning filter status`,
+      `  memory: ${st.memoryPath}`,
+      `  mappings: ${st.mappingCount}`,
+      `  mailboxes: ${st.mailboxes.join(", ") || "(none yet)"}`,
+      `  LLM: ${st.llmConfigured ? `configured (${st.llmModel} @ ${st.llmBaseUrl})` : "not configured \u2014 domain fallback names only (set XAI_API_KEY)"}`,
+      `  updated: ${st.updatedAt}`,
+      top ? `Top mappings:
+${top}` : "  (no mappings \u2014 run filter-learn)"
+    ].join("\n");
+    return successResponse(text, st);
+  }, "Error reading filter status")
+);
+server.registerTool(
+  "filter-memory",
+  {
+    description: "Use when: listing everything the self-learning filter has stored (domain/email \u2192 mailbox, confidence, hits).\nReturns: full mapping table from category-memory.json.\nDo not use when: you want a short summary (use filter-status) or to change a mapping (use filter-correct / filter-forget).",
+    inputSchema: {
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      mappingCount: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ memoryPath }) => {
+    const st = memoryStatus(memoryPath);
+    if (st.mappingCount === 0) {
+      return successResponse(
+        "No learned mappings yet. Run filter-learn on the inbox first.",
+        st
+      );
+    }
+    const lines = st.mappings.map(
+      (m) => `  ${m.key} \u2192 ${m.mailbox}  conf=${m.confidence.toFixed(2)} hits=${m.hits} [${m.source}]`
+    ).join("\n");
+    return successResponse(
+      `Learned ${st.mappingCount} mapping(s) in ${st.memoryPath}:
+${lines}`,
+      st
+    );
+  }, "Error listing filter memory")
+);
+function runNewsletterSmartMailboxes(opts) {
+  const result = mailManager.createNewsletterSmartMailboxes(opts.dryRun, opts.minCount, opts.days);
+  const lines = (result.createdOrProposed || []).map((c) => {
+    const state = opts.dryRun ? "would create" : c.alreadyExisted ? "already existed" : c.success ? "created" : c.error ? `error: ${c.error}` : "ok";
+    return `  - ${c.name || "?"} <${c.email || "?"}> score ${c.score ?? "?"} [${state}]`;
+  }).join("\n");
+  const prefix = opts.dryRun ? `Newsletter smart mailboxes (dry-run): would create ${result.count}` : `Newsletter smart mailboxes: ${result.count} processed`;
+  return {
+    dryRun: result.dryRun,
+    count: result.count,
+    createdOrProposed: result.createdOrProposed,
+    text: `${prefix}:
+${lines || "  (none met the newsletter threshold)"}`
+  };
+}
+server.registerTool(
+  "filter-learn",
+  {
+    description: 'Use when: teaching the self-learning inbox filter from current INBOX mail \u2014 clusters by sender domain, names folders via LLM (or domain fallback), writes category-memory.json. By default also discovers newsletters and creates Apple Mail smart mailboxes named "NL: \u2026" per sender. Optionally apply moves immediately (apply=true).\nReturns: clusters, newsletter smart-mailbox results, optional move stats.\nNo preset categories: names emerge from your mail. Set XAI_API_KEY for semantic folder names.\nDo not use when: you only want to apply existing memory (use filter-auto-sort) or only newsletters (use create-newsletter-smart-mailboxes).',
+    inputSchema: {
+      account: external_exports.string().optional().describe("Limit to one Mail account"),
+      limit: external_exports.number().int().min(1).max(500).default(150).describe("Max INBOX messages to scan (default 150)"),
+      apply: external_exports.boolean().default(false).describe("If true, also auto-sort after learning (high-confidence moves)"),
+      aggressive: external_exports.boolean().default(false).describe("When apply=true, lower confidence threshold to 0.5"),
+      forceFallback: external_exports.boolean().default(false).describe("Skip LLM even if API key is set; name folders from domains only"),
+      newsletters: external_exports.boolean().default(true).describe(
+        'If true (default), discover newsletter senders and create "NL: \u2026" smart mailboxes'
+      ),
+      newsletterDryRun: external_exports.boolean().default(false).describe("If true, only propose newsletter smart mailboxes (no plist write)"),
+      newsletterMinCount: external_exports.number().int().min(1).default(3).describe("Min messages from a sender to treat as newsletter (default 3)"),
+      newsletterDays: external_exports.number().int().min(1).default(90).describe("Look back this many days for newsletter discovery (default 90)"),
+      actions: external_exports.boolean().default(true).describe(
+        "If true (default), derive actions from mail (reply/pay/meeting/\u2026) and execute them (flag, Reminders, reply drafts \u2014 never auto-send)"
+      ),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      namedCount: external_exports.number().optional(),
+      usedLlm: external_exports.boolean().optional(),
+      moved: external_exports.number().optional(),
+      newsletterCount: external_exports.number().optional(),
+      actionsExecuted: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      apply,
+      aggressive,
+      forceFallback,
+      newsletters,
+      newsletterDryRun,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath
+    }) => {
+      const messages = listInboxForFilter(account, limit ?? 150);
+      if (messages.length === 0 && newsletters === false) {
+        return successResponse("INBOX is empty (or unreadable) \u2014 nothing to learn.", {
+          namedCount: 0,
+          usedLlm: false,
+          scanned: 0
+        });
+      }
+      const learned = messages.length > 0 ? await learnFromMessages(messages, {
+        memoryPath,
+        forceFallback: !!forceFallback
+      }) : {
+        memoryPath: memoryPath || defaultMemoryPath(),
+        clusters: [],
+        namedCount: 0,
+        usedLlm: false,
+        llmError: void 0,
+        llmModel: void 0,
+        memory: void 0
+      };
+      const clusterLines = learned.clusters.map(
+        (c) => `  - ${c.domain} (${c.count} msg): \u2192 "${c.mailbox}" [${c.source}] e.g. ${c.sampleSubjects[0] || "(no subject)"}`
+      ).join("\n");
+      let moveSection = "";
+      let moved = 0;
+      let failed = 0;
+      if (apply && messages.length > 0) {
+        const plan = planAutoSort(messages, {
+          memoryPath: learned.memoryPath,
+          aggressive: !!aggressive
+        });
+        const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+        moved = exec.moved;
+        failed = exec.failed;
+        if (exec.movedFroms.length) bumpMoves(exec.movedFroms, learned.memoryPath);
+        moveSection = `
+
+Apply: moved ${moved}, failed ${failed}, created mailboxes: ${exec.created.join(", ") || "(none)"}`;
+        if (exec.errors.length) moveSection += `
+Errors: ${exec.errors.slice(0, 5).join("; ")}`;
+      }
+      let newsletterSection = "";
+      let newsletterPayload = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!newsletterDryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90
+        });
+        newsletterSection = `
+
+${newsletterPayload.text}`;
+      }
+      let actionSection = "";
+      let actionResult = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30
+        });
+        actionSection = `
+
+${actionResult.text}`;
+      }
+      const llmNote = learned.usedLlm ? `LLM naming via ${learned.llmModel}` : `Domain fallback names${learned.llmError ? ` (${learned.llmError})` : ""}`;
+      return successResponse(
+        `Learned from ${messages.length} INBOX message(s) \u2192 ${learned.namedCount} cluster(s). ${llmNote}.
+Memory: ${learned.memoryPath}
+${clusterLines || "  (no clusters)"}${moveSection}${newsletterSection}${actionSection}${apply ? "" : "\n\nTip: re-run with apply=true to move, or call filter-auto-sort."}`,
+        {
+          namedCount: learned.namedCount,
+          usedLlm: learned.usedLlm,
+          llmError: learned.llmError,
+          llmModel: learned.llmModel,
+          memoryPath: learned.memoryPath,
+          clusters: learned.clusters,
+          scanned: messages.length,
+          moved,
+          failed,
+          applied: !!apply,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload ? {
+            dryRun: newsletterPayload.dryRun,
+            count: newsletterPayload.count,
+            createdOrProposed: newsletterPayload.createdOrProposed
+          } : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0
+        }
+      );
+    },
+    "Error running filter-learn"
+  )
+);
+server.registerTool(
+  "filter-auto-sort",
+  {
+    description: 'Use when: automatically filing INBOX mail using the self-learned memory only (no LLM). High-confidence mappings move to their mailboxes; unknown senders stay in INBOX. Creates destination mailboxes as needed. By default also creates "NL: \u2026" newsletter smart mailboxes for bulk senders.\nReturns: move/skip counts, newsletter smart-mailbox results, and a per-message plan summary.\nDefault threshold confidence \u2265 0.8 (use aggressive=true for \u2265 0.5). dryRun=true only plans (moves + newsletters).\nDo not use when: memory is empty \u2014 run filter-learn first. Prefer filter-correct if a move was wrong.',
+    inputSchema: {
+      account: external_exports.string().optional(),
+      limit: external_exports.number().int().min(1).max(500).default(150),
+      dryRun: external_exports.boolean().default(false).describe("If true, only report what would move (default false = actually move)"),
+      aggressive: external_exports.boolean().default(false).describe("Lower confidence threshold to 0.5"),
+      categories: external_exports.array(external_exports.string()).optional().describe("Only move into these destination mailbox names"),
+      newsletters: external_exports.boolean().default(true).describe('If true (default), also create "NL: \u2026" smart mailboxes for newsletter senders'),
+      newsletterMinCount: external_exports.number().int().min(1).default(3),
+      newsletterDays: external_exports.number().int().min(1).default(90),
+      actions: external_exports.boolean().default(true).describe(
+        "If true (default), derive + execute mail actions (flag, Reminders, reply drafts). Skipped when dryRun=true."
+      ),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      moved: external_exports.number().optional(),
+      skipped: external_exports.number().optional(),
+      dryRun: external_exports.boolean().optional(),
+      newsletterCount: external_exports.number().optional(),
+      actionsExecuted: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(
+    async ({
+      account,
+      limit,
+      dryRun,
+      aggressive,
+      categories,
+      newsletters,
+      newsletterMinCount,
+      newsletterDays,
+      actions,
+      memoryPath
+    }) => {
+      const path = memoryPath || defaultMemoryPath();
+      const st = memoryStatus(path);
+      if (st.mappingCount === 0) {
+        return errorResponse(
+          "No learned mappings yet. Run filter-learn first so the filter can invent categories from your inbox."
+        );
+      }
+      const messages = listInboxForFilter(account, limit ?? 150);
+      const plan = planAutoSort(messages, {
+        memoryPath: path,
+        aggressive: !!aggressive,
+        categories
+      });
+      const preview = plan.items.slice(0, 40).map(
+        (i) => `  [${i.action}] ${i.id}: ${i.from.slice(0, 40)} \u2192 ${i.destMailbox || "\u2014"} (${i.reason})`
+      ).join("\n");
+      let newsletterPayload = null;
+      if (newsletters !== false) {
+        newsletterPayload = runNewsletterSmartMailboxes({
+          dryRun: !!dryRun,
+          minCount: newsletterMinCount ?? 3,
+          days: newsletterDays ?? 90
+        });
+      }
+      const nlText = newsletterPayload ? `
+
+${newsletterPayload.text}` : "";
+      if (dryRun) {
+        return successResponse(
+          `DRY RUN filter-auto-sort: would move ${plan.moveCount}, skip ${plan.skipCount} of ${messages.length}.
+${preview}${nlText}`,
+          {
+            dryRun: true,
+            moved: 0,
+            wouldMove: plan.moveCount,
+            skipped: plan.skipCount,
+            plan: plan.items,
+            newsletterCount: newsletterPayload?.count ?? 0,
+            newsletters: newsletterPayload ? {
+              dryRun: true,
+              count: newsletterPayload.count,
+              createdOrProposed: newsletterPayload.createdOrProposed
+            } : null
+          }
+        );
+      }
+      const exec = await executeSortPlan(plan, messages, { ensureMailboxes: true });
+      if (exec.movedFroms.length) bumpMoves(exec.movedFroms, path);
+      let actionSection = "";
+      let actionResult = null;
+      if (actions !== false) {
+        actionResult = runActionPipeline({
+          account,
+          limit: Math.min(limit ?? 40, 40),
+          bodyLimit: 20,
+          execute: true,
+          executeLimit: 30
+        });
+        actionSection = `
+
+${actionResult.text}`;
+      }
+      return successResponse(
+        `filter-auto-sort: moved ${exec.moved}, failed ${exec.failed}, skipped ${plan.skipCount} of ${messages.length}.
+Created: ${exec.created.join(", ") || "(none)"}
+${preview}${nlText}${actionSection}${exec.errors.length ? `
+Errors: ${exec.errors.slice(0, 5).join("; ")}` : ""}`,
+        {
+          dryRun: false,
+          moved: exec.moved,
+          failed: exec.failed,
+          skipped: plan.skipCount,
+          created: exec.created,
+          plan: plan.items,
+          errors: exec.errors,
+          newsletterCount: newsletterPayload?.count ?? 0,
+          newsletters: newsletterPayload ? {
+            dryRun: false,
+            count: newsletterPayload.count,
+            createdOrProposed: newsletterPayload.createdOrProposed
+          } : null,
+          actionsExecuted: actionResult?.executed ?? 0,
+          actionsDerived: actionResult?.derived ?? 0,
+          actionsPending: actionResult?.summary.pending ?? 0
+        }
+      );
+    },
+    "Error running filter-auto-sort"
+  )
+);
+function makeActionDeps() {
+  return {
+    flagMessage: (id, colorIndex) => mailManager.flagMessage(id, colorIndex),
+    replyDraft: (id, body) => Boolean(mailManager.replyToMessage(id, body, false, false).success),
+    createReminder: (title, body, dueDate) => createMailReminder(title, body, dueDate)
+  };
+}
+function runActionPipeline(opts) {
+  const queuePath = opts.queuePath || defaultActionQueuePath();
+  const messages = listInboxForFilter(opts.account, opts.limit);
+  const queue = loadQueue(queuePath);
+  const allDerived = [];
+  const candidates = [...messages].slice(0, opts.bodyLimit);
+  for (const m of candidates) {
+    let body = "";
+    try {
+      const content = mailManager.getMessageContent(m.id, false, {
+        account: m.account,
+        mailbox: m.mailbox
+      });
+      body = content?.plainText?.slice(0, 3500) ?? "";
+    } catch {
+      body = "";
+    }
+    const derived = deriveActionsHeuristic({
+      id: m.id,
+      subject: m.subject,
+      sender: m.sender,
+      body
+    });
+    allDerived.push(...derived);
+  }
+  const { added } = mergeIntoQueue(queue, allDerived);
+  let executed = 0;
+  let failed = 0;
+  if (opts.execute) {
+    const run2 = runPendingActions(queue, makeActionDeps(), { limit: opts.executeLimit });
+    executed = run2.done;
+    failed = run2.failed;
+  }
+  saveQueue(queue, queuePath);
+  const summary = queueSummary(queue);
+  const sample = queue.actions.filter((a) => a.status === "pending" || a.status === "done").slice(-15);
+  const lines = sample.map(
+    (a) => `  [${a.status}] ${a.kind}: ${a.title} (msg ${a.messageId}${a.dueDate ? `, due ${a.dueDate}` : ""})`
+  ).join("\n");
+  const text = [
+    `Actions: scanned ${messages.length} msgs, read body of ${candidates.length}, derived ${allDerived.length}, added ${added} to queue.`,
+    opts.execute ? `Executed: done=${executed}, failed=${failed}.` : "Not executed (execute=false). Call filter-actions-run or re-run with execute=true.",
+    `Queue: pending=${summary.pending}, done=${summary.done}, failed=${summary.failed} @ ${queuePath}`,
+    lines ? `Recent:
+${lines}` : "  (no actions)"
+  ].join("\n");
+  return {
+    scanned: messages.length,
+    derived: allDerived.length,
+    added,
+    executed,
+    failed,
+    summary,
+    sample,
+    text
+  };
+}
+server.registerTool(
+  "filter-actions-scan",
+  {
+    description: 'Use when: deriving actionable items from INBOX emails (reply needed, payment/invoice, meeting, review, follow-up) via heuristics on subject+body. Writes a local action queue. With execute=true (default), immediately works them off: flag mail, create Reminders in list "Mail Actions", open reply drafts (never auto-sends).\nReturns: counts and a sample of actions.\nDo not use when: you only want folder sorting (filter-auto-sort) without task extraction.',
+    inputSchema: {
+      account: external_exports.string().optional(),
+      limit: external_exports.number().int().min(1).max(200).default(40).describe("Inbox messages to consider"),
+      bodyLimit: external_exports.number().int().min(1).max(50).default(20).describe("How many messages to open for body analysis (slower)"),
+      execute: external_exports.boolean().default(true).describe("If true (default), run pending actions after scan"),
+      executeLimit: external_exports.number().int().min(1).max(100).default(30),
+      queuePath: external_exports.string().optional()
+    },
+    outputSchema: {
+      derived: external_exports.number().optional(),
+      executed: external_exports.number().optional(),
+      pending: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ account, limit, bodyLimit, execute, executeLimit, queuePath }) => {
+    const r = runActionPipeline({
+      account,
+      limit: limit ?? 40,
+      bodyLimit: bodyLimit ?? 20,
+      execute: execute !== false,
+      executeLimit: executeLimit ?? 30,
+      queuePath
+    });
+    return successResponse(r.text, {
+      derived: r.derived,
+      added: r.added,
+      executed: r.executed,
+      failed: r.failed,
+      scanned: r.scanned,
+      pending: r.summary.pending,
+      summary: r.summary,
+      sample: r.sample
+    });
+  }, "Error scanning mail actions")
+);
+server.registerTool(
+  "filter-actions-run",
+  {
+    description: "Use when: executing pending items already in the action queue (flag, Reminders, reply drafts). Does not re-scan mail \u2014 use filter-actions-scan to derive first.\nNever sends email automatically.\nReturns: done/failed counts.",
+    inputSchema: {
+      limit: external_exports.number().int().min(1).max(100).default(30),
+      queuePath: external_exports.string().optional()
+    },
+    outputSchema: {
+      done: external_exports.number().optional(),
+      failed: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ limit, queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const pendingBefore = queue.actions.filter((a) => a.status === "pending").length;
+    if (pendingBefore === 0) {
+      return successResponse(`No pending actions in ${path}`, {
+        done: 0,
+        failed: 0,
+        pending: 0
+      });
+    }
+    const run2 = runPendingActions(queue, makeActionDeps(), { limit: limit ?? 30 });
+    saveQueue(run2.queue, path);
+    const summary = queueSummary(run2.queue);
+    const lines = run2.results.map((r) => `  [${r.action.status}] ${r.action.kind}: ${r.action.title} \u2192 ${r.note}`).join("\n");
+    return successResponse(
+      `Ran actions: done=${run2.done}, failed=${run2.failed} (had ${pendingBefore} pending).
+${lines}`,
+      {
+        done: run2.done,
+        failed: run2.failed,
+        pending: summary.pending,
+        results: run2.results.map((r) => ({
+          id: r.action.id,
+          kind: r.action.kind,
+          status: r.action.status,
+          note: r.note
+        }))
+      }
+    );
+  }, "Error running mail actions")
+);
+server.registerTool(
+  "filter-actions-status",
+  {
+    description: "Use when: checking the mail action queue (pending/done/failed, by kind).\nReturns: summary of the local action-queue.json.",
+    inputSchema: {
+      queuePath: external_exports.string().optional()
+    },
+    outputSchema: {
+      pending: external_exports.number().optional(),
+      done: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ queuePath }) => {
+    const path = queuePath || defaultActionQueuePath();
+    const queue = loadQueue(path);
+    const summary = queueSummary(queue);
+    const pending = queue.actions.filter((a) => a.status === "pending").slice(0, 20).map((a) => `  - ${a.kind}: ${a.title}`).join("\n");
+    return successResponse(
+      `Action queue @ ${path}
+  pending=${summary.pending} done=${summary.done} failed=${summary.failed}
+  byKind: ${JSON.stringify(summary.byKind)}
+${pending || "  (no pending)"}`,
+      { ...summary, queuePath: path }
+    );
+  }, "Error reading action queue")
+);
+server.registerTool(
+  "filter-correct",
+  {
+    description: "Use when: teaching the filter that a sender belongs in a different mailbox (user correction). Updates memory with high confidence so future filter-auto-sort uses the new destination.\nPass either message id (to resolve From) or an explicit from address, plus mailbox name.\nDo not use when: bulk re-learning (use filter-learn) or deleting a mapping (use filter-forget).",
+    inputSchema: {
+      mailbox: external_exports.string().min(1, "Destination mailbox name is required"),
+      from: external_exports.string().optional().describe("Sender address or From header"),
+      id: external_exports.string().optional().describe("Message id \u2014 used to resolve From if from omitted"),
+      apply: external_exports.boolean().default(false).describe("If true and id given, also move that message now"),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      key: external_exports.string().optional(),
+      mailbox: external_exports.string().optional()
+    }
+  },
+  withErrorHandling(async ({ mailbox, from, id, apply, memoryPath }) => {
+    let sender = from;
+    if (!sender && id) {
+      const msg = mailManager.getMessageById(id);
+      if (!msg) return errorResponse(`Message "${id}" not found`);
+      sender = msg.sender;
+    }
+    if (!sender) {
+      return errorResponse("Provide from or id so the filter knows which sender to correct");
+    }
+    const result = applyCorrection(sender, mailbox, memoryPath);
+    let moveNote = "";
+    if (apply && id) {
+      const { success, error: error2 } = mailManager.moveMessage(id, mailbox);
+      if (!success) {
+        const batch = await hybridBatchCounts(
+          [id],
+          (n) => mailManager.batchMoveMessages(n, mailbox),
+          (im) => imapBatchMove(im, mailbox, {})
+        );
+        if (batch.success === 0) {
+          moveNote = ` (move failed: ${error2 || batch.errors.join("; ") || "unknown"})`;
+        } else {
+          bumpMoves([sender], result.memoryPath);
+          moveNote = " (message moved)";
+        }
+      } else {
+        bumpMoves([sender], result.memoryPath);
+        moveNote = " (message moved)";
+      }
+    }
+    return successResponse(
+      `Corrected: ${result.key} \u2192 "${result.mapping.mailbox}" (confidence ${result.mapping.confidence})${moveNote}. Future auto-sort will use this.`,
+      {
+        key: result.key,
+        mailbox: result.mapping.mailbox,
+        confidence: result.mapping.confidence,
+        memoryPath: result.memoryPath
+      }
+    );
+  }, "Error correcting filter mapping")
+);
+server.registerTool(
+  "filter-forget",
+  {
+    description: "Use when: removing a learned mapping by domain/email key or dropping all keys that point at a mailbox name.\nReturns: how many mappings were removed.\nDoes not delete Apple Mail folders or messages.",
+    inputSchema: {
+      key: external_exports.string().optional().describe("Domain or email key to forget (e.g. amazon.de)"),
+      mailbox: external_exports.string().optional().describe("Forget all mappings that target this mailbox name"),
+      memoryPath: external_exports.string().optional()
+    },
+    outputSchema: {
+      removed: external_exports.number().optional()
+    }
+  },
+  withErrorHandling(({ key, mailbox, memoryPath }) => {
+    if (!key && !mailbox) {
+      return errorResponse("Provide key and/or mailbox to forget");
+    }
+    const result = applyForget({ key, mailbox, memoryPath });
+    return successResponse(
+      `Forgot ${result.removed} mapping(s). Memory: ${result.memoryPath}`,
+      result
+    );
+  }, "Error forgetting filter mapping")
+);
 registerTool(
   "list-accounts",
   {
@@ -85062,7 +89579,7 @@ registerTool(
         "At least one action is required (markRead, markFlagged, delete, or moveTo)"
       ),
       matchAll: external_exports.boolean().default(true),
-      enabled: external_exports.boolean().default(true)
+      enabled: external_exports.boolean().default(false).describe("Enable immediately; defaults to false so the rule must be reviewed first")
     },
     outputSchema: {
       name: external_exports.string().optional(),
@@ -85569,7 +90086,7 @@ process.on("uncaughtException", (err) => {
 process.on("unhandledRejection", (reason) => {
   console.error("[unhandledRejection]", reason);
 });
-var transport = new StdioServerTransport();
+var transport = withJsonSchema2020_12(new StdioServerTransport());
 await server.connect(transport);
 var idleWatcher;
 if (/^(1|true|yes|on)$/i.test(process.env.APPLE_MAIL_MCP_IMAP_IDLE?.trim() ?? "")) {

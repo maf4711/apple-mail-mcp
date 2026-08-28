@@ -7,12 +7,14 @@
  *
  * Gated by RUN_IMAP_IT so it is skipped in the normal unit suite. CI sets it and
  * provides a GreenMail service; locally:
- *   docker run -d --rm -p 3143:3143 -e GREENMAIL_OPTS='-Dgreenmail.setup.test.imap -Dgreenmail.users=tester:secret@example.com -Dgreenmail.auth.disabled' greenmail/standalone:2.1.0
+ *   docker run -d --rm -p 3993:3993 -e GREENMAIL_OPTS='-Dgreenmail.setup.test.imaps -Dgreenmail.users=tester:secret@example.com -Dgreenmail.auth.disabled' greenmail/standalone:2.1.0
  *   RUN_IMAP_IT=1 npm run test:imap
  */
 import { describe, it, expect, beforeAll } from "vitest";
 import { ImapFlow } from "imapflow";
 import {
+  buildImapConnectionOptions,
+  type ImapClientLike,
   type ImapConfig,
   imapListMessages,
   imapSearchMessages,
@@ -41,21 +43,33 @@ const run = process.env.RUN_IMAP_IT ? describe : describe.skip;
 
 const cfg: ImapConfig = {
   host: process.env.GREENMAIL_HOST ?? "127.0.0.1",
-  port: Number(process.env.GREENMAIL_IMAP_PORT ?? 3143),
-  secure: false,
+  port: Number(process.env.GREENMAIL_IMAP_PORT ?? 3993),
+  secure: true,
   user: process.env.GREENMAIL_USER ?? "tester",
   pass: process.env.GREENMAIL_PASS ?? "secret",
   accountLabel: "greenmail",
 };
-const deps = { config: cfg };
+const deps = {
+  config: cfg,
+  // GreenMail uses a self-signed test certificate. This connector is confined
+  // to the integration fixture and deliberately disables certificate
+  // verification for that fixture only; production defaultConnect keeps
+  // verification enabled and requires TLS for non-implicit connections.
+  connect: async (connectionConfig: ImapConfig) => {
+    const c = new ImapFlow({
+      ...buildImapConnectionOptions(connectionConfig),
+      tls: { rejectUnauthorized: false },
+    });
+    c.on("error", () => {});
+    await c.connect();
+    return c as unknown as ImapClientLike;
+  },
+};
 
 function raw(): ImapFlow {
   return new ImapFlow({
-    host: cfg.host,
-    port: cfg.port,
-    secure: cfg.secure,
-    auth: { user: cfg.user, pass: cfg.pass },
-    logger: false,
+    ...buildImapConnectionOptions(cfg),
+    tls: { rejectUnauthorized: false },
   });
 }
 
@@ -139,10 +153,18 @@ run("IMAP backend (GreenMail) integration", () => {
       await imapSearchMessages({ mailbox: "INBOX", subject: "Movable", limit: 1 }, deps)
     ).text;
     const id = firstImapId(search);
-    expect((await imapMoveMessageById(id, "Dest", deps)).success).toBe(true);
+    const moved = await imapMoveMessageById(id, "Dest", deps);
+    expect(moved.success).toBe(true);
+    // #181: a real move against a real server must come back CORROBORATED, not
+    // merely un-rejected. Whether that arrives via UIDPLUS COPYUID or via the
+    // uid leaving the source is the server's business, but "unverified" here
+    // would mean the post-condition check does not actually work end to end.
+    expect(moved.verification?.verdict).toBe("verified");
     const inDest = (await imapListMessages({ mailbox: "Dest", limit: 10 }, deps)).text;
     const destId = firstImapId(inDest);
-    expect((await imapDeleteMessageById(destId, deps)).success).toBe(true);
+    const deleted = await imapDeleteMessageById(destId, deps);
+    expect(deleted.success).toBe(true);
+    expect(deleted.verification?.verdict).toBe("verified");
     await imapDeleteMailbox("Dest", deps);
     expect(list).toMatch(/via IMAP/);
   });
@@ -201,6 +223,32 @@ run("IMAP 2.1 optimizations (GreenMail) integration", () => {
     const fetched = await imapFetchAttachment(id, "doc.pdf", deps);
     expect(fetched.success).toBe(true);
     expect(Buffer.from(fetched.base64 as string, "base64").toString()).toBe("PDF-BYTES-HERE");
+  });
+
+  // #181: the countDelta the IMAP path now reports must agree with a REAL
+  // server's STATUS, not just with a mock that returns whatever we told it to.
+  it("batch move reports a countDelta that matches the server's own STATUS", async () => {
+    expect((await imapCreateMailbox("CDdest", deps)).success).toBe(true);
+    await appendMessage("CountDelta A", "a");
+    await appendMessage("CountDelta B", "b");
+    const found = (
+      await imapSearchMessages({ mailbox: "INBOX", subject: "CountDelta", limit: 10 }, deps)
+    ).text;
+    const ids = [...found.matchAll(/imap:[A-Za-z0-9_-]+/g)].map((m) => m[0]).slice(0, 2);
+    expect(ids.length).toBe(2);
+
+    const r = await imapBatchMove(ids, "CDdest", deps);
+    expect(r.success).toBe(2);
+    const [d] = r.countDelta ?? [];
+    expect(d).toBeDefined();
+    expect(d.mailbox).toBe("INBOX");
+    expect(d.expected).toBe(2);
+    // A real server removes both from the source, so this is the `match` case.
+    // before/after come from STATUS and must be internally consistent.
+    expect(d.before! - d.after!).toBe(d.observed);
+    expect(d.observed).toBe(2);
+    expect(d.status).toBe("match");
+    await imapDeleteMailbox("CDdest", deps);
   });
 
   it("batch mark-read + move over a UID set (I2)", async () => {

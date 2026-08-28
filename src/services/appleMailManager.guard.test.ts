@@ -168,6 +168,52 @@ describe("renameMailbox rollback on move failure", () => {
   });
 });
 
+describe("renameMailbox refuses an ambiguous oldName before creating anything (#198)", () => {
+  it("does not create the destination when oldName resolves ambiguously", () => {
+    // Two mailboxes share the leaf "Receipts" and there is no exact
+    // top-level "Receipts" — resolveMailbox("Receipts", ...) throws.
+    // Resolving oldName has to happen BEFORE createMailbox runs, or the
+    // ambiguity is only discovered after the destination already exists,
+    // leaving an orphan with nothing to roll it back.
+    h.router.fn = (script: string) => {
+      if (script.includes("set end of mbNames to mbPath")) {
+        return { success: true, output: "Personal/Receipts, Work/Receipts, INBOX" };
+      }
+      return { success: true, output: "" };
+    };
+    const mgr = new AppleMailManager();
+
+    const res = mgr.renameMailbox("Receipts", "Invoices", "iCloud");
+
+    expect(res.success).toBe(false);
+    expect(res.error).toMatch(/ambiguous/);
+    expect(res.error).toMatch(/Personal\/Receipts/);
+    expect(res.error).toMatch(/Work\/Receipts/);
+    expect(ranScript("make new mailbox")).toBe(false);
+  });
+
+  it("still renames cleanly when oldName is an unambiguous leaf", () => {
+    h.router.fn = (script: string) => {
+      if (script.includes("set end of mbNames to mbPath")) {
+        return { success: true, output: "Work/Receipts, INBOX" };
+      }
+      if (script.includes("move m to destMailbox")) {
+        return { success: true, output: "ok5" };
+      }
+      if (script.includes("make new mailbox")) {
+        return { success: true, output: "ok" };
+      }
+      return { success: true, output: "" };
+    };
+    const mgr = new AppleMailManager();
+
+    const res = mgr.renameMailbox("Receipts", "Invoices", "iCloud");
+
+    expect(res.success).toBe(true);
+    expect(ranScript("make new mailbox")).toBe(true);
+  });
+});
+
 describe("server-side create/rename guard (BUG B)", () => {
   it("createMailbox refuses on an IMAP account with no IMAP config, attempting no create", () => {
     h.router.fn = makeRouter({ enabled: "true", accountType: "imap" });
@@ -248,10 +294,21 @@ describe("server-side create/rename guard (BUG B)", () => {
 });
 
 describe("describeMailboxOpError create verb", () => {
-  it("maps a -10000 create failure to the server-side-mailbox explanation", () => {
+  it("maps a -10000 create failure to the scripting-bridge explanation", () => {
     const msg = describeMailboxOpError("create", "AppleEvent handler failed (-10000)");
-    expect(msg).toMatch(/Mail\.app cannot create server-side/);
+    expect(msg).toMatch(/scripting bridge will not create this mailbox/);
     expect(msg).toMatch(/Create it in Mail\.app directly/);
+  });
+
+  // #193: the message used to say "only local On My Mac mailboxes support
+  // this". Measured 2026-08-16, a local mailbox raises -10000 too — so that
+  // clause sent a user who had just failed on a local mailbox looking in
+  // exactly the wrong place. The remedy was right; the exemption was not.
+  it("does NOT claim local On My Mac mailboxes are exempt", () => {
+    const msg = describeMailboxOpError("delete", "AppleEvent handler failed (-10000)");
+    expect(msg).not.toMatch(/only local .* support this/i);
+    expect(msg).toMatch(/local "On My Mac" mailboxes too/);
+    expect(msg).toMatch(/Delete it in Mail\.app directly/);
   });
 
   it("passes through an unrelated create error unchanged", () => {
