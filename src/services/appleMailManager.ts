@@ -13,6 +13,7 @@
  * @module services/appleMailManager
  */
 
+import { buildScopedSearchPage, buildDirectMailboxPage } from "@/services/scopedSearchPage.js";
 import { spawnSync } from "child_process";
 import {
   constants as fsConstants,
@@ -516,8 +517,26 @@ function buildMessageRowLoop(opts: {
   offset?: number;
   /** Append a hasAttachments field (bulk-reads `mail attachments`). */
   withAttachments?: boolean;
+  stableIdentity?: boolean;
+  /** Native object specifier, not a materialized reference list. */
+  bulkCollection?: string;
+  /** Map page rows back into a small, directly projected filtered collection. */
+  indexedBulk?: boolean;
 }): string {
-  const { collection, limit, dedup, dateFilter, trailing = "", offset, withAttachments } = opts;
+  const {
+    collection,
+    limit,
+    dedup,
+    dateFilter,
+    trailing = "",
+    offset,
+    withAttachments,
+    stableIdentity,
+    bulkCollection,
+    indexedBulk,
+  } = opts;
+  const bulkTarget = bulkCollection ? `(${bulkCollection})` : "_msgs";
+  const bulkIndex = indexedBulk ? "_metadataIndex" : "_i";
   const dedupOpen = dedup
     ? `if seenIds does not contain msgId then\n            set end of seenIds to msgId`
     : "";
@@ -531,67 +550,96 @@ function buildMessageRowLoop(opts: {
     ? `set msgDate to d\n            if not (${dateFilter}) then\n              -- outside date range; skip\n            else`
     : "";
   const dateClose = dateFilter ? `end if` : "";
-  const attBulk = withAttachments ? `\n        set _atts to mail attachments of _msgs` : "";
+  const attBulk = withAttachments
+    ? `
+      set _attBulkOK to false
+      try
+        set _atts to mail attachments of ${bulkTarget}
+        set _attBulkOK to ((count of _atts) is (count of _msgs))
+      end try`
+    : "";
   const attRow = withAttachments
     ? `
           set msgHasAtt to "false"
           try
-            if _bulkOK then
-              if (count of (item _i of _atts)) > 0 then set msgHasAtt to "true"
+            if _attBulkOK then
+              if (count of (item ${bulkIndex} of _atts)) > 0 then set msgHasAtt to "true"
             else
               if (count of mail attachments of (item _i of _msgs)) > 0 then set msgHasAtt to "true"
             end if
           end try`
+    : "";
+  const identityBulk = stableIdentity ? `\n        set _rfcIds to message id of ${bulkTarget}` : "";
+  const identityRow = stableIdentity
+    ? `
+          if _bulkOK then
+            set _rfcId to item ${bulkIndex} of _rfcIds
+          else
+            set _rfcId to message id of (item _i of _msgs)
+          end if
+          if _rfcId is missing value then set _rfcId to ""`
+    : "";
+  const identityField = stableIdentity ? ` & "${FIELD_SEP}__MCP_RFC__=" & (_rfcId as string)` : "";
+  const rowFailure = stableIdentity
+    ? `on error _rowError number _rowNumber
+          error _rowError number _rowNumber`
     : "";
   const attField = withAttachments ? ` & "${FIELD_SEP}" & msgHasAtt` : "";
   return `
       set _msgs to ${collection}
       set _bulkOK to true
       try
-        set _ids to id of _msgs
-        set _subjs to subject of _msgs
-        set _sndrs to sender of _msgs
-        set _dates to date received of _msgs
-        set _reads to read status of _msgs
-        set _flags to flagged status of _msgs${attBulk}
+        ${indexedBulk ? `if (count of _candidates) > 500 then error "Filtered bulk page exceeds safe bound"` : ""}
+        set _ids to id of ${bulkTarget}
+        set _subjs to subject of ${bulkTarget}
+        set _sndrs to sender of ${bulkTarget}
+        set _dates to date received of ${bulkTarget}
+        set _reads to read status of ${bulkTarget}
+        set _flags to flagged status of ${bulkTarget}${identityBulk}
+        ${["_ids", "_subjs", "_sndrs", "_dates", "_reads", "_flags", ...(stableIdentity ? ["_rfcIds"] : [])].map((field) => `if class of ${field} is not list then set ${field} to {${field}}`).join("\n        ")}
+        ${["_ids", "_subjs", "_sndrs", "_dates", "_reads", "_flags", ...(stableIdentity ? ["_rfcIds"] : [])].map((field) => `if (count of ${field}) is not (count of ${indexedBulk ? "_candidates" : "_msgs"}) then error "Metadata collection changed"`).join("\n        ")}
+        ${indexedBulk ? `if (count of _ids) is not (count of _candidates) then error "Filtered collection changed"` : ""}
       on error
         set _bulkOK to false
       end try
+      ${attBulk}
       repeat with _i from 1 to (count of _msgs)
         if msgCount >= ${limit} then exit repeat
         try
+          ${indexedBulk ? "set _metadataIndex to item _i of _pageIndexes" : ""}
           if _bulkOK then
-            set msgId to (item _i of _ids) as string
+            set msgId to (item ${bulkIndex} of _ids) as string
           else
             set msgId to id of (item _i of _msgs) as string
           end if
           ${dedupOpen}
           ${offsetOpen}
           if _bulkOK then
-            set d to item _i of _dates
+            set d to item ${bulkIndex} of _dates
           else
             set d to date received of (item _i of _msgs)
           end if
           ${dateOpen}
           if _bulkOK then
-            set msgSubject to item _i of _subjs
-            set msgSender to item _i of _sndrs
-            set msgRead to (item _i of _reads) as string
-            set msgFlagged to (item _i of _flags) as string
+            set msgSubject to item ${bulkIndex} of _subjs
+            set msgSender to item ${bulkIndex} of _sndrs
+            set msgRead to (item ${bulkIndex} of _reads) as string
+            set msgFlagged to (item ${bulkIndex} of _flags) as string
           else
             set _m to item _i of _msgs
             set msgSubject to subject of _m
             set msgSender to sender of _m
             set msgRead to read status of _m as string
             set msgFlagged to flagged status of _m as string
-          end if${attRow}
+          end if${attRow}${identityRow}
           set msgDateStr to ${AS_DATE_TO_STRING}
           if msgCount > 0 then set outputText to outputText & "${RECORD_SEP}"
-          set outputText to outputText & msgId & "${FIELD_SEP}" & msgSubject & "${FIELD_SEP}" & msgSender & "${FIELD_SEP}" & msgDateStr & "${FIELD_SEP}" & msgRead & "${FIELD_SEP}" & msgFlagged${trailing}${attField}
+          set outputText to outputText & msgId & "${FIELD_SEP}" & msgSubject & "${FIELD_SEP}" & msgSender & "${FIELD_SEP}" & msgDateStr & "${FIELD_SEP}" & msgRead & "${FIELD_SEP}" & msgFlagged${trailing}${attField}${identityField}
           set msgCount to msgCount + 1
           ${dateClose}
           ${offsetClose}
           ${dedupClose}
+        ${rowFailure}
         end try
       end repeat`;
 }
@@ -2300,8 +2348,11 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
     from?: string,
     subject?: string,
     isRead?: boolean,
-    isFlagged?: boolean
+    isFlagged?: boolean,
+    offset = 0
   ): SearchResult {
+    if (!Number.isInteger(offset) || offset < 0 || (offset > 0 && (!account || !mailbox)))
+      throw new Error("Search offset requires an explicit account and mailbox");
     // If no account specified, search across all accounts and merge diagnostics.
     if (!account) {
       const accounts = this.listAccounts();
@@ -2409,6 +2460,10 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
         ? gmailReceivingMailboxes(this.getCachedMailboxNames(targetAccount))
         : null;
 
+      if (gmailInbox && offset > 0)
+        throw new Error(
+          "Search offset is not supported for virtual Gmail inboxes; select a concrete mailbox"
+        );
       if (gmailInbox) {
         rowsIncludeMailbox = true;
         const nameList = appleScriptLowerNameList(gmailInbox);
@@ -2450,10 +2505,11 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
         set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
       else
         try
-          ${buildMessageRowLoop({ collection: `messages of theMailbox ${searchCondition}`, limit, dateFilter })}
+          ${buildScopedSearchPage(`messages of theMailbox ${searchCondition}`, limit, offset, dateFilter)}
+          ${buildMessageRowLoop({ collection: "_pageMessages", limit, stableIdentity: true, bulkCollection: `messages of theMailbox ${searchCondition}`, indexedBulk: true })}
         on error _errMsg number _errNum
           set _timedOut to true
-          set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
+          set _notSearched to "${escapeForAppleScript(targetMailbox)} [error " & (_errNum as string) & "]${DIAG_ITEM_SEP}"
         end try
       end if
       return outputText & "${DIAG_MARKER}timedOut=" & (_timedOut as string) & "${DIAG_FIELD_SEP}skipped=${DIAG_FIELD_SEP}notSearched=" & _notSearched
@@ -3089,10 +3145,11 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
         set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
       else
         try
-          ${buildMessageRowLoop({ collection: `messages of theMailbox ${fromFilter}`, limit, offset, withAttachments: true })}
+          ${fromFilter ? buildScopedSearchPage(`messages of theMailbox ${fromFilter}`, limit, offset) : buildDirectMailboxPage(limit, offset)}
+          ${buildMessageRowLoop({ collection: "_pageMessages", limit, withAttachments: true, stableIdentity: true, bulkCollection: fromFilter ? undefined : "messages _pageFirst thru _pageLast of theMailbox" })}
         on error _errMsg number _errNum
           set _timedOut to true
-          set _notSearched to "${escapeForAppleScript(targetMailbox)}${DIAG_ITEM_SEP}"
+          set _notSearched to "${escapeForAppleScript(targetMailbox)} [error " & (_errNum as string) & "]${DIAG_ITEM_SEP}"
         end try
       end if
       return outputText & "${DIAG_MARKER}timedOut=" & (_timedOut as string) & "${DIAG_FIELD_SEP}skipped=${DIAG_FIELD_SEP}notSearched=" & _notSearched
@@ -3186,6 +3243,18 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
 
     for (const item of items) {
       const parts = item.split(FIELD_SEP);
+      let messageId: string | undefined;
+      if (!rowsIncludeMailbox && parts.at(-1)?.startsWith("__MCP_RFC__=")) {
+        const value = parts.pop()!.slice("__MCP_RFC__=".length).trim().replace(/^<|>$/g, "");
+        if (
+          value &&
+          ![...value].some(
+            (character) => character.charCodeAt(0) <= 32 || character.charCodeAt(0) === 127
+          ) &&
+          value.length <= 998
+        )
+          messageId = value;
+      }
       if (parts.length < 6) continue;
 
       let msgMailbox = mailbox;
@@ -3200,6 +3269,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
       const msgId = parts[0].trim();
       messages.push({
         id: msgId,
+        ...(messageId ? { messageId } : {}),
         subject: parts[1],
         sender: parts[2],
         recipients: [],

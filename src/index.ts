@@ -535,6 +535,12 @@ registerTool(
       account: z.string().optional().describe("Account to search in (omit to search all accounts)"),
       isRead: z.boolean().optional().describe("Filter by read status"),
       isFlagged: z.boolean().optional().describe("Filter by flagged status"),
+      offset: z
+        .number()
+        .int()
+        .min(0)
+        .optional()
+        .describe("Skip matching messages (requires an explicit account and concrete mailbox)."),
       dateFrom: DATE_FILTER_SCHEMA.describe("Start date filter (e.g., 'January 1, 2026')"),
       dateTo: DATE_FILTER_SCHEMA.describe("End date filter (e.g., 'March 1, 2026')"),
       limit: z
@@ -553,6 +559,7 @@ registerTool(
       mailbox,
       account,
       limit = 50,
+      offset = 0,
       dateFrom,
       dateTo,
       from,
@@ -560,6 +567,9 @@ registerTool(
       isRead,
       isFlagged,
     }) => {
+      if (offset > 0 && (!account || !mailbox)) {
+        return errorResponse("Search offset requires an explicit account and concrete mailbox.");
+      }
       // IMAP backend: prefer direct IMAP whenever IMAP is configured (v2.6.0).
       //   - explicit IMAP account → single-account IMAP (fast path);
       //   - no account + IMAP configured → MERGE: IMAP fans out over every
@@ -572,6 +582,7 @@ registerTool(
           query,
           mailbox,
           limit,
+          offset,
           dateFrom,
           dateTo,
           from,
@@ -620,7 +631,8 @@ registerTool(
         from,
         subject,
         isRead,
-        isFlagged
+        isFlagged,
+        offset
       );
 
       const coverageBlock = partialCoverageBlock(diagnostics);

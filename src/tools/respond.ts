@@ -17,6 +17,7 @@ import type { SearchDiagnostics, Message } from "@/types.js";
 export function messageSummary(m: Message): Record<string, unknown> {
   return {
     id: m.id,
+    ...(m.messageId ? { messageId: m.messageId } : {}),
     subject: m.subject,
     sender: m.sender,
     dateReceived: m.dateReceived instanceof Date ? m.dateReceived.toISOString() : m.dateReceived,

@@ -19,6 +19,8 @@
  * Represents an email message in Apple Mail.
  */
 export interface Message {
+  /** Stable RFC Message-ID when exposed by the scoped mailbox listing. */
+  messageId?: string;
   /** Unique identifier for the message */
   id: string;
 

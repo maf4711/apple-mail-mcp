@@ -667,7 +667,8 @@ async function fetchMailboxMatches(
   client: ImapClientLike,
   path: string,
   criteria: Record<string, unknown>,
-  newestCount: number
+  newestCount: number,
+  startOffset = 0
 ): Promise<{ messages: ImapMessage[]; total: number }> {
   const lock = await client.getMailboxLock(path);
   try {
@@ -675,7 +676,11 @@ async function fetchMailboxMatches(
     const uids = Array.isArray(found) ? found : [];
     if (uids.length === 0 || newestCount === 0) return { messages: [], total: uids.length };
 
-    const newest = uids.slice().reverse().slice(0, newestCount);
+    const newest = uids
+      .slice()
+      .reverse()
+      .slice(startOffset, startOffset + newestCount);
+    if (newest.length === 0) return { messages: [], total: uids.length };
     const byUid = new Map<number, ImapMessage>();
     for await (const msg of client.fetch(
       newest.join(","),
@@ -686,6 +691,9 @@ async function fetchMailboxMatches(
       { uid: true }
     )) {
       byUid.set(msg.uid, msg);
+    }
+    if (newest.some((uid) => !byUid.has(uid))) {
+      throw new Error("IMAP FETCH omitted requested messages; listing is incomplete");
     }
     return {
       messages: newest
@@ -729,14 +737,23 @@ async function run(
       const limit = args.limit ?? 50;
       const offset = args.offset ?? 0;
       const criteria = buildCriteria(args, listMode);
-      const newestPerMailbox = offset + limit;
+      // Only a global merge needs each mailbox's leading offset+limit rows.
+      // Scoped pagination fetches the requested UID window exactly once.
+      const newestPerMailbox = unscopedSearch ? offset + limit : limit;
+      const mailboxOffset = unscopedSearch ? 0 : offset;
       const fetched: FetchedMailboxMessage[] = [];
       const failedMailboxes: string[] = [];
       let totalMatched = 0;
 
       for (const path of paths) {
         try {
-          const result = await fetchMailboxMatches(client, path, criteria, newestPerMailbox);
+          const result = await fetchMailboxMatches(
+            client,
+            path,
+            criteria,
+            newestPerMailbox,
+            mailboxOffset
+          );
           totalMatched += result.total;
           fetched.push(...result.messages.map((message) => ({ message, path })));
         } catch (error) {
@@ -765,7 +782,7 @@ async function run(
         }
         ordered = [...unique.values()].slice(offset, offset + limit);
       } else {
-        ordered = fetched.slice(offset, offset + limit);
+        ordered = fetched;
       }
 
       const rows = ordered.map(({ message, path }) => formatRow(message, cfg.accountLabel, path));
