@@ -138,6 +138,8 @@ const DIAG_MARKER = "\x1dDIAG\x1d"; // GS-wrapped — payload/diagnostics bounda
 const DIAG_FIELD_SEP = "\x1dF\x1d"; // between diagnostics fields
 const DIAG_ITEM_SEP = "\x1dM\x1d"; // between diagnostics list items
 const CONTENT_MARKER = "\x1dCONTENT\x1d"; // subject/plain-text boundary
+const METADATA_MARKER = "\x1dMETA\x1d";
+const METADATA_END_MARKER = "\x1dENDMETA\x1d";
 const MSGID_MARKER = "\x1dMSGID\x1d"; // subject/RFC-Message-ID boundary (get-message content)
 const HTML_MARKER = "\x1dHTML\x1d"; // plain-text/source boundary
 const LOOKUP_ERROR_MARKER = "\x1dERR\x1d"; // GS-wrapped — by-id lookup failure; must not be a bare text prefix because the success payload of the same script leads with the sender-controlled subject
@@ -993,16 +995,31 @@ function mailboxPathFragment(mailboxVar: string, outputVar: string): string {
 function mailboxLookupFragment(collExpr: string, path: string, outputVar: string): string {
   return `
         set ${outputVar} to missing value
-        repeat with _mbc in (${collExpr})
-          set _mbcPath to ""
-          ${mailboxPathFragment("_mbc", "_mbcPath")}
+        try
           ignoring case
-            if _mbcPath is "${escapeForAppleScript(path)}" then
-              set ${outputVar} to _mbc
-              exit repeat
-            end if
+            set _namedCandidates to (${collExpr} whose name is "${escapeForAppleScript(mailboxLeaf(path))}")
+            repeat with _mbc in _namedCandidates
+              set _mbcPath to ""
+              ${mailboxPathFragment("_mbc", "_mbcPath")}
+              if _mbcPath is "${escapeForAppleScript(path)}" then
+                set ${outputVar} to contents of _mbc
+                exit repeat
+              end if
+            end repeat
           end ignoring
-        end repeat`;
+        end try
+        if ${outputVar} is missing value then
+          repeat with _mbc in (${collExpr})
+            set _mbcPath to ""
+            ${mailboxPathFragment("_mbc", "_mbcPath")}
+            ignoring case
+              if _mbcPath is "${escapeForAppleScript(path)}" then
+                set ${outputVar} to contents of _mbc
+                exit repeat
+              end if
+            end ignoring
+          end repeat
+        end if`;
 }
 
 /**
@@ -2726,17 +2743,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
           end repeat
         end ignoring`
       : `set acct to (first account whose name is "${escapeForAppleScript(account)}")
-        set targetMb to missing value
-        ignoring case
-          repeat with mb in mailboxes of acct
-            set _mbPath to ""
-            ${mailboxPathFragment("mb", "_mbPath")}
-            if _mbPath is "${escapeForAppleScript(resolved)}" then
-              set targetMb to mb
-              exit repeat
-            end if
-          end repeat
-        end ignoring`;
+        ${mailboxLookupFragment("mailboxes of acct", resolved, "targetMb")}`;
     return buildAppLevelScript(`
       try
         ${bind}
@@ -2780,6 +2787,15 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
     // the message carries none), plain-text content and — only when requested —
     // the raw source. `msg` must already be bound.
     const innerFetch = `
+                set msgMetadata to "${METADATA_MARKER}${FIELD_SEP}${FIELD_SEP}${METADATA_END_MARKER}"
+                try
+                  set msgSender to sender of msg as string
+                  ${this.sanitizeFragment("msgSender", "                  ")}
+                  set d to date received of msg
+                  set msgReceived to ${AS_DATE_TO_STRING}
+                  set msgFlagged to flagged status of msg as string
+                  set msgMetadata to "${METADATA_MARKER}" & msgSender & "${FIELD_SEP}" & msgReceived & "${FIELD_SEP}" & msgFlagged & "${METADATA_END_MARKER}"
+                end try
                 set msgSubject to subject of msg
                 set msgRfcId to ""
                 try
@@ -2787,7 +2803,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
                 end try
                 set msgContent to content of msg
                 ${sourceFetch}
-                return msgSubject & "${MSGID_MARKER}" & msgRfcId & "${CONTENT_MARKER}" & msgContent & "${HTML_MARKER}" & htmlSource`;
+                return msgMetadata & msgSubject & "${MSGID_MARKER}" & msgRfcId & "${CONTENT_MARKER}" & msgContent & "${HTML_MARKER}" & htmlSource`;
 
     // Fast path: when we know which account+mailbox holds this id (explicit hint
     // from the caller, or remembered from a prior search/list/by-id lookup), open
@@ -2808,6 +2824,9 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
         includeHtml
       );
       if (scoped) return scoped;
+      // An explicit scope is an identity boundary, not a performance hint.
+      // Only cached locations may fall back after a stale index miss.
+      if (hint?.account && hint?.mailbox) return null;
       // Scoped lookup missed (stale index — e.g. the message was moved). Fall
       // through to the full scan below rather than returning a false "not found".
     }
@@ -2879,7 +2898,43 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
       return null;
     }
 
-    const htmlSplit = result.output.split(HTML_MARKER);
+    let payload = result.output;
+    let metadata: Pick<MessageContent, "sender" | "dateReceived" | "isFlagged"> = {};
+    if (payload.startsWith(METADATA_MARKER)) {
+      const end = payload.indexOf(METADATA_END_MARKER, METADATA_MARKER.length);
+      if (end < 0) return null;
+      const fields = payload.slice(METADATA_MARKER.length, end).split(FIELD_SEP);
+      payload = payload.slice(end + METADATA_END_MARKER.length);
+      if (fields.length === 3 && fields[0].trim() && ["true", "false"].includes(fields[2])) {
+        const numbers = fields[1].split("-").map(Number);
+        if (/^\d{4}-\d{1,2}-\d{1,2}-\d{1,2}-\d{1,2}-\d{1,2}$/.test(fields[1])) {
+          const [year, month, day, hours, minutes, seconds] = numbers;
+          const date = new Date(year, month - 1, day, hours, minutes, seconds);
+          const actual = [
+            date.getFullYear(),
+            date.getMonth() + 1,
+            date.getDate(),
+            date.getHours(),
+            date.getMinutes(),
+            date.getSeconds(),
+          ];
+          if (
+            Number.isFinite(date.getTime()) &&
+            numbers.every((number, i) => number === actual[i]) &&
+            ![...fields[0]].some(
+              (character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127
+            )
+          ) {
+            metadata = {
+              sender: fields[0],
+              dateReceived: date.toISOString(),
+              isFlagged: fields[2] === "true",
+            };
+          }
+        }
+      }
+    }
+    const htmlSplit = payload.split(HTML_MARKER);
     const contentPart = htmlSplit[0];
     const rawSource = htmlSplit.length > 1 ? htmlSplit[1] : "";
 
@@ -2904,6 +2959,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
       plainText: parts[1],
       htmlContent,
       rfcMessageId,
+      ...metadata,
     };
   }
 

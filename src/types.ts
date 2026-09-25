@@ -109,6 +109,12 @@ export interface SearchResult {
  * Represents the content of an email message.
  */
 export interface MessageContent {
+  /** Live native metadata; absent if the read or strict validation failed. */
+  sender?: string;
+  /** ISO 8601 receive timestamp, never a fallback current date. */
+  dateReceived?: string;
+  /** Missing is unknown, not equivalent to unflagged. */
+  isFlagged?: boolean;
   /** Message identifier */
   id: string;
 

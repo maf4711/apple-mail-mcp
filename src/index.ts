@@ -698,6 +698,9 @@ registerTool(
       id: z.string().optional(),
       subject: z.string().optional(),
       body: z.string().optional(),
+      sender: z.string().optional(),
+      dateReceived: z.string().optional(),
+      isFlagged: z.boolean().optional(),
       isHtml: z.boolean().optional(),
       rfcMessageId: z
         .string()
@@ -746,6 +749,9 @@ registerTool(
             body,
             isHtml,
             rfcMessageId: content.rfcMessageId ?? "",
+            ...(content.sender !== undefined ? { sender: content.sender } : {}),
+            ...(content.dateReceived !== undefined ? { dateReceived: content.dateReceived } : {}),
+            ...(typeof content.isFlagged === "boolean" ? { isFlagged: content.isFlagged } : {}),
           });
         },
         ok: "",

@@ -328,6 +328,7 @@ function imapIdentityKey(spec: { host: string; port: number; user: string }): st
  * as a secondary guard so two distinct mailboxes can't share one nickname.
  */
 function listImapAccountSpecs(env: NodeJS.ProcessEnv = process.env): ImapAccountSpec[] {
+  if (isTruthySetting(env.APPLE_MAIL_MCP_LOCAL_ONLY)) return [];
   const specs: ImapAccountSpec[] = [];
   const seen = new Set<string>();
   const user = env[IMAP_ENV.user]?.trim();
@@ -497,6 +498,7 @@ export function resolveImapConfig(
 
 /** Build transport options with STARTTLS required unless explicitly opted out. */
 export function buildImapConnectionOptions(cfg: ImapConfig) {
+  assertImapAllowed();
   return {
     host: cfg.host,
     port: cfg.port,
@@ -519,7 +521,16 @@ export function buildImapConnectionOptions(cfg: ImapConfig) {
   };
 }
 
+function assertImapAllowed(): void {
+  if (isTruthySetting(process.env.APPLE_MAIL_MCP_LOCAL_ONLY)) {
+    throw new Error(
+      "IMAP disabled by APPLE_MAIL_MCP_LOCAL_ONLY; use native Apple Mail IDs and tools."
+    );
+  }
+}
+
 const defaultConnect: ImapConnect = async (cfg) => {
+  assertImapAllowed();
   const client = new ImapFlow(buildImapConnectionOptions(cfg));
   // ImapFlow is an EventEmitter: once connect() resolves, a later socket error
   // on this pooled, long-lived client (idle Gmail/iCloud timeout, server BYE,
@@ -1144,6 +1155,7 @@ function scheduleIdleClose(key: string): void {
 const connecting = new Map<string, Promise<ImapClientLike>>();
 
 async function acquirePooled(cfg: ImapConfig): Promise<ImapClientLike> {
+  assertImapAllowed();
   const key = poolKey(cfg);
   const existing = pools.get(key);
   if (existing) {
@@ -1229,6 +1241,7 @@ async function useClient<T>(
   fn: (client: ImapClientLike, cfg: ImapConfig) => Promise<T>,
   retryOnDrop = false
 ): Promise<T> {
+  assertImapAllowed();
   const cfg = deps.config ?? resolveImapConfig(process.env, deps.account);
   if (deps.connect) {
     const client = await deps.connect(cfg);

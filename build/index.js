@@ -79543,6 +79543,8 @@ var DIAG_MARKER = "DIAG";
 var DIAG_FIELD_SEP = "F";
 var DIAG_ITEM_SEP = "M";
 var CONTENT_MARKER = "CONTENT";
+var METADATA_MARKER = "META";
+var METADATA_END_MARKER = "ENDMETA";
 var MSGID_MARKER = "MSGID";
 var HTML_MARKER = "HTML";
 var LOOKUP_ERROR_MARKER = "ERR";
@@ -79910,16 +79912,31 @@ function mailboxPathFragment(mailboxVar, outputVar) {
 function mailboxLookupFragment(collExpr, path, outputVar) {
   return `
         set ${outputVar} to missing value
-        repeat with _mbc in (${collExpr})
-          set _mbcPath to ""
-          ${mailboxPathFragment("_mbc", "_mbcPath")}
+        try
           ignoring case
-            if _mbcPath is "${escapeForAppleScript(path)}" then
-              set ${outputVar} to _mbc
-              exit repeat
-            end if
+            set _namedCandidates to (${collExpr} whose name is "${escapeForAppleScript(mailboxLeaf(path))}")
+            repeat with _mbc in _namedCandidates
+              set _mbcPath to ""
+              ${mailboxPathFragment("_mbc", "_mbcPath")}
+              if _mbcPath is "${escapeForAppleScript(path)}" then
+                set ${outputVar} to contents of _mbc
+                exit repeat
+              end if
+            end repeat
           end ignoring
-        end repeat`;
+        end try
+        if ${outputVar} is missing value then
+          repeat with _mbc in (${collExpr})
+            set _mbcPath to ""
+            ${mailboxPathFragment("_mbc", "_mbcPath")}
+            ignoring case
+              if _mbcPath is "${escapeForAppleScript(path)}" then
+                set ${outputVar} to contents of _mbc
+                exit repeat
+              end if
+            end ignoring
+          end repeat
+        end if`;
 }
 var MAILBOX_ALIASES = {
   inbox: ["INBOX", "Inbox", "inbox"],
@@ -81232,17 +81249,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
             end if
           end repeat
         end ignoring` : `set acct to (first account whose name is "${escapeForAppleScript(account)}")
-        set targetMb to missing value
-        ignoring case
-          repeat with mb in mailboxes of acct
-            set _mbPath to ""
-            ${mailboxPathFragment("mb", "_mbPath")}
-            if _mbPath is "${escapeForAppleScript(resolved)}" then
-              set targetMb to mb
-              exit repeat
-            end if
-          end repeat
-        end ignoring`;
+        ${mailboxLookupFragment("mailboxes of acct", resolved, "targetMb")}`;
     return buildAppLevelScript(`
       try
         ${bind}
@@ -81276,6 +81283,15 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
                   set htmlSource to source of msg
                 end try` : `set htmlSource to ""`;
     const innerFetch = `
+                set msgMetadata to "${METADATA_MARKER}${FIELD_SEP}${FIELD_SEP}${METADATA_END_MARKER}"
+                try
+                  set msgSender to sender of msg as string
+                  ${this.sanitizeFragment("msgSender", "                  ")}
+                  set d to date received of msg
+                  set msgReceived to ${AS_DATE_TO_STRING}
+                  set msgFlagged to flagged status of msg as string
+                  set msgMetadata to "${METADATA_MARKER}" & msgSender & "${FIELD_SEP}" & msgReceived & "${FIELD_SEP}" & msgFlagged & "${METADATA_END_MARKER}"
+                end try
                 set msgSubject to subject of msg
                 set msgRfcId to ""
                 try
@@ -81283,7 +81299,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
                 end try
                 set msgContent to content of msg
                 ${sourceFetch}
-                return msgSubject & "${MSGID_MARKER}" & msgRfcId & "${CONTENT_MARKER}" & msgContent & "${HTML_MARKER}" & htmlSource`;
+                return msgMetadata & msgSubject & "${MSGID_MARKER}" & msgRfcId & "${CONTENT_MARKER}" & msgContent & "${HTML_MARKER}" & htmlSource`;
     const loc = hint?.account && hint?.mailbox ? { account: hint.account, mailbox: hint.mailbox } : this.idLocationIndex.get(id.toString());
     if (loc) {
       const scopedScript = this.scopedByIdScript(loc.account, loc.mailbox, id, innerFetch);
@@ -81293,6 +81309,7 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
         includeHtml
       );
       if (scoped) return scoped;
+      if (hint?.account && hint?.mailbox) return null;
     }
     const script = buildAppLevelScript(`
       try
@@ -81353,7 +81370,39 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
       this.lastMessageLookupError = result.output.slice(LOOKUP_ERROR_MARKER.length).trim();
       return null;
     }
-    const htmlSplit = result.output.split(HTML_MARKER);
+    let payload = result.output;
+    let metadata = {};
+    if (payload.startsWith(METADATA_MARKER)) {
+      const end = payload.indexOf(METADATA_END_MARKER, METADATA_MARKER.length);
+      if (end < 0) return null;
+      const fields = payload.slice(METADATA_MARKER.length, end).split(FIELD_SEP);
+      payload = payload.slice(end + METADATA_END_MARKER.length);
+      if (fields.length === 3 && fields[0].trim() && ["true", "false"].includes(fields[2])) {
+        const numbers = fields[1].split("-").map(Number);
+        if (/^\d{4}-\d{1,2}-\d{1,2}-\d{1,2}-\d{1,2}-\d{1,2}$/.test(fields[1])) {
+          const [year, month, day, hours, minutes, seconds] = numbers;
+          const date3 = new Date(year, month - 1, day, hours, minutes, seconds);
+          const actual = [
+            date3.getFullYear(),
+            date3.getMonth() + 1,
+            date3.getDate(),
+            date3.getHours(),
+            date3.getMinutes(),
+            date3.getSeconds()
+          ];
+          if (Number.isFinite(date3.getTime()) && numbers.every((number3, i) => number3 === actual[i]) && ![...fields[0]].some(
+            (character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127
+          )) {
+            metadata = {
+              sender: fields[0],
+              dateReceived: date3.toISOString(),
+              isFlagged: fields[2] === "true"
+            };
+          }
+        }
+      }
+    }
+    const htmlSplit = payload.split(HTML_MARKER);
     const contentPart = htmlSplit[0];
     const rawSource = htmlSplit.length > 1 ? htmlSplit[1] : "";
     const parts = contentPart.split(CONTENT_MARKER);
@@ -81367,7 +81416,8 @@ ${indent}end try${this.sanitizeFragment("_uacct", indent)}${this.sanitizeFragmen
       subject,
       plainText: parts[1],
       htmlContent,
-      rfcMessageId
+      rfcMessageId,
+      ...metadata
     };
   }
   /**
@@ -84657,6 +84707,7 @@ function imapIdentityKey(spec) {
   return `${spec.host.trim().toLowerCase()}:${spec.port}:${spec.user.trim()}`;
 }
 function listImapAccountSpecs(env = process.env) {
+  if (isTruthySetting(env.APPLE_MAIL_MCP_LOCAL_ONLY)) return [];
   const specs = [];
   const seen = /* @__PURE__ */ new Set();
   const user = env[IMAP_ENV.user]?.trim();
@@ -84778,6 +84829,7 @@ function resolveImapConfig(env = process.env, account) {
   return specToConfig(spec, isTruthySetting(env[IMAP_ENV.allowPlaintext]));
 }
 function buildImapConnectionOptions(cfg) {
+  assertImapAllowed();
   return {
     host: cfg.host,
     port: cfg.port,
@@ -84799,7 +84851,15 @@ function buildImapConnectionOptions(cfg) {
     logger: false
   };
 }
+function assertImapAllowed() {
+  if (isTruthySetting(process.env.APPLE_MAIL_MCP_LOCAL_ONLY)) {
+    throw new Error(
+      "IMAP disabled by APPLE_MAIL_MCP_LOCAL_ONLY; use native Apple Mail IDs and tools."
+    );
+  }
+}
 var defaultConnect = async (cfg) => {
+  assertImapAllowed();
   const client = new import_imapflow.ImapFlow(buildImapConnectionOptions(cfg));
   client.on("error", () => {
   });
@@ -85158,6 +85218,7 @@ function scheduleIdleClose(key) {
 }
 var connecting = /* @__PURE__ */ new Map();
 async function acquirePooled(cfg) {
+  assertImapAllowed();
   const key = poolKey(cfg);
   const existing = pools.get(key);
   if (existing) {
@@ -85209,6 +85270,7 @@ async function imapHealthCheck(deps = {}) {
   }
 }
 async function useClient(deps, fn, retryOnDrop = false) {
+  assertImapAllowed();
   const cfg = deps.config ?? resolveImapConfig(process.env, deps.account);
   if (deps.connect) {
     const client = await deps.connect(cfg);
@@ -88008,6 +88070,9 @@ Do not use when: you don't yet have an id (use search-messages or list-messages 
       id: external_exports.string().optional(),
       subject: external_exports.string().optional(),
       body: external_exports.string().optional(),
+      sender: external_exports.string().optional(),
+      dateReceived: external_exports.string().optional(),
+      isFlagged: external_exports.boolean().optional(),
       isHtml: external_exports.boolean().optional(),
       rfcMessageId: external_exports.string().optional().describe(
         "Stable RFC 5322 Message-ID (angle brackets stripped); empty when the message has none"
@@ -88049,7 +88114,10 @@ ${body}`, {
           subject: content.subject,
           body,
           isHtml,
-          rfcMessageId: content.rfcMessageId ?? ""
+          rfcMessageId: content.rfcMessageId ?? "",
+          ...content.sender !== void 0 ? { sender: content.sender } : {},
+          ...content.dateReceived !== void 0 ? { dateReceived: content.dateReceived } : {},
+          ...typeof content.isFlagged === "boolean" ? { isFlagged: content.isFlagged } : {}
         });
       },
       ok: "",
