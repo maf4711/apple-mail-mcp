@@ -71,7 +71,7 @@ describe("by-id message identity", () => {
     });
     let script = lastScript();
     expect(script).toContain('first account whose name is "work@example.com"');
-    expect(script).toContain('if _mbPath is "INBOX" then');
+    expect(script).toContain('if _mbcPath is "INBOX" then');
     expect(script).toContain("messages of targetMb whose id is 42");
     expect(script).not.toContain("messages of mb whose id is 42");
 
@@ -80,7 +80,7 @@ describe("by-id message identity", () => {
     expect(mgr.getRawSource("42")).toBe("raw MIME source");
     script = lastScript();
     expect(script).toContain('first account whose name is "work@example.com"');
-    expect(script).toContain('if _mbPath is "INBOX" then');
+    expect(script).toContain('if _mbcPath is "INBOX" then');
     expect(script).toContain("messages of targetMb whose id is 42");
     expect(script).not.toContain("messages of mb whose id is 42");
   });
@@ -91,8 +91,8 @@ describe("by-id message identity", () => {
 
     expect(mgr.getRawSource("42")).toBe("raw MIME source");
     const script = lastScript();
-    expect(script).toContain('if _mbPath is "Archive/Inbox" then');
-    expect(script).toContain('set _mbPath to (name of _pathParent) & "/" & _mbPath');
+    expect(script).toContain('if _mbcPath is "Archive/Inbox" then');
+    expect(script).toContain('set _mbcPath to (name of _pathParent) & "/" & _mbcPath');
     expect(script).toContain(
       "if _parentClass is not mailbox and _parentClass is not container then exit repeat"
     );

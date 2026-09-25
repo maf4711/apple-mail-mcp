@@ -106,8 +106,8 @@ describe("listMessages(mailbox: '') takes the all-mailboxes row shape", () => {
 
     // The scoped-lookup attempt (tried before any unscoped fallback scan) is
     // what proves rememberLocation cached the real mailbox, not the fallback.
-    const scoped = h.calls.find((s) => s.includes("if _mbPath is"));
-    expect(scoped).toContain('if _mbPath is "Work/Receipts" then');
+    const scoped = h.calls.find((s) => s.includes("if _mbcPath is"));
+    expect(scoped).toContain('if _mbcPath is "Work/Receipts" then');
   });
 });
 
